@@ -7,13 +7,13 @@
  */
 
 object Hello extends App {
-  println("Hello pelle")
+  println("Hello pelles")
 }
 
-object Pelle {
+object Pelle extends App{
 
   def m : String = {
-    "Hei"
+    "hei"
   }
 }
 
