@@ -3,7 +3,7 @@ package no.jergan.frogpuzzle
 import scala.collection.mutable
 
 /**
- * Simulates a {@link Solution}
+ * Simulates a [[Solution]] to test it.
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */

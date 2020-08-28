@@ -3,7 +3,7 @@ package no.jergan.frogpuzzle
 import scala.collection.mutable.ListBuffer
 
 /**
- * Board of game.
+ * Board of game where frog lives.
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */

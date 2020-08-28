@@ -1,7 +1,7 @@
 package no.jergan.frogpuzzle
 
 /**
- * Square of the board.
+ * Square of the [[Board]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */

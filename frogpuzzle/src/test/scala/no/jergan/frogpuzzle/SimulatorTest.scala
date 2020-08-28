@@ -3,10 +3,9 @@ package no.jergan.frogpuzzle
 import org.scalatest.flatspec.AnyFlatSpec
 
 /**
- * Unit test of {@link Simulator}
+ * Unit test of [[Simulator]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
- * @version
  */
 class SimulatorTest extends AnyFlatSpec {
 

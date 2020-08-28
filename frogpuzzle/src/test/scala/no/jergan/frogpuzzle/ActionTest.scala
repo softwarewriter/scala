@@ -3,10 +3,9 @@ package no.jergan.frogpuzzle
 import org.scalatest.flatspec.AnyFlatSpec
 
 /**
- * Unit test of {@link Action}
+ * Unit test of [[Action]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
- * @version
  */
 class ActionTest extends AnyFlatSpec {
 

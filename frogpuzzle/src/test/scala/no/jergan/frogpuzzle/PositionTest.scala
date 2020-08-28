@@ -3,10 +3,9 @@ package no.jergan.frogpuzzle
 import org.scalatest.flatspec.AnyFlatSpec
 
 /**
- * Unit test of {@link Position}
+ * Unit test of [[Position]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
- * @version
  */
 class PositionTest extends AnyFlatSpec {
 

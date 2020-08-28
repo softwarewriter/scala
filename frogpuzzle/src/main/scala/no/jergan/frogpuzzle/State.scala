@@ -1,7 +1,7 @@
 package no.jergan.frogpuzzle
 
 /**
- * State of frog represented by {@link Position} and {@link Orientation}.
+ * State of frog represented by [[Position]] and [[Orientation]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */

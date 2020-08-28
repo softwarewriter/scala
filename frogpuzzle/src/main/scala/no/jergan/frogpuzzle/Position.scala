@@ -1,7 +1,7 @@
 package no.jergan.frogpuzzle
 
 /**
- * Position on board.
+ * Position on [[Board]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */

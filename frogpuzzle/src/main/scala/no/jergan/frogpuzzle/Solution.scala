@@ -1,7 +1,7 @@
 package no.jergan.frogpuzzle
 
 /**
- * Solution (actual or candidate) in context of a {@link Board}.
+ * Solution (actual or candidate) in context of a [[Board]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
