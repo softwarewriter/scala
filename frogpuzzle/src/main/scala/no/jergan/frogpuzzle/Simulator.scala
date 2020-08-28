@@ -1,7 +1,5 @@
 package no.jergan.frogpuzzle
 
-import scala.collection.mutable
-
 /**
  * Simulates a [[Solution]] to test it.
  *
@@ -20,7 +18,7 @@ class Simulator {
       }
       val position = state.position;
       if (solution.board.squareAt(position) == EMPTY) {
-         return false; // outside
+         return false;
       }
       if (position == solution.board.end() && requiredToVisit.subsetOf(states.map(state => state.position))) {
          return true;
