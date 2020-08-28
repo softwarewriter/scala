@@ -10,7 +10,7 @@ import scala.collection.mutable
 class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
 
    override def toString: String = {
-      val result = new StringBuilder();
+      val result = new StringBuilder()
       board.foreach(row => {
          row.foreach(square => {
             result.addOne(square.character)
@@ -33,7 +33,7 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
    }
 
    def initialState(): State = {
-      State(start(), initialOrientation());
+      State(start(), initialOrientation())
    }
 
    def squareAt(position: Position): Square = {
@@ -43,18 +43,18 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
       if (position.y > this.sizeY) {
          throw new Exception(s"${position.y} is outside height of board + $sizeY")
       }
-      board(position.y)(position.x);
+      board(position.y)(position.x)
    }
 
    private[this] def findOne(square: Square): Position = {
       val all = findAll(square)
       if (all.isEmpty) {
-         throw new Exception(s"No square of type $square");
+         throw new Exception(s"No square of type $square")
       }
       if (all.size > 1) {
-         throw new Exception(s"${all.size} squares of type $square");
+         throw new Exception(s"${all.size} squares of type $square")
       }
-      all.iterator.next();
+      all.iterator.next()
    }
 
    private[this] def findAll(square: Square): Set[Position] = {
@@ -70,10 +70,10 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
    private[this] def initialOrientation(): Orientation = {
       val neighbours = Orientation.all().filter(orientation => squareAt(start().move(None, orientation)) != EMPTY)
       if (neighbours.isEmpty) {
-         throw new Exception("No neighbouring square");
+         throw new Exception("No neighbouring square")
       }
       if (neighbours.size > 2) {
-         throw new Exception(s"${neighbours.size} neighbouring squares");
+         throw new Exception(s"${neighbours.size} neighbouring squares")
       }
       neighbours.last
    }
@@ -84,8 +84,8 @@ object Board {
    def parse(string: String): Board = {
       val nonEmptyLines = string.split("\n").filter(line => !line.isEmpty)
       val maxSizeX = nonEmptyLines.map(line => line.length).max
-      val sizeWithBorderX = maxSizeX + 2;
-      val sizeWithBorderY = nonEmptyLines.length + 2;
+      val sizeWithBorderX = maxSizeX + 2
+      val sizeWithBorderY = nonEmptyLines.length + 2
       val board = Array.fill[Square](sizeWithBorderY, sizeWithBorderX)(EMPTY)
       nonEmptyLines.zipWithIndex foreach { case (line, y) =>
          line.toCharArray.zipWithIndex foreach { case (character, x) =>

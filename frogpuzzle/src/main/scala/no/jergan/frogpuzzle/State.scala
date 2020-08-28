@@ -5,10 +5,10 @@ package no.jergan.frogpuzzle
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-case class State(val position: Position, val orientation: Orientation) {
+case class State(position: Position, orientation: Orientation) {
 
    override def toString: String = {
-      (s"($position - $orientation)");
+      s"($position - $orientation)"
    }
 
    def move(action: Option[Action]): State = {
