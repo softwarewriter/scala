@@ -18,10 +18,10 @@ case object MOVE_LEFT extends Action {val character = 'l'}
 object Action {
    def parse(character : Char) : Action = {
       character match {
-         case 'u' => MOVE_UP
-         case 'r' => MOVE_RIGHT
-         case 'd' => MOVE_DOWN
-         case 'l' => MOVE_LEFT
+         case MOVE_UP.character => MOVE_UP
+         case MOVE_RIGHT.character => MOVE_RIGHT
+         case MOVE_DOWN.character => MOVE_DOWN
+         case MOVE_LEFT.character => MOVE_LEFT
       }
    }
 }

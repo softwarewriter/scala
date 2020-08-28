@@ -18,10 +18,10 @@ case object FACE_LEFT extends Orientation {val character = 'l'}
 object Orientation {
    def parse(character : Char) : Orientation = {
       character match {
-         case 'u' => FACE_UP
-         case 'r' => FACE_RIGHT
-         case 'd' => FACE_DOWN
-         case 'l' => FACE_LEFT
+         case FACE_UP.character => FACE_UP
+         case FACE_RIGHT.character => FACE_RIGHT
+         case FACE_DOWN.character => FACE_DOWN
+         case FACE_LEFT.character => FACE_LEFT
       }
    }
 }
