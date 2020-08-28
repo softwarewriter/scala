@@ -11,11 +11,10 @@ class Simulator {
 
    def correctSolution(solution: Solution): Boolean = {
       val unvisited = new mutable.HashSet[Position].addAll(solution.board.requiredToVisit())
-      val states = new mutable.HashSet[State]
-      correctSolution(solution, states, unvisited, solution.board.initialState());
+      correctSolution(solution, Set.empty, unvisited, solution.board.initialState());
    }
 
-   private[this] def correctSolution(solution: Solution, states: mutable.HashSet[State], unvisited: mutable.HashSet[Position], state: State): Boolean = {
+   private[this] def correctSolution(solution: Solution, states: Set[State], unvisited: mutable.HashSet[Position], state: State): Boolean = {
       if (states.contains(state)) {
          return false; // loop
       }

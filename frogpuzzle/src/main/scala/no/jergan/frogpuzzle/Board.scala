@@ -1,5 +1,6 @@
 package no.jergan.frogpuzzle
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -28,7 +29,7 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
       findOne(END)
    }
 
-   def requiredToVisit(): List[Position] = {
+   def requiredToVisit(): Set[Position] = {
       findAll(REGULAR)
    }
 
@@ -57,14 +58,14 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
       all.iterator.next();
    }
 
-   private[this] def findAll(square: Square): List[Position] = {
-      val result = new ListBuffer[Position]
+   private[this] def findAll(square: Square): Set[Position] = {
+      val result = new mutable.HashSet[Position]
       for (y <- 0 until sizeY; x <- 0 until sizeX) {
          if (board(y)(x) == square) {
             result.addOne(Position(x, y))
          }
       }
-      result.toList
+      result.toSet
    }
 
    private[this] def initialOrientation(): Orientation = {

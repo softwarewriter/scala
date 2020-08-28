@@ -8,7 +8,15 @@ package no.jergan.frogpuzzle
 object FrogPuzzleTest {
 
    def testBoard(): Board = {
-      val boardAsString = io.Source.fromInputStream(getClass.getResourceAsStream("/testboard.txt")).mkString
+      board("/testboard.txt")
+   }
+
+   def testBoardWithOverlap(): Board = {
+      board("/testboardWithOverlap.txt")
+   }
+
+   private[this] def board(filename: String): Board = {
+      val boardAsString = io.Source.fromInputStream(getClass.getResourceAsStream(filename)).mkString
       Board.parse(boardAsString)
    }
 

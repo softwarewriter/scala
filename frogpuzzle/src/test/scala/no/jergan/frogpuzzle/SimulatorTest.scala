@@ -21,6 +21,16 @@ class SimulatorTest extends AnyFlatSpec {
       assert(new Simulator().correctSolution(solution))
    }
 
+   it should "be able to identify correct solution on board with overlap" in {
+      val board = FrogPuzzleTest.testBoardWithOverlap()
+      val solution = Solution.empty(board)
+         .addAction(2, 1, MOVE_RIGHT)
+         .addAction(3, 1, MOVE_DOWN)
+         .addAction(3, 2, MOVE_LEFT)
+         .addAction(1, 2, MOVE_UP)
+      assert(new Simulator().correctSolution(solution))
+   }
+
    it should "be able to identify non correct solution" in {
       val board = FrogPuzzleTest.testBoard()
       val solution = Solution.empty(board)
