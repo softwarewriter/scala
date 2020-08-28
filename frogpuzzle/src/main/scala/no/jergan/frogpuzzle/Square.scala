@@ -28,11 +28,10 @@ case object EMPTY extends Square {
 
 object Square {
    def parse(character: Char): Square = {
-      character match {
-         case START.character => START
-         case END.character => END
-         case REGULAR.character => REGULAR
-         case EMPTY.character => EMPTY
-      }
+      all().find(_.character == character).get
+   }
+
+   def all(): List[Square] = {
+      List(START, END, REGULAR, EMPTY)
    }
 }

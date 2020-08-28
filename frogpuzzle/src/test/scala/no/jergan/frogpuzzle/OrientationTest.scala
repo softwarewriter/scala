@@ -17,5 +17,4 @@ class OrientationTest extends AnyFlatSpec {
       assert(Orientation.parse('d') == FACE_DOWN)
       assert(Orientation.parse('r') == FACE_RIGHT)
    }
-
 }

@@ -28,11 +28,11 @@ case object MOVE_LEFT extends Action {
 
 object Action {
    def parse(character: Char): Action = {
-      character match {
-         case MOVE_UP.character => MOVE_UP
-         case MOVE_RIGHT.character => MOVE_RIGHT
-         case MOVE_DOWN.character => MOVE_DOWN
-         case MOVE_LEFT.character => MOVE_LEFT
-      }
+      all().find(_.character == character).get
    }
+
+   def all(): List[Action] = {
+      List(MOVE_UP, MOVE_RIGHT, MOVE_DOWN, MOVE_LEFT)
+   }
+
 }

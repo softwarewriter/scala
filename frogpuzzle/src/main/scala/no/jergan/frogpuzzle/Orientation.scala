@@ -28,12 +28,7 @@ case object FACE_LEFT extends Orientation {
 
 object Orientation {
    def parse(character: Char): Orientation = {
-      character match {
-         case FACE_UP.character => FACE_UP
-         case FACE_RIGHT.character => FACE_RIGHT
-         case FACE_DOWN.character => FACE_DOWN
-         case FACE_LEFT.character => FACE_LEFT
-      }
+      all().find(_.character == character).get
    }
 
    def all(): List[Orientation] = {
