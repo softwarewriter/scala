@@ -42,9 +42,8 @@ class Board(val sizeX : Int, val sizeY : Int, board : Array[Array[Square]]) {
 
    def findAll(square : Square) : List[Position] = {
       val result = new ListBuffer[Position]
-      for (y <- 0 to sizeY - 1; x <- 0 to sizeX - 1) {
-         val s = board(y)(x)
-         if (s == square) {
+      for (y <- 0 until sizeY; x <- 0 until sizeX) {
+         if (board(y)(x) == square) {
             result.addOne(new Position(x, y))
          }
       }
