@@ -38,10 +38,10 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
 
    def squareAt(position: Position): Square = {
       if (position.x > this.sizeX) {
-         throw new Exception("" + position.x + " is outside width of board " + this.sizeX);
+         throw new Exception(s"${position.x} is outside width of board + $sizeX")
       }
       if (position.y > this.sizeY) {
-         throw new Exception("" + position.y + " is outside height of board " + this.sizeY);
+         throw new Exception(s"${position.y} is outside height of board + $sizeY")
       }
       board(position.y)(position.x);
    }
@@ -49,10 +49,10 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
    private[this] def findOne(square: Square): Position = {
       val all = findAll(square)
       if (all.isEmpty) {
-         throw new Exception("No square of type " + square);
+         throw new Exception(s"No square of type $square");
       }
       if (all.size > 1) {
-         throw new Exception("" + all.size + " squares of type " + square);
+         throw new Exception(s"${all.size} squares of type $square");
       }
       all.iterator.next();
    }
@@ -61,7 +61,7 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
       val result = new ListBuffer[Position]
       for (y <- 0 until sizeY; x <- 0 until sizeX) {
          if (board(y)(x) == square) {
-            result.addOne(new Position(x, y))
+            result.addOne(Position(x, y))
          }
       }
       result.toList
@@ -73,7 +73,7 @@ class Board(val sizeX: Int, val sizeY: Int, board: Array[Array[Square]]) {
          throw new Exception("No neighbouring square");
       }
       if (neighbours.size > 2) {
-         throw new Exception("" + neighbours.size + " neighbouring squares");
+         throw new Exception(s"${neighbours.size} neighbouring squares");
       }
       neighbours.last
    }

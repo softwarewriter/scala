@@ -13,6 +13,10 @@ class BoardTest extends AnyFlatSpec {
    behavior of "parse"
 
    it should "be able to parse board from string" in {
+
+     val p = Position(2, 3);
+     println(p)
+     println(s"ole ${p.x} dole")
       val board = FrogPuzzleTest.testBoard()
 
       assert(board.sizeX == 5);

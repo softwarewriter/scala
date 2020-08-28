@@ -14,11 +14,11 @@ class Solution private(val board: Board, positionToAction: Map[Position, Action]
    def addAction(position: Position, action: Action): Solution = {
       val existing = positionToAction.get(position);
       if (existing.isDefined) {
-         throw new Exception("Can't add action to position " + position + " as position already has action " + existing);
+         throw new Exception(s"Can't add action to position $position as position already has action $existing");
       }
       val square = board.squareAt(position);
       if (square != REGULAR) {
-         throw new Exception("Actions can only be put on regular squares, was " + square);
+         throw new Exception(s"Actions can only be put on regular squares, was $square");
       }
       new Solution(board, positionToAction + (position -> action))
    }
