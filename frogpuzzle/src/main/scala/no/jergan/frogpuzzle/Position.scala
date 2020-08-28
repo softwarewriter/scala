@@ -5,10 +5,10 @@ package no.jergan.frogpuzzle
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class Position(val x : Int, val y : Int) {
+case class Position(val x : Int, val y : Int) {
 
    override def toString : String = {
-      "($x, $y)";
+      (s"($x, $y)");
    }
 
    def move(action: Option[Action], orientation: Orientation) : Position = {
