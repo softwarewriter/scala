@@ -18,14 +18,18 @@ class Board(val sizeX : Int, val sizeY : Int, board : Array[Array[Square]]) {
          result.addOne('\n')
       })
       result.toString
-  }
+   }
 
-   def start() : Position = {
+   def start(): Position = {
       findOne(START)
    }
 
-   def end() : Position = {
+   def end(): Position = {
       findOne(END)
+   }
+
+   def initialState(): State = {
+      State(start(), initialOrientation());
    }
 
    def findOne(square: Square): Position = {
@@ -48,6 +52,29 @@ class Board(val sizeX : Int, val sizeY : Int, board : Array[Array[Square]]) {
          }
       }
       result.toList
+   }
+
+   def squareAt(position: Position) : Square = {
+      if (position.x > this.sizeX) {
+         throw new Exception("" + position.x + " is outside width of board " + this.sizeX);
+      }
+      if (position.y > this.sizeY) {
+         throw new Exception("" + position.y + " is outside height of board " + this.sizeY);
+      }
+      board(position.y)(position.x);
+   }
+
+   def initialOrientation(): Orientation = {
+      val neighbours = Orientation.all().filter(orientation => squareAt(start().move(None, orientation)) != EMPTY)
+      if (neighbours.isEmpty)
+      {
+         throw new Exception("No neighbouring square");
+      }
+      if (neighbours.size > 2)
+      {
+         throw new Exception("" + neighbours.size + " neighbouring squares");
+      }
+      neighbours.last
    }
 
 }
