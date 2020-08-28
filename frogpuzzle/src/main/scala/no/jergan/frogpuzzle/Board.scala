@@ -1,7 +1,6 @@
 package no.jergan.frogpuzzle
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 /**
  * Board of game where frog lives.
