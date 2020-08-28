@@ -1,6 +1,5 @@
 package no.jergan.frogpuzzle
 
-import scala.collection.convert.ImplicitConversionsToJava.`set AsJavaSet`
 import scala.collection.mutable
 
 /**
@@ -23,7 +22,7 @@ class Simulator {
       if (solution.board.squareAt(position) == EMPTY) {
          return false; // outside
       }
-      if (position == solution.board.end() && states.map(state => state.position).containsAll(requiredToVisit)) {
+      if (position == solution.board.end() && requiredToVisit.subsetOf(states.map(state => state.position))) {
          return true;
       }
       correctSolution(solution, requiredToVisit, states + state, state.move(solution.actionAt(position)))
