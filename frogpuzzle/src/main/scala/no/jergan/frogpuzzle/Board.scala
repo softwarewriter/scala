@@ -28,30 +28,12 @@ class Board(val sizeX : Int, val sizeY : Int, board : Array[Array[Square]]) {
       findOne(END)
    }
 
+   def requiredToVisit(): List[Position] = {
+      findAll(REGULAR)
+   }
+
    def initialState(): State = {
       State(start(), initialOrientation());
-   }
-
-   def findOne(square: Square): Position = {
-      val all = findAll(square)
-      if (all.isEmpty) {
-         throw new Exception("No square of type " + square);
-      }
-      if (all.size > 1)
-      {
-         throw new Exception("" + all.size + " squares of type " + square);
-      }
-      all.iterator.next();
-   }
-
-   def findAll(square : Square) : List[Position] = {
-      val result = new ListBuffer[Position]
-      for (y <- 0 until sizeY; x <- 0 until sizeX) {
-         if (board(y)(x) == square) {
-            result.addOne(new Position(x, y))
-         }
-      }
-      result.toList
    }
 
    def squareAt(position: Position) : Square = {
@@ -64,7 +46,29 @@ class Board(val sizeX : Int, val sizeY : Int, board : Array[Array[Square]]) {
       board(position.y)(position.x);
    }
 
-   def initialOrientation(): Orientation = {
+   private[this] def findOne(square: Square): Position = {
+      val all = findAll(square)
+      if (all.isEmpty) {
+         throw new Exception("No square of type " + square);
+      }
+      if (all.size > 1)
+      {
+         throw new Exception("" + all.size + " squares of type " + square);
+      }
+      all.iterator.next();
+   }
+
+   private[this] def findAll(square : Square) : List[Position] = {
+      val result = new ListBuffer[Position]
+      for (y <- 0 until sizeY; x <- 0 until sizeX) {
+         if (board(y)(x) == square) {
+            result.addOne(new Position(x, y))
+         }
+      }
+      result.toList
+   }
+
+   private[this] def initialOrientation(): Orientation = {
       val neighbours = Orientation.all().filter(orientation => squareAt(start().move(None, orientation)) != EMPTY)
       if (neighbours.isEmpty)
       {

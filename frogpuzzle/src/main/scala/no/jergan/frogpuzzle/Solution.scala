@@ -1,7 +1,7 @@
 package no.jergan.frogpuzzle
 
 /**
- * Solution (actual or candidate).
+ * Solution (actual or candidate) in context of a {@link Board}.
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
@@ -13,7 +13,7 @@ class Solution private (val board : Board, positionToAction: Map[Position, Actio
 
    def addAction(position: Position, action: Action): Solution = {
       val existing = positionToAction.get(position);
-      if (!existing.isEmpty)
+      if (existing.isDefined)
       {
          throw new Exception("Can't add action to position " + position + " as position already has action " + existing);
       }
