@@ -1,7 +1,8 @@
-import org.scalatest.flatspec.AnyFlatSpec
-import no.jergan.frogpuzzle.Lars2
+package no.jergan.frogpuzzle
 
-class FirstTest extends AnyFlatSpec {
+import org.scalatest.flatspec.AnyFlatSpec
+
+class SecondTest extends AnyFlatSpec {
 
     behavior of "An empty Set"
 
@@ -20,7 +21,8 @@ class FirstTest extends AnyFlatSpec {
     }
 
     it should "be able to find my other scala code" in {
-        assert(new Lars2().m.equals("hei"))
+        assert(new Lars().m.equals("hei"))
+
 //        assert(Pelle.m.equals("hei"))
     }
 

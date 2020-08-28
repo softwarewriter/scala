@@ -10,7 +10,7 @@ object Hello extends App {
   println("Hello pelles")
 }
 
-object Pelle extends App{
+object Pelle extends App {
 
   def m : String = {
     "hei"
