@@ -5,7 +5,7 @@ package no.jergan.frogpuzzle
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class Solution(val board : Board, positionToAction: Map[Position, Action]) {
+class Solution private (val board : Board, positionToAction: Map[Position, Action]) {
 
    def addAction(x : Int, y: Int , action : Action): Solution = {
       addAction(Position(x, y), action);
@@ -13,7 +13,7 @@ class Solution(val board : Board, positionToAction: Map[Position, Action]) {
 
    def addAction(position: Position, action: Action): Solution = {
       val existing = positionToAction.get(position);
-      if (existing != null)
+      if (!existing.isEmpty)
       {
          throw new Exception("Can't add action to position " + position + " as position already has action " + existing);
       }

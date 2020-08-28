@@ -13,8 +13,7 @@ class BoardTest extends AnyFlatSpec {
   behavior of "parse"
 
   it should "be able to parse board from string" in {
-    val boardAsString = io.Source.fromInputStream(getClass.getResourceAsStream("/testboard.txt")).mkString
-    val board = Board.parse(boardAsString)
+    val board = FrogPuzzleTest.testBoard()
 
     assert(board.sizeX == 5);
     assert(board.sizeY == 6);
