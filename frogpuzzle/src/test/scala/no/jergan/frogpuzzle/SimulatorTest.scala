@@ -30,4 +30,12 @@ class SimulatorTest extends AnyFlatSpec {
       assert(!new Simulator().correctSolution(solution))
    }
 
+   it should "be able to identify non correct solution caused by loops" in {
+      val board = FrogPuzzleTest.testBoard()
+      val solution = Solution.empty(board)
+         .addAction(1, 3, MOVE_UP)
+         .addAction(1, 2, MOVE_DOWN)
+      assert(!new Simulator().correctSolution(solution))
+   }
+
 }
