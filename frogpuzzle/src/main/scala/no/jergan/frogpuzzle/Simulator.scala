@@ -19,14 +19,12 @@ class Simulator {
       if (position == solution.board.end() && unvisited.isEmpty) {
          return true;
       }
-      if (solution.board.squareAt(position) == EMPTY)
-      {
+      if (solution.board.squareAt(position) == EMPTY) {
          return false;
       }
       val removed = unvisited.remove(position);
       val result = correctSolution(solution, unvisited, state.move(solution.actionAt(position)))
-      if (removed)
-      {
+      if (removed) {
          unvisited.add(position);
       }
       result;

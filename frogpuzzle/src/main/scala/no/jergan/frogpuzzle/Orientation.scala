@@ -7,13 +7,24 @@ package no.jergan.frogpuzzle
  */
 sealed trait Orientation {
 
-   def character : Char
+   def character: Char
 }
 
-case object FACE_UP extends Orientation {val character = 'u'}
-case object FACE_RIGHT extends Orientation {val character = 'r'}
-case object FACE_DOWN extends Orientation {val character = 'd'}
-case object FACE_LEFT extends Orientation {val character = 'l'}
+case object FACE_UP extends Orientation {
+   val character = 'u'
+}
+
+case object FACE_RIGHT extends Orientation {
+   val character = 'r'
+}
+
+case object FACE_DOWN extends Orientation {
+   val character = 'd'
+}
+
+case object FACE_LEFT extends Orientation {
+   val character = 'l'
+}
 
 object Orientation {
    def parse(character: Char): Orientation = {

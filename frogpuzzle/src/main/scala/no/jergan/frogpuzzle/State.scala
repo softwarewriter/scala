@@ -7,11 +7,11 @@ package no.jergan.frogpuzzle
  */
 case class State(val position: Position, val orientation: Orientation) {
 
-   override def toString : String = {
+   override def toString: String = {
       (s"($position - $orientation)");
    }
 
-   def move(action : Option[Action]): State = {
+   def move(action: Option[Action]): State = {
       (action, orientation) match {
          case (None, FACE_UP) | (Some(MOVE_UP), _) => State(position.move(action, orientation), FACE_UP);
          case (None, FACE_RIGHT) | (Some(MOVE_RIGHT), _) => State(position.move(action, orientation), FACE_RIGHT);
