@@ -1,5 +1,7 @@
 package no.jergan.frogpuzzle
 
+import scala.collection.mutable.ListBuffer
+
 /**
  * Board of game.
  *
@@ -7,6 +9,28 @@ package no.jergan.frogpuzzle
  */
 class Board(val sizeX : Int, val sizeY : Int, board : Array[Array[Square]]) {
 
+   def findOne(square: Square): Position = {
+      val all = findAll(square)
+      if (all.isEmpty) {
+         throw new Exception("No square of type " + square);
+      }
+      if (all.size > 1)
+      {
+         throw new Exception("" + all.size + " squares of type " + square);
+      }
+      all.iterator.next();
+   }
+
+   def findAll(square : Square) : List[Position] = {
+      val result = new ListBuffer[Position]
+      for (y <- 0 to sizeY; x <- 0 to sizeX) {
+         val s = board(y)(x)
+         if (s == square) {
+            result.addOne(new Position(x, y))
+         }
+      }
+      result.toList
+   }
 
 }
 
