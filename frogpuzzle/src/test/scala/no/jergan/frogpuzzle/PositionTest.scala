@@ -23,6 +23,7 @@ class PositionTest extends AnyFlatSpec {
       assert(Position(2, 2).move(Some(MOVE_RIGHT), FACE_UP).equals(Position(3, 2)))
       assert(Position(2, 2).move(Some(MOVE_DOWN), FACE_RIGHT).equals(Position(2, 3)))
       assert(Position(2, 2).move(Some(MOVE_LEFT), FACE_DOWN).equals(Position(1, 2)))
+      assert(Position(2, 2).move(Some(JUMP), FACE_DOWN).equals(Position(2, 4)))
    }
 
 }

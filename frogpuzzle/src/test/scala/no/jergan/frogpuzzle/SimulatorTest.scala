@@ -31,6 +31,17 @@ class SimulatorTest extends AnyFlatSpec {
       assert(new Simulator().correctSolution(solution))
    }
 
+   it should "be able to identify correct solution on board that requires jump" in {
+      val board = FrogPuzzleTest.testBoardThatRequiresJump().getOrElse(fail())
+      val solution = Solution.build(board,
+         (2, 3, JUMP),
+         (2, 1, MOVE_LEFT),
+         (1, 1, MOVE_DOWN),
+         (1, 2, MOVE_RIGHT),
+         (2, 2, JUMP)).getOrElse(fail())
+      assert(new Simulator().correctSolution(solution))
+   }
+
    it should "be able to identify non correct solution" in {
       val board = FrogPuzzleTest.testBoard().getOrElse(fail())
       val solution = Solution.build(board,

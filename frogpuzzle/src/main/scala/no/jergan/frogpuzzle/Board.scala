@@ -63,7 +63,7 @@ object Board {
       val all = findAll(squares, square)
       all.size match {
          case 1 => Right(all.iterator.next())
-         case _=> Left(s"${all.size} squares of type $square, should only be exactly one")
+         case _ => Left(s"${all.size} squares of type $square, should only be exactly one")
       }
    }
 
@@ -81,7 +81,7 @@ object Board {
       val neighbours = Orientation.all().filter(orientation => squareAt(squares, start.move(None, orientation)) != EMPTY)
       neighbours.size match {
          case 1 => Right(neighbours.iterator.next())
-         case _=> Left(s"${neighbours.size} neighbouring squares, should be exactly one")
+         case _ => Left(s"${neighbours.size} neighbouring squares, should be exactly one")
       }
    }
 

@@ -26,6 +26,10 @@ case object MOVE_LEFT extends Action {
    val character = 'l'
 }
 
+case object JUMP extends Action {
+   val character = 'j'
+}
+
 object Action {
    def parse(character: Char): Action = {
       all().find(_.character == character).get

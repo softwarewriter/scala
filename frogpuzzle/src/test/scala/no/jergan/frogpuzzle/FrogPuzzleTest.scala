@@ -15,6 +15,10 @@ object FrogPuzzleTest {
       board("/testboardWithOverlap.txt")
    }
 
+   def testBoardThatRequiresJump(): Either[String, Board] = {
+      board("/testboardThatRequiresJump.txt")
+   }
+
    private[this] def board(filename: String): Either[String, Board] = {
       val boardAsString = io.Source.fromInputStream(getClass.getResourceAsStream(filename)).mkString
       Board.parse(boardAsString)

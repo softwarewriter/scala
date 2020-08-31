@@ -8,22 +8,37 @@ package no.jergan.frogpuzzle
 sealed trait Orientation {
 
    def character: Char
+   def deltaX: Int
+   def deltaY: Int
+
+   def next(position: Position): Position = {
+      Position(position.x + deltaX, position.y + deltaY)
+   }
+
 }
 
 case object FACE_UP extends Orientation {
    val character = 'u'
+   val deltaX = 0
+   val deltaY = -1
 }
 
 case object FACE_RIGHT extends Orientation {
    val character = 'r'
+   val deltaX = 1
+   val deltaY = 0
 }
 
 case object FACE_DOWN extends Orientation {
    val character = 'd'
+   val deltaX = 0
+   val deltaY = 1
 }
 
 case object FACE_LEFT extends Orientation {
    val character = 'l'
+   val deltaX = -1
+   val deltaY = 0
 }
 
 object Orientation {
