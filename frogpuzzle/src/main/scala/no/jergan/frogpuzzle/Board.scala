@@ -7,7 +7,7 @@ import scala.collection.mutable
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class Board(val sizeX: Int, val sizeY: Int, val squares: Array[Array[Square]], val start: Position, val end: Position) {
+class Board(val sizeX: Int, val sizeY: Int, val squares: Array[Array[Square]], val start: Position, val end: Position, val orientation: Orientation) {
 
    override def toString: String = {
       val result = new StringBuilder()
@@ -21,42 +21,15 @@ class Board(val sizeX: Int, val sizeY: Int, val squares: Array[Array[Square]], v
    }
 
    def requiredToVisit(): Set[Position] = {
-      findAll(REGULAR)
+      Board.findAll(squares, REGULAR)
    }
 
    def initialState(): State = {
-      State(start, initialOrientation())
+      State(start, orientation)
    }
 
    def squareAt(position: Position): Square = {
-      if (position.x > this.sizeX) {
-         throw new Exception(s"${position.x} is outside width of board + $sizeX")
-      }
-      if (position.y > this.sizeY) {
-         throw new Exception(s"${position.y} is outside height of board + $sizeY")
-      }
-      squares(position.y)(position.x)
-   }
-
-   private[this] def findAll(square: Square): Set[Position] = {
-      val result = new mutable.HashSet[Position]
-      for (y <- 0 until sizeY; x <- 0 until sizeX) {
-         if (squares(y)(x) == square) {
-            result.addOne(Position(x, y))
-         }
-      }
-      result.toSet
-   }
-
-   private[this] def initialOrientation(): Orientation = {
-      val neighbours = Orientation.all().filter(orientation => squareAt(start.move(None, orientation)) != EMPTY)
-      if (neighbours.isEmpty) {
-         throw new Exception("No neighbouring square")
-      }
-      if (neighbours.size > 2) {
-         throw new Exception(s"${neighbours.size} neighbouring squares")
-      }
-      neighbours.last
+      Board.squareAt(squares, position)
    }
 
 }
@@ -75,10 +48,14 @@ object Board {
       }
       val start = findOne(squares, START)
       val end = findOne(squares, END)
+      val orientation: Either[String, Orientation] = start match {
+         case Left(value) => Left("No start")
+         case Right(value) => initialOrientation(squares, value)
+      }
 
-      (start, end) match {
-         case (Right(start), Right(end)) => Right(new Board(sizeWithBorderX, sizeWithBorderY, squares, start, end))
-         case (_, _) => Left("Board does not meet initial requirements")
+      (start, end, orientation) match {
+         case (Right(start), Right(end), Right(orientation)) => Right(new Board(sizeWithBorderX, sizeWithBorderY, squares, start, end, orientation))
+         case (_, _, _) => Left("Board does not meet initial requirements")
       }
    }
 
@@ -86,11 +63,11 @@ object Board {
       val all = findAll(squares, square)
       all.size match {
          case 1 => Right(all.iterator.next())
-         case _=> Left(s"${all.size} squares of type $square, should only be one")
+         case _=> Left(s"${all.size} squares of type $square, should only be exactly one")
       }
    }
 
-   private[this] def findAll(squares: Array[Array[Square]], square: Square): Set[Position] = {
+   def findAll(squares: Array[Array[Square]], square: Square): Set[Position] = {
       val result = new mutable.HashSet[Position]
       for (y <- squares.indices; x <- squares(y).indices) {
          if (squares(y)(x) == square) {
@@ -98,6 +75,18 @@ object Board {
          }
       }
       result.toSet
+   }
+
+   private[this] def initialOrientation(squares: Array[Array[Square]], start: Position): Either[String, Orientation] = {
+      val neighbours = Orientation.all().filter(orientation => squareAt(squares, start.move(None, orientation)) != EMPTY)
+      neighbours.size match {
+         case 1 => Right(neighbours.iterator.next())
+         case _=> Left(s"${neighbours.size} neighbouring squares, should be exactly one")
+      }
+   }
+
+   def squareAt(squares: Array[Array[Square]], position: Position): Square = {
+      squares(position.y)(position.x)
    }
 
 }
