@@ -7,7 +7,7 @@ import scala.collection.mutable
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class Board(val sizeX: Int, val sizeY: Int, val squares: Array[Array[Square]], val start: Position, val end: Position, val orientation: Orientation) {
+class Board(val squares: Array[Array[Square]], val start: Position, val end: Position, val orientation: Orientation, val warps: Map[Position, Position]) {
 
    override def toString: String = {
       val result = new StringBuilder()
@@ -20,16 +20,28 @@ class Board(val sizeX: Int, val sizeY: Int, val squares: Array[Array[Square]], v
       result.toString
    }
 
+   def sizeX(): Int = {
+      squares.map(row => row.length).max
+   }
+
+   def sizeY(): Int = {
+      squares.length
+   }
+
    def requiredToVisit(): Set[Position] = {
       Board.findAll(squares, REGULAR)
    }
 
    def initialState(): State = {
-      State(start, orientation)
+      State(start, orientation, false)
    }
 
    def squareAt(position: Position): Square = {
       Board.squareAt(squares, position)
+   }
+
+   def warp(position: Position): Option[Position] = {
+      warps.get(position)
    }
 
 }
@@ -38,9 +50,7 @@ object Board {
    def parse(string: String): Either[String, Board] = {
       val nonEmptyLines = string.split("\n").filter(line => !line.isEmpty)
       val maxSizeX = nonEmptyLines.map(line => line.length).max
-      val sizeWithBorderX = maxSizeX + 2
-      val sizeWithBorderY = nonEmptyLines.length + 2
-      val squares = Array.fill[Square](sizeWithBorderY, sizeWithBorderX)(EMPTY)
+      val squares = Array.fill[Square](nonEmptyLines.length + 2, maxSizeX + 2)(EMPTY)
       nonEmptyLines.zipWithIndex foreach { case (line, y) =>
          line.toCharArray.zipWithIndex foreach { case (character, x) =>
             squares(y + 1)(x + 1) = Square.parse(character)
@@ -52,10 +62,10 @@ object Board {
          case Left(value) => Left("No start")
          case Right(value) => initialOrientation(squares, value)
       }
-
-      (start, end, orientation) match {
-         case (Right(start), Right(end), Right(orientation)) => Right(new Board(sizeWithBorderX, sizeWithBorderY, squares, start, end, orientation))
-         case (_, _, _) => Left("Board does not meet initial requirements")
+      val warps = buildWarpMap(squares);
+      (start, end, orientation, warps) match {
+         case (Right(start), Right(end), Right(orientation), Right(warps)) => Right(new Board(squares, start, end, orientation, warps))
+         case (_, _, _, _) => Left("Board does not meet initial requirements")
       }
    }
 
@@ -77,6 +87,10 @@ object Board {
       result.toSet
    }
 
+   def squareAt(squares: Array[Array[Square]], position: Position): Square = {
+      squares(position.y)(position.x)
+   }
+
    private[this] def initialOrientation(squares: Array[Array[Square]], start: Position): Either[String, Orientation] = {
       val neighbours = Orientation.all().filter(orientation => squareAt(squares, start.move(None, orientation)) != EMPTY)
       neighbours.size match {
@@ -85,8 +99,19 @@ object Board {
       }
    }
 
-   def squareAt(squares: Array[Array[Square]], position: Position): Square = {
-      squares(position.y)(position.x)
+   private[this] def buildWarpMap(squares: Array[Array[Square]]) : Either[String, Map[Position, Position]] = {
+      var result : Map[Position, Position] = Map.empty
+      for (square <- Square.warps()) {
+         val warps = findAll(squares, square).toList
+         if (warps.size == 2) {
+            result += (warps(0) -> warps(1))
+            result += (warps(1) -> warps(0))
+         }
+         else if (warps.nonEmpty) {
+            return Left("Unmatched warps for " + square)
+         }
+      }
+      Right(result)
    }
 
 }

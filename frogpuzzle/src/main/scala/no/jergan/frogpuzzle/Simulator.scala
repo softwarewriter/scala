@@ -23,7 +23,7 @@ class Simulator {
       if (position == solution.board.end && requiredToVisit.subsetOf(states.map(state => state.position))) {
          return true
       }
-      correctSolution(solution, requiredToVisit, states + state, state.move(solution.actionAt(position)))
+      correctSolution(solution, requiredToVisit, states + state, state.move(solution.board, solution.actionAt(position)))
    }
 
 }

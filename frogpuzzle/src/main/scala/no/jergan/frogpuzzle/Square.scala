@@ -26,12 +26,27 @@ case object EMPTY extends Square {
    val character = ' '
 }
 
+case object WARP1 extends Square {
+   val character = '1'
+}
+
+case object WARP2 extends Square {
+   val character = '2'
+}
+
+case object WARP3 extends Square {
+   val character = '3'
+}
 object Square {
    def parse(character: Char): Square = {
       all().find(_.character == character).get
    }
 
    def all(): List[Square] = {
-      List(START, END, REGULAR, EMPTY)
+      List.concat(List(START, END, REGULAR, EMPTY), warps())
+   }
+
+   def warps(): List[Square] = {
+      List(WARP1, WARP2, WARP3)
    }
 }
