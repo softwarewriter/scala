@@ -5,16 +5,16 @@ package no.jergan.frogpuzzle
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-case class State(position: Position, orientation: Orientation, warped: Boolean) {
+case class State(position: Position, orientation: Orientation, fromPortal: Boolean) {
 
    override def toString: String = {
       s"($position - $orientation)"
    }
 
    def move(board: Board, action: Option[Action]): State = {
-      val warp = if (warped) None else board.warp(position)
+      val portal = if (fromPortal) None else board.portal(position)
       val next = position.move(action, orientation)
-      (warp, action, orientation) match {
+      (portal, action, orientation) match {
          case (Some(position), _, _) => State(position, orientation, true)
          case (None, None, _) => State(next, orientation, false)
          case (None, Some(JUMP), _) => State(next, orientation, false)

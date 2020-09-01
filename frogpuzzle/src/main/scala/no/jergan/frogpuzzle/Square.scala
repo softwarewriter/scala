@@ -26,15 +26,15 @@ case object EMPTY extends Square {
    val character = ' '
 }
 
-case object WARP1 extends Square {
+case object PORTAL1 extends Square {
    val character = '1'
 }
 
-case object WARP2 extends Square {
+case object PORTAL2 extends Square {
    val character = '2'
 }
 
-case object WARP3 extends Square {
+case object PORTAL3 extends Square {
    val character = '3'
 }
 object Square {
@@ -43,10 +43,10 @@ object Square {
    }
 
    def all(): List[Square] = {
-      List.concat(List(START, END, REGULAR, EMPTY), warps())
+      List.concat(List(START, END, REGULAR, EMPTY), portals())
    }
 
-   def warps(): List[Square] = {
-      List(WARP1, WARP2, WARP3)
+   def portals(): List[Square] = {
+      List(PORTAL1, PORTAL2, PORTAL3)
    }
 }

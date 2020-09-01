@@ -7,7 +7,7 @@ import scala.collection.mutable
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class Board(val squares: Array[Array[Square]], val start: Position, val end: Position, val orientation: Orientation, val warps: Map[Position, Position]) {
+class Board(val squares: Array[Array[Square]], val start: Position, val end: Position, val orientation: Orientation, val portals: Map[Position, Position]) {
 
    override def toString: String = {
       val result = new StringBuilder()
@@ -40,8 +40,8 @@ class Board(val squares: Array[Array[Square]], val start: Position, val end: Pos
       Board.squareAt(squares, position)
    }
 
-   def warp(position: Position): Option[Position] = {
-      warps.get(position)
+   def portal(position: Position): Option[Position] = {
+      portals.get(position)
    }
 
 }
@@ -62,9 +62,9 @@ object Board {
          case Left(value) => Left("No start")
          case Right(value) => initialOrientation(squares, value)
       }
-      val warps = buildWarpMap(squares);
-      (start, end, orientation, warps) match {
-         case (Right(start), Right(end), Right(orientation), Right(warps)) => Right(new Board(squares, start, end, orientation, warps))
+      val portals = buildPortalMap(squares);
+      (start, end, orientation, portals) match {
+         case (Right(start), Right(end), Right(orientation), Right(portals)) => Right(new Board(squares, start, end, orientation, portals))
          case (_, _, _, _) => Left("Board does not meet initial requirements")
       }
    }
@@ -99,16 +99,16 @@ object Board {
       }
    }
 
-   private[this] def buildWarpMap(squares: Array[Array[Square]]) : Either[String, Map[Position, Position]] = {
+   private[this] def buildPortalMap(squares: Array[Array[Square]]) : Either[String, Map[Position, Position]] = {
       var result : Map[Position, Position] = Map.empty
-      for (square <- Square.warps()) {
-         val warps = findAll(squares, square).toList
-         if (warps.size == 2) {
-            result += (warps(0) -> warps(1))
-            result += (warps(1) -> warps(0))
+      for (portalSquare <- Square.portals()) {
+         val portals = findAll(squares, portalSquare).toList
+         if (portals.size == 2) {
+            result += (portals(0) -> portals(1))
+            result += (portals(1) -> portals(0))
          }
-         else if (warps.nonEmpty) {
-            return Left("Unmatched warps for " + square)
+         else if (portals.nonEmpty) {
+            return Left("Unmatched portals for " + portalSquare)
          }
       }
       Right(result)

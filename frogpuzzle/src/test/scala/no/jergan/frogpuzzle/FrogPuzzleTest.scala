@@ -19,8 +19,8 @@ object FrogPuzzleTest {
       board("/testboardThatRequiresJump.txt")
    }
 
-   def testBoardWithWarp(): Either[String, Board] = {
-      board("/testboardWithWarp.txt")
+   def testBoardWithPortal(): Either[String, Board] = {
+      board("/testboardWithPortal.txt")
    }
 
    private[this] def board(filename: String): Either[String, Board] = {
