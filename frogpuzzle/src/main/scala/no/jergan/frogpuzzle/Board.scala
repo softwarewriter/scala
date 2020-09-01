@@ -100,18 +100,25 @@ object Board {
    }
 
    private[this] def buildPortalMap(squares: Array[Array[Square]]) : Either[String, Map[Position, Position]] = {
-      var result : Map[Position, Position] = Map.empty
-      for (portalSquare <- Square.portals()) {
-         val portals = findAll(squares, portalSquare).toList
-         if (portals.size == 2) {
-            result += (portals(0) -> portals(1))
-            result += (portals(1) -> portals(0))
-         }
-         else if (portals.nonEmpty) {
-            return Left("Unmatched portals for " + portalSquare)
-         }
+      eitherOrSequence(Square.portals()
+         .map(portalSquare => findAll(squares, portalSquare).toList)
+         .map(element => {
+            element.size match {
+               case 0 => Right(Map.empty)
+               case 2 => Right(Map.empty + (element(0) -> element(1)) + (element(1) -> element(0)))
+               case other => Left(s"Unmached portals, had $other occurrences")
+            }
+         })) match {
+         case Left(value) => Left(value)
+         case Right(list) => Right(list.flatten.toMap)
       }
-      Right(result)
+   }
+
+   private[this] def eitherOrSequence[A, B] (sequence: Seq[Either[A, B]]): Either[A, Seq[B]] = {
+      sequence.partitionMap(identity) match {
+         case (Nil, rights) => Right(rights)
+         case (lefts, _) => Left(lefts.collectFirst(left => left).get)
+      }
    }
 
 }
