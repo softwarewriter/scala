@@ -37,7 +37,7 @@ class Board(val squares: List[List[Square]], val start: Position, val end: Posit
    }
 
    def squareAt(position: Position): Square = {
-      Board.squareAt(squares, position)
+      Board.squareAt(squares, sizeX(), sizeY(), position)
    }
 
    def portal(position: Position): Option[Position] = {
@@ -65,10 +65,10 @@ object Board {
    private[this] def stringToMatrix(string: String) : List[List[Square]] = {
       val nonEmptyLines = string.split("\n").filter(line => !line.isEmpty)
       val maxSizeX = nonEmptyLines.map(line => line.length).max
-      val squares = Array.fill[Square](nonEmptyLines.length + 2, maxSizeX + 2)(EMPTY)
+      val squares = Array.fill[Square](nonEmptyLines.length, maxSizeX)(EMPTY)
       nonEmptyLines.zipWithIndex foreach { case (line, y) =>
          line.toCharArray.zipWithIndex foreach { case (character, x) =>
-            squares(y + 1)(x + 1) = Square.parse(character)
+            squares(y)(x) = Square.parse(character)
          }
       }
       squares.toList.map(row => row.toList)
@@ -92,12 +92,12 @@ object Board {
       result.toSet
    }
 
-   def squareAt(squares: List[List[Square]], position: Position): Square = {
-      squares(position.y)(position.x)
+   def squareAt(squares: List[List[Square]], sizeX: Int, sizeY: Int, position: Position): Square = {
+      if (position.x < 0 || position.x >= sizeX || position.y < 0 || position.y >= sizeY) EMPTY else squares(position.y)(position.x)
    }
 
    private[this] def initialOrientation(squares: List[List[Square]], start: Position): Either[String, Orientation] = {
-      val neighbours = Orientation.all().filter(orientation => squareAt(squares, start.move(None, orientation)) != EMPTY)
+      val neighbours = Orientation.all().filter(orientation => squareAt(squares, squares.map(row => row.length).max, squares.length, start.move(None, orientation)) != EMPTY)
       neighbours.size match {
          case 1 => Right(neighbours.iterator.next())
          case _ => Left(s"${neighbours.size} neighbouring squares, should be exactly one")
