@@ -7,7 +7,7 @@ import scala.collection.mutable
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class Board(val squares: Array[Array[Square]], val start: Position, val end: Position, val orientation: Orientation, val portals: Map[Position, Position]) {
+class Board(val squares: List[List[Square]], val start: Position, val end: Position, val orientation: Orientation, val portals: Map[Position, Position]) {
 
    override def toString: String = {
       val result = new StringBuilder()
@@ -48,14 +48,7 @@ class Board(val squares: Array[Array[Square]], val start: Position, val end: Pos
 
 object Board {
    def parse(string: String): Either[String, Board] = {
-      val nonEmptyLines = string.split("\n").filter(line => !line.isEmpty)
-      val maxSizeX = nonEmptyLines.map(line => line.length).max
-      val squares = Array.fill[Square](nonEmptyLines.length + 2, maxSizeX + 2)(EMPTY)
-      nonEmptyLines.zipWithIndex foreach { case (line, y) =>
-         line.toCharArray.zipWithIndex foreach { case (character, x) =>
-            squares(y + 1)(x + 1) = Square.parse(character)
-         }
-      }
+      val squares = stringToMatrix(string)
       val start = findOne(squares, START)
       val end = findOne(squares, END)
       val orientation: Either[String, Orientation] = start match {
@@ -69,7 +62,19 @@ object Board {
       }
    }
 
-   private[this] def findOne(squares: Array[Array[Square]], square: Square): Either[String, Position] = {
+   private[this] def stringToMatrix(string: String) : List[List[Square]] = {
+      val nonEmptyLines = string.split("\n").filter(line => !line.isEmpty)
+      val maxSizeX = nonEmptyLines.map(line => line.length).max
+      val squares = Array.fill[Square](nonEmptyLines.length + 2, maxSizeX + 2)(EMPTY)
+      nonEmptyLines.zipWithIndex foreach { case (line, y) =>
+         line.toCharArray.zipWithIndex foreach { case (character, x) =>
+            squares(y + 1)(x + 1) = Square.parse(character)
+         }
+      }
+      squares.toList.map(row => row.toList)
+   }
+
+   private[this] def findOne(squares: List[List[Square]], square: Square): Either[String, Position] = {
       val all = findAll(squares, square)
       all.size match {
          case 1 => Right(all.iterator.next())
@@ -77,7 +82,7 @@ object Board {
       }
    }
 
-   def findAll(squares: Array[Array[Square]], square: Square): Set[Position] = {
+   def findAll(squares: List[List[Square]], square: Square): Set[Position] = {
       val result = new mutable.HashSet[Position]
       for (y <- squares.indices; x <- squares(y).indices) {
          if (squares(y)(x) == square) {
@@ -87,11 +92,11 @@ object Board {
       result.toSet
    }
 
-   def squareAt(squares: Array[Array[Square]], position: Position): Square = {
+   def squareAt(squares: List[List[Square]], position: Position): Square = {
       squares(position.y)(position.x)
    }
 
-   private[this] def initialOrientation(squares: Array[Array[Square]], start: Position): Either[String, Orientation] = {
+   private[this] def initialOrientation(squares: List[List[Square]], start: Position): Either[String, Orientation] = {
       val neighbours = Orientation.all().filter(orientation => squareAt(squares, start.move(None, orientation)) != EMPTY)
       neighbours.size match {
          case 1 => Right(neighbours.iterator.next())
@@ -99,7 +104,7 @@ object Board {
       }
    }
 
-   private[this] def buildPortalMap(squares: Array[Array[Square]]) : Either[String, Map[Position, Position]] = {
+   private[this] def buildPortalMap(squares: List[List[Square]]) : Either[String, Map[Position, Position]] = {
       Square.portals()
          .map(portalSquare => findAll(squares, portalSquare).toList)
          .map(element => {
