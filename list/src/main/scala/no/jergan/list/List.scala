@@ -25,7 +25,9 @@ sealed trait List[+A] {
    def tail:List[A] = pending
 
    // returner en ny liste ved å kalle funksjonen for hvert element i lista
-   def map[B](f:A => B):List[B] = pending
+   def map[B](f:A => B):List[B] = {
+      Cons(f(head), tail.map(f))
+   }
 
    // legg "other" til på slutten av denne lista
    def append[AA >: A](other:List[AA]):List[AA] = pending
@@ -63,10 +65,19 @@ sealed trait List[+A] {
 
 final case class Cons[A] (x: A, xs:List[A]) extends List[A] {
    override def size: Int = xs.size + 1
+
+   override def head: A = {
+      x
+   }
+   override def tail: List[A] = {
+      xs
+   }
+
 }
 
 case object Nil extends List[Nothing] {
    override def size: Int = 0
+
 }
 
    object List {
