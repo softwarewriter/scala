@@ -16,7 +16,9 @@ sealed trait List[+A] {
    }
 
    // returnerer størrelsen på listen
-   def size:Int = pending
+   def size:Int = {
+      1 + tail.size
+   }
 
    // henter første elementet i listen (kaster exception ved tom liste)
    def head:A = pending
@@ -26,7 +28,7 @@ sealed trait List[+A] {
 
    // returner en ny liste ved å kalle funksjonen for hvert element i lista
    def map[B](f:A => B):List[B] = {
-      Cons(f(head), tail.map(f))
+      if (isEmpty) Nil else Cons(f(head), tail.map(f))
    }
 
    // legg "other" til på slutten av denne lista
@@ -64,20 +66,19 @@ sealed trait List[+A] {
 }
 
 final case class Cons[A] (x: A, xs:List[A]) extends List[A] {
-   override def size: Int = xs.size + 1
 
    override def head: A = {
       x
    }
    override def tail: List[A] = {
       xs
+
    }
 
 }
 
 case object Nil extends List[Nothing] {
    override def size: Int = 0
-
 }
 
    object List {
