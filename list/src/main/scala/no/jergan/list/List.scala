@@ -28,7 +28,10 @@ sealed trait List[+A] {
 
    // returner en ny liste ved å kalle funksjonen for hvert element i lista
    def map[B](f:A => B):List[B] = {
-      if (isEmpty) Nil else Cons(f(head), tail.map(f))
+      this match {
+         case Nil => Nil
+         case _ => Cons(f(head), tail.map(f))
+      }
    }
 
    // legg "other" til på slutten av denne lista
@@ -39,7 +42,13 @@ sealed trait List[+A] {
    def flatMap[B](f:A => List[B]):List[B] = pending
 
    // returner en liste som inneholder all elementer som er 'true' for predikatet f
-   def filter(f:A => Boolean):List[A] = pending
+   def filter(f:A => Boolean):List[A] = {
+      this match {
+         case Nil => Nil
+         case _ => if (f(head)) Cons(head, tail.filter(f)) else tail.filter(f)
+      }
+//      if (isEmpty) Nil else if (f(head)) Cons(head, tail.filter(f)) else tail.filter(f)
+   }
 
    // returnerer listen reversert
    def reverse:List[A] = pending
@@ -72,7 +81,6 @@ final case class Cons[A] (x: A, xs:List[A]) extends List[A] {
    }
    override def tail: List[A] = {
       xs
-
    }
 
 }
