@@ -63,7 +63,12 @@ sealed trait List[+A] {
 
    // returnerer en ny liste vel å kalle funksjonen f for alle elementene og appende resultatene etter hverandre
    // f.eks Cons(1, Cons(2, Nil)).flatMap(a => List(a, a + 1)) == Cons(1, Cons(2, Cons(2, Cons(3, Nil))))
-   def flatMap[B](f:A => List[B]):List[B] = pending
+   def flatMap[B](f:A => List[B]):List[B] = {
+      this match {
+         case Nil => Nil
+         case _ => Nil.append(f(head)).append(tail.flatMap(f))
+      }
+   }
 
    // returner en liste som inneholder all elementer som er 'true' for predikatet f
    def filter(f:A => Boolean):List[A] = {
