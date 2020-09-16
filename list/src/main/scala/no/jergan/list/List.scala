@@ -12,7 +12,10 @@ import scala.language.postfixOps
 sealed trait List[+A] {
    // returnerer om listen er tom
    def isEmpty:Boolean = {
-      size == 0
+      this match {
+         case Nil => true
+         case _ => false
+      }
    }
 
    // returnerer størrelsen på listen
@@ -27,7 +30,7 @@ sealed trait List[+A] {
    def head:A = {
       this match {
          case Nil => throw new Exception("empty")
-         case Cons(x, xs) => x
+         case Cons(x, _) => x
       }
    }
 
@@ -35,7 +38,7 @@ sealed trait List[+A] {
    def tail:List[A] = {
       this match {
          case Nil => throw new Exception("empty")
-         case Cons(x, xs) => xs
+         case Cons(_, xs) => xs
       }
    }
 
@@ -48,7 +51,14 @@ sealed trait List[+A] {
    }
 
    // legg "other" til på slutten av denne lista
-   def append[AA >: A](other:List[AA]):List[AA] = pending
+   def append[AA >: A](other:List[AA]):List[AA] = {
+      (this, other) match {
+         case (Nil, Nil) => Nil
+         case (Nil, _) => other
+         case (_, Nil) => this
+         case (_, _) => this.tail.append(Cons(this.reverse.head, other))
+      }
+   }
 
 
    // returnerer en ny liste vel å kalle funksjonen f for alle elementene og appende resultatene etter hverandre
@@ -64,7 +74,14 @@ sealed trait List[+A] {
    }
 
    // returnerer listen reversert
-   def reverse:List[A] = pending
+   def reverse:List[A] = {
+      this match {
+         case Nil => Nil
+         case _ => {
+            if (size == 1) this else Cons(tail.reverse.head, Cons(head, tail.reverse.tail).reverse)
+         }
+      }
+   }
 
    // Cons(1, Cons(2, Cons(3, Nil)).foldLeft(10)(f)
    // f(f(f(10, 1), 2), 3)
