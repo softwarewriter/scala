@@ -111,7 +111,7 @@ object Board {
             element.size match {
                case 0 => Right(Map.empty)
                case 2 => Right(Map.empty + (element(0) -> element(1)) + (element(1) -> element(0)))
-               case other => Left(s"Unmached portals, had $other occurrences")
+               case other => Left(s"Unmached portals, had $other occurrences, should be exactly two")
             }
          })
          .partitionMap(identity) match {
