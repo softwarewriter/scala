@@ -66,7 +66,7 @@ sealed trait List[+A] {
    def flatMap[B](f:A => List[B]):List[B] = {
       this match {
          case Nil => Nil
-         case _ => Nil.append(f(head)).append(tail.flatMap(f))
+         case _ => f(head).append(tail.flatMap(f))
       }
    }
 
