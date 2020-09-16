@@ -91,8 +91,13 @@ sealed trait List[+A] {
    // Cons(1, Cons(2, Cons(3, Nil)).foldLeft(10)(f)
    // f(f(f(10, 1), 2), 3)
    // http://upload.wikimedia.org/wikipedia/commons/5/5a/Left-fold-transformation.png
-   // @annotation.tailrec
-   final def foldLeft[B](acc:B)(f:(B, A) => B):B = pending
+   @annotation.tailrec
+   final def foldLeft[B](acc:B)(f:(B, A) => B):B = {
+      this match {
+         case Nil => acc
+         case _ => tail.foldLeft(f(acc, head))(f)
+      }
+   }
 
    // Cons(1, Cons(2, Cons(3, Nil))).foldRight(10)(f)
    // f(3, f(2, f(3, 10)))
@@ -107,7 +112,7 @@ sealed trait List[+A] {
    def sum[B >: A](implicit num:Numeric[B]):B = {
       this match {
          case Nil => num.zero
-         case _ => num.plus(head,tail.sum(num))
+         case _ => num.plus(head, tail.sum(num))
       }
    }
 
