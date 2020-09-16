@@ -124,7 +124,6 @@ sealed trait List[+A] {
       }
    }
 
-   def pending = error("pending")
 }
 
 final case class Cons[A] (x: A, xs:List[A]) extends List[A] {
