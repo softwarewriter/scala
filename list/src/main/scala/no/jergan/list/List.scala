@@ -102,7 +102,13 @@ sealed trait List[+A] {
    // Cons(1, Cons(2, Cons(3, Nil))).foldRight(10)(f)
    // f(3, f(2, f(3, 10)))
    // http://upload.wikimedia.org/wikipedia/commons/3/3e/Right-fold-transformation.png
-   final def foldRight[B](acc:B)(f:(A, B) => B):B = pending
+   @annotation.tailrec
+   final def foldRight[B](acc:B)(f:(A, B) => B):B = {
+      this match {
+         case Nil => acc
+         case _ => tail.foldRight(f(head, acc))(f)
+      }
+   }
 
    // returnerer en liste flatet ut (om det er mulig, ellers compile error)
    // f.eks. Cons(Cons(1, Nil), Cons(2, Nil)).flatten == Cons(1, Cons(2, Nil))
