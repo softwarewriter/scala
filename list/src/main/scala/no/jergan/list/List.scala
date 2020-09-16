@@ -112,7 +112,9 @@ sealed trait List[+A] {
 
    // returnerer en liste flatet ut (om det er mulig, ellers compile error)
    // f.eks. Cons(Cons(1, Nil), Cons(2, Nil)).flatten == Cons(1, Cons(2, Nil))
-   def flatten[B](implicit f:A => List[B]):List[B] = pending
+   def flatten[B](implicit f:A => List[B]):List[B] = {
+      flatMap(f)
+   }
 
    // returnerer summen av elementene i listen (om den inneholder nummer, ellers compile error)
    def sum[B >: A](implicit num:Numeric[B]):B = {
