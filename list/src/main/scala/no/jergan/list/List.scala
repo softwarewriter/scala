@@ -17,14 +17,27 @@ sealed trait List[+A] {
 
    // returnerer størrelsen på listen
    def size:Int = {
-      1 + tail.size
+      this match {
+         case Nil => 0
+         case _ => 1 + tail.size
+      }
    }
 
    // henter første elementet i listen (kaster exception ved tom liste)
-   def head:A = pending
+   def head:A = {
+      this match {
+         case Nil => throw new Exception("empty")
+         case Cons(x, xs) => x
+      }
+   }
 
    // henter halen til listen (kaster exception ved tom liste)
-   def tail:List[A] = pending
+   def tail:List[A] = {
+      this match {
+         case Nil => throw new Exception("empty")
+         case Cons(x, xs) => xs
+      }
+   }
 
    // returner en ny liste ved å kalle funksjonen for hvert element i lista
    def map[B](f:A => B):List[B] = {
@@ -37,6 +50,7 @@ sealed trait List[+A] {
    // legg "other" til på slutten av denne lista
    def append[AA >: A](other:List[AA]):List[AA] = pending
 
+
    // returnerer en ny liste vel å kalle funksjonen f for alle elementene og appende resultatene etter hverandre
    // f.eks Cons(1, Cons(2, Nil)).flatMap(a => List(a, a + 1)) == Cons(1, Cons(2, Cons(2, Cons(3, Nil))))
    def flatMap[B](f:A => List[B]):List[B] = pending
@@ -47,7 +61,6 @@ sealed trait List[+A] {
          case Nil => Nil
          case _ => if (f(head)) Cons(head, tail.filter(f)) else tail.filter(f)
       }
-//      if (isEmpty) Nil else if (f(head)) Cons(head, tail.filter(f)) else tail.filter(f)
    }
 
    // returnerer listen reversert
@@ -75,18 +88,9 @@ sealed trait List[+A] {
 }
 
 final case class Cons[A] (x: A, xs:List[A]) extends List[A] {
-
-   override def head: A = {
-      x
-   }
-   override def tail: List[A] = {
-      xs
-   }
-
 }
 
 case object Nil extends List[Nothing] {
-   override def size: Int = 0
 }
 
    object List {
