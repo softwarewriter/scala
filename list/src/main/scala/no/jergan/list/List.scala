@@ -56,7 +56,7 @@ sealed trait List[+A] {
          case (Nil, Nil) => Nil
          case (Nil, _) => other
          case (_, Nil) => this
-         case (_, _) => this.tail.append(Cons(this.reverse.head, other))
+         case (_, _) => Cons(other.head, this.reverse).reverse.append(other.tail)
       }
    }
 
@@ -78,7 +78,7 @@ sealed trait List[+A] {
       this match {
          case Nil => Nil
          case _ => {
-            if (size == 1) this else Cons(tail.reverse.head, Cons(head, tail.reverse.tail).reverse)
+            if (size == 1) this else Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
          }
       }
    }
