@@ -53,11 +53,9 @@ sealed trait List[+A] {
    // legg "other" til på slutten av denne lista
    def append[AA >: A](other:List[AA]):List[AA] = {
       (this, other) match {
-         case (Nil, Nil) => Nil
          case (Nil, other) => other
-         case (Cons(_, _), Nil) => this
          case (Cons(_, _), other) => foldRight(other)((a, b) => Cons(a, b))
-         // alternativt
+         // alternativt for å bruke matching context i stedet for this:
          // case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
       }
    }
@@ -83,7 +81,6 @@ sealed trait List[+A] {
    def reverse:List[A] = {
       this match {
          case Nil => Nil
-         case Cons(_, Nil) => this
          case Cons(head, tail) => tail.foldLeft(Cons(head, Nil))((b, a) => Cons(a, b))
       }
    }
