@@ -55,7 +55,7 @@ sealed trait List[+A] {
       (this, other) match {
          case (Nil, other) => other
          case (Cons(_, _), other) => foldRight(other)((a, b) => Cons(a, b))
-         // alternativt for å bruke matching context i stedet for this:
+         // alternativt for å bruke matching context i stedet for this kan man si:
          // case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
       }
    }
@@ -81,7 +81,12 @@ sealed trait List[+A] {
    def reverse:List[A] = {
       this match {
          case Nil => Nil
-         case Cons(head, tail) => tail.foldLeft(Cons(head, Nil))((b, a) => Cons(a, b))
+
+         // Ville egentlig si bare "Nil" istedet for "Cons(head, Nil).tail",
+         // men da får jeg en type feil jeg ikke helt skjønner.
+         case Cons(_, _) => foldLeft(Cons(head, Nil).tail)((b, a) => Cons(a, b))
+         // alternativt for å bruke matching context i stedet for this kan man si:
+         // case Cons(head, tail) => tail.foldLeft(Cons(head, Nil))((b, a) => Cons(a, b))
       }
    }
 
