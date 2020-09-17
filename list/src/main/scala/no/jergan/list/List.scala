@@ -118,10 +118,7 @@ sealed trait List[+A] {
 
    // returnerer summen av elementene i listen (om den inneholder nummer, ellers compile error)
    def sum[B >: A](implicit num:Numeric[B]):B = {
-      this match {
-         case Nil => num.zero
-         case _ => num.plus(head, tail.sum(num))
-      }
+      foldLeft(num.zero)(num.plus)
    }
 
 }
