@@ -56,7 +56,9 @@ sealed trait List[+A] {
          case (Nil, Nil) => Nil
          case (Nil, other) => other
          case (Cons(_, _), Nil) => this
-         case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
+         case (Cons(_, _), other) => foldRight(other)((a, b) => Cons(a, b))
+         // alternativt
+         // case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
       }
    }
 
@@ -82,7 +84,10 @@ sealed trait List[+A] {
       this match {
          case Nil => Nil
          case Cons(_, Nil) => this
+//         case Cons(head, tail) => tail.foldRight(Cons(head, Nil))((a, b) => Cons(a, b))
          case Cons(head, tail) => Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
+//         case Cons(head, tail) => foldRight(   tail.foldRight(Cons(head, Nil)((a, b) => Cons(a, b))
+//         case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
 
 //         case Cons(head, tail) => tail.reverse
       }
@@ -153,20 +158,28 @@ case object Nil extends List[Nothing] {
       }
 
       def main(args: Array[String]): Unit = {
+         /*
          assertEq("isEmpty", false, list.isEmpty)
          assertEq("isEmpty", true, Nil.isEmpty)
          assertEq("size", 3, list.size)
          assertEq("head", 1, list.head)
          assertEq("tail", Cons(2, Cons(3, Nil)), list.tail)
          assertEq("map", Cons(2, Cons(3, Cons(4, Nil))), list.map(1 +))
-         assertEq("append", list3, list.append(list2))
+         */
+//         assertEq("append", list3, list.append(list2))
+         /*
          assertEq("flatMap", list3, nested.flatMap(identity))
          assertEq("filter", Cons(2, Cons(4, Nil)), list3.filter(_ % 2 == 0))
+
+          */
          assertEq("reverse", Cons(3, Cons(2, Cons(1, Nil))), list.reverse)
+         /*
          assertEq("foldLeft", 4, list.foldLeft(10)(_ - _))
          assertEq("foldRight", -8, list.foldRight(10)(_ - _))
          assertEq("flatten", list3, nested.flatten)
          assertEq("sum", 6, list.sum)
+
+          */
       }
 
    }
