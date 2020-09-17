@@ -54,12 +54,11 @@ sealed trait List[+A] {
    def append[AA >: A](other:List[AA]):List[AA] = {
       (this, other) match {
          case (Nil, Nil) => Nil
-         case (Nil, _) => other
-         case (_, Nil) => this
-         case (_, _) => Cons(other.head, this.reverse).reverse.append(other.tail)
+         case (Nil, other) => other
+         case (Cons(_, _), Nil) => this
+         case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
       }
    }
-
 
    // returnerer en ny liste vel å kalle funksjonen f for alle elementene og appende resultatene etter hverandre
    // f.eks Cons(1, Cons(2, Nil)).flatMap(a => List(a, a + 1)) == Cons(1, Cons(2, Cons(2, Cons(3, Nil))))
@@ -84,6 +83,8 @@ sealed trait List[+A] {
          case Nil => Nil
          case Cons(_, Nil) => this
          case Cons(head, tail) => Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
+
+//         case Cons(head, tail) => tail.reverse
       }
    }
 
@@ -99,15 +100,15 @@ sealed trait List[+A] {
    }
 
    // Cons(1, Cons(2, Cons(3, Nil))).foldRight(10)(f)
-   // f(3, f(2, f(3, 10)))
+   // f(1, f(2, f(3, 10)))
    // http://upload.wikimedia.org/wikipedia/commons/3/3e/Right-fold-transformation.png
-   @annotation.tailrec
    final def foldRight[B](acc:B)(f:(A, B) => B):B = {
       this match {
          case Nil => acc
-         case Cons(head, tail) => tail.foldRight(f(head, acc))(f)
+         case Cons(head, tail) => f(head, tail.foldRight(acc)(f))
       }
    }
+//   ((a, b) => Cons(a, b))
 
    // returnerer en liste flatet ut (om det er mulig, ellers compile error)
    // f.eks. Cons(Cons(1, Nil), Cons(2, Nil)).flatten == Cons(1, Cons(2, Nil))
