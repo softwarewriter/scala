@@ -82,9 +82,8 @@ sealed trait List[+A] {
    def reverse:List[A] = {
       this match {
          case Nil => Nil
-         case _ => {
-            if (size == 1) this else Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
-         }
+         case Cons(_, Nil) => this
+         case _ => Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
       }
    }
 
