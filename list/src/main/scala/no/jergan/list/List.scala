@@ -22,7 +22,7 @@ sealed trait List[+A] {
    def size:Int = {
       this match {
          case Nil => 0
-         case _ => 1 + tail.size
+         case Cons(_, tail) => 1 + tail.size
       }
    }
 
@@ -46,7 +46,7 @@ sealed trait List[+A] {
    def map[B](f:A => B):List[B] = {
       this match {
          case Nil => Nil
-         case _ => Cons(f(head), tail.map(f))
+         case Cons(head, tail) => Cons(f(head), tail.map(f))
       }
    }
 
@@ -66,7 +66,7 @@ sealed trait List[+A] {
    def flatMap[B](f:A => List[B]):List[B] = {
       this match {
          case Nil => Nil
-         case _ => f(head).append(tail.flatMap(f))
+         case Cons(head, tail) => f(head).append(tail.flatMap(f))
       }
    }
 
@@ -74,7 +74,7 @@ sealed trait List[+A] {
    def filter(f:A => Boolean):List[A] = {
       this match {
          case Nil => Nil
-         case _ => if (f(head)) Cons(head, tail.filter(f)) else tail.filter(f)
+         case Cons(head, tail) => if (f(head)) Cons(head, tail.filter(f)) else tail.filter(f)
       }
    }
 
@@ -83,7 +83,7 @@ sealed trait List[+A] {
       this match {
          case Nil => Nil
          case Cons(_, Nil) => this
-         case _ => Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
+         case Cons(head, tail) => Cons(tail.reverse.head, Cons(head, tail.reverse.tail.reverse).reverse)
       }
    }
 
@@ -94,7 +94,7 @@ sealed trait List[+A] {
    final def foldLeft[B](acc:B)(f:(B, A) => B):B = {
       this match {
          case Nil => acc
-         case _ => tail.foldLeft(f(acc, head))(f)
+         case Cons(head, tail) => tail.foldLeft(f(acc, head))(f)
       }
    }
 
@@ -105,7 +105,7 @@ sealed trait List[+A] {
    final def foldRight[B](acc:B)(f:(A, B) => B):B = {
       this match {
          case Nil => acc
-         case _ => tail.foldRight(f(head, acc))(f)
+         case Cons(head, tail) => tail.foldRight(f(head, acc))(f)
       }
    }
 
@@ -152,7 +152,6 @@ case object Nil extends List[Nothing] {
       }
 
       def main(args: Array[String]): Unit = {
-
          assertEq("isEmpty", false, list.isEmpty)
          assertEq("isEmpty", true, Nil.isEmpty)
          assertEq("size", 3, list.size)
