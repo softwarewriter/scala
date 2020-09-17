@@ -119,6 +119,8 @@ sealed trait List[+A] {
    // returnerer summen av elementene i listen (om den inneholder nummer, ellers compile error)
    def sum[B >: A](implicit num:Numeric[B]):B = {
       foldLeft(num.zero)(num.plus)
+      // eller foldRight(num.zero)(num.plus)
+      // da plus er kommutativ
    }
 
 }
