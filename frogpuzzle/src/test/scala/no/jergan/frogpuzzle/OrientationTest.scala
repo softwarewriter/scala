@@ -1,13 +1,13 @@
 package no.jergan.frogpuzzle
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 
 /**
  * Unit test of [[Orientation]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class OrientationTest extends AnyFlatSpec {
+class OrientationTest extends FlatSpec {
 
    behavior of "parse"
 

@@ -1,13 +1,13 @@
 package no.jergan.frogpuzzle
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 
 /**
  * Unit test of [[Action]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class ActionTest extends AnyFlatSpec {
+class ActionTest extends FlatSpec {
 
    behavior of "parse"
 

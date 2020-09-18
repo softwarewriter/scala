@@ -1,13 +1,13 @@
 package no.jergan.frogpuzzle
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 
 /**
  * Unit test of [[Position]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class PositionTest extends AnyFlatSpec {
+class PositionTest extends FlatSpec {
 
    behavior of "move"
 

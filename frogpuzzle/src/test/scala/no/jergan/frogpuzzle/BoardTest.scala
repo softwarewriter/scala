@@ -1,13 +1,13 @@
 package no.jergan.frogpuzzle
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 
 /**
  * Unit test of [[Board]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class BoardTest extends AnyFlatSpec {
+class BoardTest extends FlatSpec {
 
    behavior of "parse"
 

@@ -1,13 +1,13 @@
 package no.jergan.frogpuzzle
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 
 /**
  * Unit test of [[Simulator]].
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class SimulatorTest extends AnyFlatSpec {
+class SimulatorTest extends FlatSpec {
 
    behavior of "correctSolution"
 
