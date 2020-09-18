@@ -1,9 +1,0 @@
-allprojects {
-    repositories {
-        jcenter()
-    }
-}
-
-subprojects {
-    version = "1.0"
-}
