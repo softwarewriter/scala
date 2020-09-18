@@ -57,6 +57,8 @@ sealed trait List[+A] {
          case (Cons(_, _), other) => foldRight(other)((a, b) => Cons(a, b))
          // alternativt for å bruke matching context i stedet for this kan man si:
          // case (Cons(head, tail), other) => Cons(head, tail).foldRight(other)((a, b) => Cons(a, b))
+
+         //         fasit: case (Cons(head, tail), other) => Cons(head, tail.append(other))
       }
    }
 
@@ -81,12 +83,9 @@ sealed trait List[+A] {
    def reverse:List[A] = {
       this match {
          case Nil => Nil
+         case Cons(head, tail) => tail.foldLeft(Cons(head, Nil))((b, a) => Cons(a, b))
 
-         // Ville egentlig si bare "Nil" istedet for "Cons(head, Nil).tail",
-         // men da får jeg en type feil jeg ikke helt skjønner.
-         case Cons(_, _) => foldLeft(Cons(head, Nil).tail)((b, a) => Cons(a, b))
-         // alternativt for å bruke matching context i stedet for this kan man si:
-         // case Cons(head, tail) => tail.foldLeft(Cons(head, Nil))((b, a) => Cons(a, b))
+         // fasit         case Cons(head, tail) => tail.reverse.append(Cons(head, Nil))
       }
    }
 
@@ -110,7 +109,6 @@ sealed trait List[+A] {
          case Cons(head, tail) => f(head, tail.foldRight(acc)(f))
       }
    }
-//   ((a, b) => Cons(a, b))
 
    // returnerer en liste flatet ut (om det er mulig, ellers compile error)
    // f.eks. Cons(Cons(1, Nil), Cons(2, Nil)).flatten == Cons(1, Cons(2, Nil))
@@ -169,6 +167,14 @@ case object Nil extends List[Nothing] {
          assertEq("foldRight", -8, list.foldRight(10)(_ - _))
          assertEq("flatten", list3, nested.flatten)
          assertEq("sum", 6, list.sum)
+
+         /*
+         val pelle1: List[Int] = list
+         val pelle: List[List[Int]] = Cons(list, Cons(list2, Nil))
+         println(pelle)
+         println(pelle.flatten)
+
+ */
       }
 
    }
