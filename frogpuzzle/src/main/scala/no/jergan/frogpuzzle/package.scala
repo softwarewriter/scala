@@ -33,10 +33,12 @@ package object frogpuzzle {
    // Variant i kortform (single abstract method)
    implicit var orientationStringable: Stringable[Orientation] = (orientation: Orientation) => orientation.toString
 
-   // @kaare: Det jeg ønsker her er å ikke eksplisitt referere til positionStringable men å få en egen variable bundet inn gjennom
-   //         å bruke "implicit" på en eller annen måte.
-   implicit var stateStringable: Stringable[State] = new Stringable[State] {
+   // @kaare: Det er de to konstruksjonene under jeg ønsker å slå sammen hvis mulig.
+
+   class StateStringable(implicit positionStringable: Stringable[Position], implicit val orientationStringable: Stringable[Orientation]) extends Stringable[State] {
       override def asString(state: State): String = s"(${positionStringable.asString(state.position)} - ${orientationStringable.asString(state.orientation)})"
    }
+
+   implicit var stateStringable = new StateStringable()
 
 }

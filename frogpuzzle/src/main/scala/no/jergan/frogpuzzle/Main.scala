@@ -13,10 +13,11 @@ object Main {
       val state = State(position, FACE_UP, false)
 
       import no.jergan.frogpuzzle.StringableWrapper.asStringInWrapper
+      
 
-      println(stateStringable.asString(state))
-      println(asStringInWrapper(state))
-      println(state.asStringInSyntax)
+      println(stateStringable.asString(state)) // explicit
+      println(asStringInWrapper(state)) // implicit using wrapper
+      println(state.asStringInSyntax) // magic using implicit class
    }
 
 }
