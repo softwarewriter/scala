@@ -18,6 +18,19 @@ object Main {
       println(stateStringable.asString(state)) // explicit
       println(asStringInWrapper(state)) // implicit using wrapper
       println(state.asStringInSyntax) // magic using implicit class
+
+      def curried(a: Int)(b: Int, c: Int)(d: Int): Int = {
+         a + b + d + d
+      }
+
+      val c0: Int => (Int, Int) => Int => Int = curried
+      val c1: (Int, Int) => Int => Int = curried(1)
+      val c2: (Int => Int) = curried(1)(2, 3)
+      val c3: Int = curried(1)(2, 3)(4)
+
+
+
+
    }
 
 }
