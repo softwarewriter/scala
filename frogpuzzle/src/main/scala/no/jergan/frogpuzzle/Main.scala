@@ -2,7 +2,7 @@ package no.jergan.frogpuzzle
 
 
 /**
- * What does this class do?
+ * Main class for testing.
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
@@ -12,11 +12,11 @@ object Main {
       val position = Position(1, 4)
       val state = State(position, FACE_UP, false)
 
-      import no.jergan.frogpuzzle.StringableWrapper.asString
+      import no.jergan.frogpuzzle.StringableWrapper.asStringInWrapper
 
-      println(positionStringable.asString(position))
-      println(asString(position))
-      println(asString(state))
+      println(stateStringable.asString(state))
+      println(asStringInWrapper(state))
+      println(state.asStringInSyntax)
    }
 
 }

@@ -1,7 +1,7 @@
 package no.jergan
 
 /**
- * Package.
+ * Package object.
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
@@ -15,9 +15,13 @@ package object frogpuzzle {
 
    object StringableWrapper {
 
-      def asString[A](a: A)(implicit stringable: Stringable[A]): String  = {
+      def asStringInWrapper[A](a: A)(implicit stringable: Stringable[A]): String  = {
          stringable.asString(a)
       }
+   }
+
+   implicit class StringableSyntax[A](val a: A) {
+      def asStringInSyntax(implicit stringable: Stringable[A]): String = stringable.asString(a)
    }
 
    implicit var positionStringable = new Stringable[Position] {
@@ -28,8 +32,7 @@ package object frogpuzzle {
       override def asString(orientation: Orientation): String = orientation.toString
    }
 
-   implicit var stateStringable = new Stringable[State] {
-      override def asString(state: State): String = s"(${positionStringable.asString(state.position)} - ${orientationStringable.asString(state.orientation)})"
-   }
+   // Variant i kortform (single abstract method)
+   implicit var stateStringable: Stringable[State] = (state: State) => s"(${positionStringable.asString(state.position)} - ${orientationStringable.asString(state.orientation)})"
 
 }
