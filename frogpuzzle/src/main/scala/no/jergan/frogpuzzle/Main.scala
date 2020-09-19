@@ -47,9 +47,12 @@ object Main {
       def comp4 = intToString2 andThen stringToInt2
 
       // Disse kompilerer ikke.
-      // def comp5 = stringToInt1 compose intToString1
-      // def comp6 = intToString1 andThen stringToInt1
+      //def comp5 = stringToInt1 compose intToString1
+      //def comp6 = intToString1 andThen stringToInt_
 
+      // Men det gjør disse.
+      def comp5 = stringToInt1 _ compose intToString1
+      def comp6 = intToString1 _ andThen stringToInt1
 
    }
 
