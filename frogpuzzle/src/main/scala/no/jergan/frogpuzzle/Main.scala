@@ -25,10 +25,30 @@ object Main {
 
       val c0: Int => (Int, Int) => Int => Int = curried
       val c1: (Int, Int) => Int => Int = curried(1)
-      val c2: (Int => Int) = curried(1)(2, 3)
+      val c2: Int => Int = curried(1)(2, 3)
       val c3: Int = curried(1)(2, 3)(4)
 
 
+
+
+      def intToString1(a: Int): String = a.toString
+      def intToString2: Int => String = (a: Int) => a.toString
+
+      def stringToInt1(a: String): Int = a.length
+      def stringToInt2: String => Int = (a: String) => a.length
+
+      def manualComposition(a: Int): Int = {
+         stringToInt1(intToString1(a))
+      }
+
+      def comp2: Int => Int = manualComposition
+
+      def comp3 = stringToInt2 compose intToString2
+      def comp4 = intToString2 andThen stringToInt2
+
+      // Disse kompilerer ikke.
+      // def comp5 = stringToInt1 compose intToString1
+      // def comp6 = intToString1 andThen stringToInt1
 
 
    }
