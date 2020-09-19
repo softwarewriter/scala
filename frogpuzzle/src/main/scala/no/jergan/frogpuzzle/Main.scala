@@ -48,11 +48,19 @@ object Main {
 
       // Disse kompilerer ikke.
       //def comp5 = stringToInt1 compose intToString1
-      //def comp6 = intToString1 andThen stringToInt_
+      //def comp6 = intToString1 andThen stringToInt1
 
-      // Men det gjør disse.
-      def comp5 = stringToInt1 _ compose intToString1
-      def comp6 = intToString1 _ andThen stringToInt1
+      // Trolig pga av disse heller ikke kompilerer, men hvorfor
+      // def intToString3 = intToString1
+      // def stringToInt3 = stringToInt1
+
+      // Men det gjør disse
+      def intToString3 = intToString1 _
+      def stringToInt3 = stringToInt1 _
+
+      // Og disse
+      def intToString4: Int => String = intToString1
+      def stringToInt4: String => Int = stringToInt1
 
    }
 
