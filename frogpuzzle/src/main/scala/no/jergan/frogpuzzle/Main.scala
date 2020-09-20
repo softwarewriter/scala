@@ -29,8 +29,6 @@ object Main {
       val c3: Int = curried(1)(2, 3)(4)
 
 
-
-
       def intToString1(a: Int): String = a.toString
       def intToString2: Int => String = (a: Int) => a.toString
 
