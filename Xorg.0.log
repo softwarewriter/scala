@@ -1,0 +1,135 @@
+[   391.948] 
+X.Org X Server 1.20.3
+X Protocol Version 11, Revision 0
+[   391.950] Build Operating System:  4.19.34-300.el7.x86_64 
+[   391.951] Current Operating System: Linux localhost.localdomain 4.18.0-147.el8.x86_64 #1 SMP Wed Dec 4 21:51:45 UTC 2019 x86_64
+[   391.951] Kernel command line: BOOT_IMAGE=(hd0,msdos1)/vmlinuz-4.18.0-147.el8.x86_64 root=/dev/mapper/cl-root ro crashkernel=auto resume=/dev/mapper/cl-swap rd.lvm.lv=cl/root rd.lvm.lv=cl/swap rhgb quiet
+[   391.952] Build Date: 13 December 2019  01:04:32PM
+[   391.953] Build ID: xorg-x11-server 1.20.3-8.el8 
+[   391.954] Current version of pixman: 0.36.0
+[   391.956] 	Before reporting problems, check http://wiki.x.org
+	to make sure that you have the latest version.
+[   391.956] Markers: (--) probed, (**) from config file, (==) default setting,
+	(++) from command line, (!!) notice, (II) informational,
+	(WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+[   391.959] (==) Log file: "/home/ojergan/.local/share/xorg/Xorg.0.log", Time: Mon Sep 21 23:24:57 2020
+[   391.960] (==) Using config directory: "/etc/X11/xorg.conf.d"
+[   391.961] (==) Using system config directory "/usr/share/X11/xorg.conf.d"
+[   391.961] (==) No Layout section.  Using the first Screen section.
+[   391.961] (==) No screen section available. Using defaults.
+[   391.961] (**) |-->Screen "Default Screen Section" (0)
+[   391.961] (**) |   |-->Monitor "<default monitor>"
+[   391.961] (==) No monitor specified for screen "Default Screen Section".
+	Using a default monitor configuration.
+[   391.961] (==) Automatically adding devices
+[   391.961] (==) Automatically enabling devices
+[   391.961] (==) Automatically adding GPU devices
+[   391.961] (==) Automatically binding GPU devices
+[   391.961] (==) Max clients allowed: 256, resource mask: 0x1fffff
+[   391.961] (==) FontPath set to:
+	catalogue:/etc/X11/fontpath.d,
+	built-ins
+[   391.961] (==) ModulePath set to "/usr/lib64/xorg/modules"
+[   391.961] (II) The server relies on udev to provide the list of input devices.
+	If no devices become available, reconfigure udev or disable AutoAddDevices.
+[   391.961] (II) Loader magic: 0x563ef89c0020
+[   391.961] (II) Module ABI versions:
+[   391.961] 	X.Org ANSI C Emulation: 0.4
+[   391.961] 	X.Org Video Driver: 24.0
+[   391.961] 	X.Org XInput driver : 24.1
+[   391.961] 	X.Org Server Extension : 10.0
+[   391.962] (++) using VT number 3
+
+[   391.964] (II) systemd-logind: took control of session /org/freedesktop/login1/session/_3107
+[   391.965] (II) xfree86: Adding drm device (/dev/dri/card1)
+[   391.965] (II) Platform probe for /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/drm/card1
+[   391.966] (II) systemd-logind: got fd for /dev/dri/card1 226:1 fd 11 paused 0
+[   391.966] (II) xfree86: Adding drm device (/dev/dri/card0)
+[   391.966] (II) Platform probe for /sys/devices/pci0000:00/0000:00:02.0/drm/card0
+[   391.967] (II) systemd-logind: got fd for /dev/dri/card0 226:0 fd 12 paused 0
+[   391.970] (--) PCI:*(0@0:2:0) 8086:0416:1028:05cd rev 6, Mem @ 0xf5400000/4194304, 0xd0000000/268435456, I/O @ 0x0000f000/64, BIOS @ 0x????????/65536
+[   391.970] (--) PCI: (1@0:0:0) 10de:11b7:1028:15cd rev 161, Mem @ 0xf4000000/16777216, 0xe0000000/268435456, 0xf0000000/33554432, I/O @ 0x0000e000/128, BIOS @ 0x????????/65536
+[   391.971] (II) LoadModule: "glx"
+[   391.971] (II) Loading /usr/lib64/xorg/modules/extensions/libglx.so
+[   391.972] (II) Module glx: vendor="X.Org Foundation"
+[   391.973] 	compiled for 1.20.3, module version = 1.0.0
+[   391.973] 	ABI class: X.Org Server Extension, version 10.0
+[   392.026] (==) Matched modesetting as autoconfigured driver 0
+[   392.026] (==) Matched fbdev as autoconfigured driver 1
+[   392.026] (==) Matched vesa as autoconfigured driver 2
+[   392.026] (==) Assigned the driver to the xf86ConfigLayout
+[   392.026] (II) LoadModule: "modesetting"
+[   392.026] (II) Loading /usr/lib64/xorg/modules/drivers/modesetting_drv.so
+[   392.026] (II) Module modesetting: vendor="X.Org Foundation"
+[   392.026] 	compiled for 1.20.3, module version = 1.20.3
+[   392.026] 	Module class: X.Org Video Driver
+[   392.026] 	ABI class: X.Org Video Driver, version 24.0
+[   392.026] (II) LoadModule: "fbdev"
+[   392.026] (II) Loading /usr/lib64/xorg/modules/drivers/fbdev_drv.so
+[   392.026] (II) Module fbdev: vendor="X.Org Foundation"
+[   392.026] 	compiled for 1.20.3, module version = 0.5.0
+[   392.026] 	Module class: X.Org Video Driver
+[   392.026] 	ABI class: X.Org Video Driver, version 24.0
+[   392.026] (II) LoadModule: "vesa"
+[   392.026] (II) Loading /usr/lib64/xorg/modules/drivers/vesa_drv.so
+[   392.026] (II) Module vesa: vendor="X.Org Foundation"
+[   392.026] 	compiled for 1.20.3, module version = 2.4.0
+[   392.026] 	Module class: X.Org Video Driver
+[   392.026] 	ABI class: X.Org Video Driver, version 24.0
+[   392.026] (II) modesetting: Driver for Modesetting Kernel Drivers: kms
+[   392.026] (II) FBDEV: driver for framebuffer: fbdev
+[   392.026] (II) VESA: driver for VESA chipsets: vesa
+[   392.026] xf86EnableIOPorts: failed to set IOPL for I/O (Operation not permitted)
+[   392.026] (II) modeset(0): using drv /dev/dri/card0
+[   392.026] (WW) Falling back to old probe method for fbdev
+[   392.026] (II) Loading sub module "fbdevhw"
+[   392.026] (II) LoadModule: "fbdevhw"
+[   392.026] (II) Loading /usr/lib64/xorg/modules/libfbdevhw.so
+[   392.026] (II) Module fbdevhw: vendor="X.Org Foundation"
+[   392.026] 	compiled for 1.20.3, module version = 0.0.2
+[   392.026] 	ABI class: X.Org Video Driver, version 24.0
+[   392.026] (EE) open /dev/fb0: Permission denied
+[   392.026] (II) modeset(G0): using drv /dev/dri/card1
+[   392.026] (WW) VGA arbiter: cannot open kernel arbiter, no multi-card support
+[   392.026] (II) modeset(0): Creating default Display subsection in Screen section
+	"Default Screen Section" for depth/fbbpp 24/32
+[   392.026] (==) modeset(0): Depth 24, (==) framebuffer bpp 32
+[   392.026] (==) modeset(0): RGB weight 888
+[   392.026] (==) modeset(0): Default visual is TrueColor
+[   392.026] (II) Loading sub module "glamoregl"
+[   392.026] (II) LoadModule: "glamoregl"
+[   392.026] (II) Loading /usr/lib64/xorg/modules/libglamoregl.so
+[   392.029] (II) Module glamoregl: vendor="X.Org Foundation"
+[   392.029] 	compiled for 1.20.3, module version = 1.0.1
+[   392.029] 	ABI class: X.Org ANSI C Emulation, version 0.4
+[   392.041] (EE) 
+[   392.041] (EE) Backtrace:
+[   392.041] (EE) 0: /usr/libexec/Xorg (xorg_backtrace+0x7d) [0x563ef8732f2d]
+[   392.041] (EE) 1: /usr/libexec/Xorg (0x563ef857b000+0x1bbcdd) [0x563ef8736cdd]
+[   392.041] (EE) 2: /lib64/libpthread.so.0 (0x7f21d0baf000+0x12dd0) [0x7f21d0bc1dd0]
+[   392.041] (EE) 3: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x137f5) [0x7f21c80cb7f5]
+[   392.041] (EE) 4: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x1c498) [0x7f21c80d4498]
+[   392.041] (EE) 5: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x22396) [0x7f21c80da396]
+[   392.041] (EE) 6: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x1baab) [0x7f21c80d3aab]
+[   392.041] (EE) 7: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x179ad) [0x7f21c80cf9ad]
+[   392.041] (EE) 8: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x179f9) [0x7f21c80cf9f9]
+[   392.041] (EE) 9: /lib64/libEGL_mesa.so.0 (0x7f21c80b8000+0x116f8) [0x7f21c80c96f8]
+[   392.041] (EE) 10: /usr/lib64/xorg/modules/libglamoregl.so (glamor_egl_init+0xa3) [0x7f21cc655f53]
+[   392.041] (EE) 11: /usr/lib64/xorg/modules/drivers/modesetting_drv.so (0x7f21cce96000+0xbc5a) [0x7f21ccea1c5a]
+[   392.041] (EE) 12: /usr/libexec/Xorg (InitOutput+0xa08) [0x563ef8618b28]
+[   392.041] (EE) 13: /usr/libexec/Xorg (0x563ef857b000+0x60007) [0x563ef85db007]
+[   392.041] (EE) 14: /lib64/libc.so.6 (__libc_start_main+0xf3) [0x7f21d080f873]
+[   392.041] (EE) 15: /usr/libexec/Xorg (_start+0x2e) [0x563ef85c4bbe]
+[   392.041] (EE) 
+[   392.041] (EE) Segmentation fault at address 0x563efb0000ef
+[   392.041] (EE) 
+Fatal server error:
+[   392.042] (EE) Caught signal 11 (Segmentation fault). Server aborting
+[   392.042] (EE) 
+[   392.042] (EE) 
+Please consult the The X.Org Foundation support 
+	 at http://wiki.x.org
+ for help. 
+[   392.042] (EE) Please also check the log file at "/home/ojergan/.local/share/xorg/Xorg.0.log" for additional information.
+[   392.042] (EE) 
+[   392.047] (EE) Server terminated with error (1). Closing log file.
