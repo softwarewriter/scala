@@ -21,7 +21,7 @@ package object frogpuzzle {
    }
 
    // @kaare: Det er her jeg lurer på hvorfor vi hadde "implicit class StringableSyntax[A: Stringable](val a: A)"
-   //         når signaturer under ser ut til å gjøre det jeg vil.
+   //         når signaturen under ser ut til å gjøre det jeg vil.
    implicit class StringableSyntax[A](val a: A) {
       def asStringInSyntax(implicit stringable: Stringable[A]): String = stringable.asString(a)
    }

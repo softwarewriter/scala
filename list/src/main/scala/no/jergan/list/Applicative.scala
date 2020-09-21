@@ -5,14 +5,20 @@ trait SemiGroup[A] {
 }
 
 object SemiGroup {
+
+   implicit def ListSemigroup[String]: SemiGroup[List[String]] = new SemiGroup[List[String]] {
+      def append(a1: List[String], a2: List[String]) = a1 ::: a2
+   }
+
+   /*
    implicit def ListSemigroup[A]: SemiGroup[List[A]] = new SemiGroup[List[A]] {
       def append(a1: List[A], a2: List[A]) = a1 ::: a2
    }
+
+    */
 }
 
 sealed trait Validation[E, X] {
-
-   def pure(x: X)(implicit applicative: Validation[E, X]): Validation[E, X] = applicative.pure(x)
 
    def map[Y](f: X => Y): Validation[E, Y] = this match {
       case Failure(e) => Failure(e)
@@ -55,13 +61,19 @@ object Validators {
          Failure(List("Postcode must be 4 digits"))
 }
 
-object ApplicativeDemo extends App {  import Validators._
+object ApplicativeDemo extends App {
+
+   import Validators._
+
    case class Person(name: String, age: Int, postCode: String)
 
-   val createPerson = (Person(_, _, _)).curried
-   val age = validAge(-1)
-   val name = validName("kaare")
-   val postcode = validPostcode("077")
+   def constructor(name: String)(age: Int)(postCode: String) = Person(name, age, postCode)
+
+   val createPerson2: String => Int => String => Person = (Person(_, _, _)).curried
+   val createPerson: String => Int => String => Person = constructor
+   val age: Validation[List[String], Int] = validAge(42)
+   val name: Validation[List[String], String] = validName("Kaare")
+   val postcode: Validation[List[String], String] = validPostcode("0854")
 
    name |@|(age |@|(postcode map createPerson)) match {
       case Success(p) => println("We have a person: " + p)
