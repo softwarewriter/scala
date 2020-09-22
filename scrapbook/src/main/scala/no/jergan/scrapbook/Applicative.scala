@@ -1,4 +1,4 @@
-package boosterconf.applicative
+package no.jergan.scrapbook
 
 trait SemiGroup[A] {
    def append(a1: A, a2: A): A

@@ -1,4 +1,4 @@
-package no.jergan.list
+package no.jergan.scrapbook
 
 import cats.effect.{IO, Resource}
 import cats.implicits._
