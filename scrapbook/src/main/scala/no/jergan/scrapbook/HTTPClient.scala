@@ -35,7 +35,8 @@ object HTTPClient extends IOApp {
     val request: IO[String] =
       httpClient.expect[String]("http://localhost:1337/echo/pelle")
 
-    request *> IO(ExitCode.Success)
+    println(request.unsafeRunSync)
+    IO(ExitCode.Success)
   }
 
 }
