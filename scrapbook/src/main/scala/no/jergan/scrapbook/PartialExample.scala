@@ -36,3 +36,5 @@ object PartialExample extends  App {
    completeNumberFunction.apply(-2)
 
 }
+
+// scala format
