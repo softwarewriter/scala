@@ -1,13 +1,16 @@
 package no.jergan.scrapbook
 
 import cats.effect.{ExitCode, IO, IOApp}
+import io.circe.{Encoder, Json}
 import org.http4s.{HttpApp, HttpRoutes, Method, Request, Response, Status, Uri}
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
+import io.circe._
+import io.circe.syntax._
 
 /**
-  * What does this class do?
+  * HTTP server for person.
   *
   * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
   */
@@ -25,12 +28,37 @@ object HTTPServer extends IOApp {
     database.get(id)
   }
 
+  /*
+  implicit var positionStringable = new Stringable[Position] {
+    override def asString(position: Position): String = s"(${position.x}, ${position.y})"
+  }
+
+   */
+/*
+implicit val encodeFoo: Encoder[Thing] = new Encoder[Thing] {
+  final def apply(a: Thing): Json = Json.obj(
+    ("foo", Json.fromString(a.foo)),
+    ("bar", Json.fromInt(a.bar))
+  )
+}
+
+ */
+
+  implicit val personEncoder: Encoder[Person] = new Encoder[Person] {
+
+    def apply(person: Person): Json = Json.obj(
+      ("firstName", Json.fromString(person.firstName)),
+      ("lastName", Json.fromString(person.lastName)),
+      ("age", Json.fromInt(person.age))
+    )
+  }
+
   val personHttpService: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "person" / id => {
       val personOrNot = personService(id)
       (personOrNot) match {
         case (None)         => NotFound("No person with id " + id)
-        case (Some(person)) => Ok(person.firstName)
+        case (Some(person)) => Ok(person.asJson.toString())
       }
     }
   }
