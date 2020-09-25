@@ -25,13 +25,13 @@ object HTTPServer extends IOApp {
 
   def personService(id: String): Option[Person] = {
     val onkelSkrue  = new Person("Onkel", "Skrue", 78)
-    val onkelDonald = new Person("Donald", "Duck", 35, Some(onkelSkrue))
+    val onkelDonald = new Person("Donald", "Duck", 35, onkelSkrue)
     val database = Map(
       "0" -> onkelSkrue,
       "1" -> onkelDonald,
       "2" -> new Person("Ole", "Duck", 9, onkelDonald),
-      "3" -> new Person("Dole", "Duck", 8, Some(onkelDonald)),
-      "4" -> new Person("Doffen", "Duck", 6, Some(onkelDonald)),
+      "3" -> new Person("Dole", "Duck", 8, onkelDonald),
+      "4" -> new Person("Doffen", "Duck", 6, onkelDonald),
       "5" -> new Person("Nabo", "Jensen", 42),
     )
     database.get(id)
