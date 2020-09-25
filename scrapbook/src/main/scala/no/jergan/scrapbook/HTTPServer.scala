@@ -15,30 +15,41 @@ import io.circe.syntax._
   */
 object HTTPServer extends IOApp {
 
-  case class Person(firstName: String, lastName: String, age: Int)
+  case class Person(firstName: String, lastName: String, age: Int, implicit val uncle: Option[Person]) {
+    def this(firstName: String, lastName: String, age: Int) =
+      this(firstName, lastName, age, None)
+    def this(firstName: String, lastName: String, age: Int, uncle: Person) =
+      this(firstName, lastName, age, Some(uncle))
+  }
 
   def personService(id: String): Option[Person] = {
+    val onkelSkrue  = new Person("Onkel", "Skrue", 78)
+    val onkelDonald = new Person("Donald", "Duck", 35, Some(onkelSkrue))
     val database = Map(
-      "1" -> Person("Ole", "Duck", 9),
-      "2" -> Person("Dole", "Duck", 8),
-      "3" -> Person("Doffen", "Duck", 6),
-      "4" -> Person("Nabo", "Jensen", 6),
+      "0" -> onkelSkrue,
+      "1" -> onkelDonald,
+      "2" -> new Person("Ole", "Duck", 9, onkelDonald),
+      "3" -> new Person("Dole", "Duck", 8, Some(onkelDonald)),
+      "4" -> new Person("Doffen", "Duck", 6, Some(onkelDonald)),
+      "5" -> new Person("Nabo", "Jensen", 42),
     )
     database.get(id)
   }
 
-  implicit val personEncoder: Encoder[Person] = new Encoder[Person] {
-    def apply(person: Person): Json = Json.obj(
+  implicit val personEncoder: Encoder[Person] = (person: Person) =>
+    Json.obj(
       ("firstName", Json.fromString(person.firstName)),
       ("lastName", Json.fromString(person.lastName)),
-      ("age", Json.fromInt(person.age))
-    )
-  }
+      ("age", Json.fromInt(person.age)),
+      person.uncle match {
+        case Some(uncle) => ("uncle", uncle.asJson)
+        case None        => ("no uncle", Json.fromString(""))
+      }
+  )
 
   val personHttpService: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "person" / id => {
-      val personOrNot = personService(id)
-      (personOrNot) match {
+      personService(id) match {
         case (None)         => NotFound("No person with id " + id)
         case (Some(person)) => Ok(person.asJson.toString())
       }
@@ -47,7 +58,7 @@ object HTTPServer extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
     BlazeServerBuilder[IO](scala.concurrent.ExecutionContext.global)
-      .bindHttp(1337)
+      .bindHttp(6510)
       .withHttpApp(personHttpService.orNotFound)
       .serve
       .compile
