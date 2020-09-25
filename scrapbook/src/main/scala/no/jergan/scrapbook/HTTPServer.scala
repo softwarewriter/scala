@@ -6,7 +6,6 @@ import org.http4s.{HttpApp, HttpRoutes, Method, Request, Response, Status, Uri}
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
-import io.circe._
 import io.circe.syntax._
 
 /**
@@ -23,29 +22,12 @@ object HTTPServer extends IOApp {
       "1" -> Person("Ole", "Duck", 9),
       "2" -> Person("Dole", "Duck", 8),
       "3" -> Person("Doffen", "Duck", 6),
-       "4" -> Person("Nabo", "Jensen", 6),
+      "4" -> Person("Nabo", "Jensen", 6),
     )
     database.get(id)
   }
 
-  /*
-  implicit var positionStringable = new Stringable[Position] {
-    override def asString(position: Position): String = s"(${position.x}, ${position.y})"
-  }
-
-   */
-/*
-implicit val encodeFoo: Encoder[Thing] = new Encoder[Thing] {
-  final def apply(a: Thing): Json = Json.obj(
-    ("foo", Json.fromString(a.foo)),
-    ("bar", Json.fromInt(a.bar))
-  )
-}
-
- */
-
   implicit val personEncoder: Encoder[Person] = new Encoder[Person] {
-
     def apply(person: Person): Json = Json.obj(
       ("firstName", Json.fromString(person.firstName)),
       ("lastName", Json.fromString(person.lastName)),
