@@ -15,7 +15,8 @@ import io.circe.syntax._
   */
 object HTTPServer extends IOApp {
 
-  case class Person(firstName: String, lastName: String, age: Int, implicit val uncle: Option[Person]) {
+  // @kaare: Er det riktig å lage ekstra konstruktorer her? Jeg ville egentlig helst bruke "implicit" for å slippe...
+  case class Person(firstName: String, lastName: String, age: Int, uncle: Option[Person]) {
     def this(firstName: String, lastName: String, age: Int) =
       this(firstName, lastName, age, None)
     def this(firstName: String, lastName: String, age: Int, uncle: Person) =
@@ -36,6 +37,7 @@ object HTTPServer extends IOApp {
     database.get(id)
   }
 
+  // @kaare: hvordan (elegant) lage en variabel liste av elementer (slik at jeg slipper "no uncle").
   implicit val personEncoder: Encoder[Person] = (person: Person) =>
     Json.obj(
       ("firstName", Json.fromString(person.firstName)),
