@@ -15,15 +15,11 @@ import io.circe.syntax._
   */
 object HTTPServer extends IOApp {
 
-  // @kaare: Er det riktig å lage ekstra konstruktorer her? Jeg ville egentlig helst bruke "implicit" for å slippe...
-  case class Person(firstName: String, lastName: String, age: Int, uncle: Option[Person]) {
-    def this(firstName: String, lastName: String, age: Int) =
-      this(firstName, lastName, age, None)
-    def this(firstName: String, lastName: String, age: Int, uncle: Person) =
-      this(firstName, lastName, age, Some(uncle))
-  }
+  case class Person(firstName: String, lastName: String, age: Int, uncle: Option[Person] = None)
 
   def personService(id: String): Option[Person] = {
+    implicit def personToOption(person: Person) = Some(person)
+
     val onkelSkrue  = new Person("Onkel", "Skrue", 78)
     val onkelDonald = new Person("Donald", "Duck", 35, onkelSkrue)
     val database = Map(
