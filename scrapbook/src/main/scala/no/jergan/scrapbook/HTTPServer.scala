@@ -17,9 +17,11 @@ object HTTPServer extends IOApp {
 
   case class Person(firstName: String, lastName: String, age: Int, uncle: Option[Person] = None)
 
-  def personService(id: String): Option[Person] = {
-    implicit def personToOption(person: Person) = Some(person)
+  object Person {
+     implicit def personToOption(person: Person) = Some(person)
+  }
 
+  def personService(id: String): Option[Person] = {
     val onkelSkrue  = new Person("Onkel", "Skrue", 78)
     val onkelDonald = new Person("Donald", "Duck", 35, onkelSkrue)
     val database = Map(
