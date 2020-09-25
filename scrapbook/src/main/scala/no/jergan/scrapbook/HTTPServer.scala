@@ -15,35 +15,36 @@ import org.http4s.server.blaze.BlazeServerBuilder
  */
 object HTTPServer extends IOApp {
 
-   /*
-     HttpServer === En eller flere partial functions med signatur Request => Response
-     val r1 = GET /hello
-     val r2 = GET /hello2
-     val r3 = GET /hello3
-     val theRest => NotFound
-     r1 orElse r2 orElse r3 orElse theRest     httpKall         == Request => Response
-     effekt i tillegg == Request => F[Response]  == Kleisli[OptionT[F, *], Request, Response]
+   case class Person(firstName: String, lastName: String, age: Int)
 
-    */  val helloService: HttpRoutes[IO] = HttpRoutes.of[IO]{
-      case Request(Method.GET,Uri(_, _, "/hello", _, _),_,_,_, _) => IO(Response[IO](Status.Ok))
+   def personService(id: String): Option[Person] = {
+      val database = Map(
+         "1" -> Person("Ole", "Duck", 9),
+         "2" -> Person("Dole", "Duck", 8),
+         "3" -> Person("Doffen", "Duck", 6),
+      )
+      database.get(id)
    }
 
-   val echoService: HttpRoutes[IO] = HttpRoutes.of[IO]{
-      case GET -> Root / "echo" / what => Ok(s"you said [$what]")
-   }
-
-   def routes(rs: List[HttpRoutes[IO]]): HttpApp[IO]= {
-      rs.reduce( _ <+> _ ).orNotFound
+   val personHttpService: HttpRoutes[IO] = HttpRoutes.of[IO]{
+      case GET -> Root / "person" / id => {
+        val personOrNot = personService(id)
+         (personOrNot) match {
+            case (None) => NotFound("No person with id " + id)
+            case (Some(person)) => Ok(person.firstName)
+         }
+      }
    }
 
    override def run(args: List[String]): IO[ExitCode] = {
       BlazeServerBuilder[IO](scala.concurrent.ExecutionContext.global)
          .bindHttp(1337)
-         .withHttpApp(routes(List(helloService,echoService)))
+         .withHttpApp(personHttpService.orNotFound)
          .serve
          .compile
          .drain
          .map(_ => ExitCode.Success)
    }
+
 }
 
