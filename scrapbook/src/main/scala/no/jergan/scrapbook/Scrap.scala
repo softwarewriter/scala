@@ -1,7 +1,5 @@
 package no.jergan.scrapbook
 
-import no.jergan.scrapbook.Scrap.a
-
 /**
   * What does this class do?
   *
@@ -12,18 +10,7 @@ object Scrap extends App {
   val list: IndexedSeq[Int] = for (i <- 0 until 20 if (i % 2 == 0)) yield i
   println(list.size)
 
-  val a = 3;
 
-  val block: Unit = {
-    println(a)
-    4
-    ()
-  }
-  println(block)
-
-  def m(a: Int) = a * a
-
-  println(m(4))
   //   println(m(block))
 
   // functions
@@ -64,10 +51,30 @@ object Scrap extends App {
   val anyList: List[Any] = List(any1, any2, any3, any4)
   println(anyList)
 
-  val nul: Null = null
+  val f: (Int, Int) => String = (a: Int, b: Int) => s"f: $a, $b"
 
-  println(nul)
+  def m(a: Int = 0, b: Int) = s"m: $a, $b"
 
-  val b: Int = null
+  println(f(1, 2))
+  println(m(1, 2))
+  println(m(b = 2))
+
+
+  val tu: (Int, Int) = (2, 3)
+  val tu2: Tuple2[Int, Int] = Tuple2(4, 5)
+  val tu3: Tuple2[Int, Int] = 4 -> 5
+  println(tu)
+  println(tu.getClass)
+  println(tu2.getClass)
+
+  println(tu._1)
+  println(tu3)
+
+  val (a: Int, b) = tu
+  println(a)
+  2 match {
+    case (1) => println(1)
+    case (_) => println("røkla")
+  }
 
 }
