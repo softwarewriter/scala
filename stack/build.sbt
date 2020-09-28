@@ -1,8 +1,6 @@
-enablePlugins(JavaAppPackaging)
+//enablePlugins(JavaAppPackaging)
 
-organization := "com.klavenessdigital"
-
-name := "vessel-poc"
+name := "stack"
 
 version := "1.0"
 
