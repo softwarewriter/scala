@@ -105,18 +105,4 @@ object Scrap extends App {
   val query = "id=1"
   val url = getURL(endpoint, query) // "https://www.example.com/users?id=1": String
 
-  def factorial(x: Int): Int = {
-    def fact2: (Int, Int) => Int = (x: Int, accumulator: Int) => {
-      if (x <= 1) accumulator
-      else fact2(x - 1, x * accumulator)
-    }
-
-    def fact(x: Int, accumulator: Int): Int = {
-      if (x <= 1) accumulator
-      else fact(x - 1, x * accumulator)
-    }
-    fact(x, 1)
-    fact2(x, 1)
-  }
-
 }
