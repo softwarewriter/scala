@@ -6,4 +6,5 @@ scalaVersion := "2.13.3"
 
 lazy val frogpuzzle = (project in file("frogpuzzle"))
 lazy val list = (project in file("list"))
+lazy val stack = (project in file("stack"))
 lazy val scrapbook = (project in file("scrapbook"))
