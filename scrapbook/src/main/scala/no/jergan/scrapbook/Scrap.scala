@@ -27,12 +27,16 @@ object Scrap extends App {
    println(m(4))
    println(m(block))
 
-  val sq: Int => Int = (x: Int) => x * x
+   def sq1: Int => Int = (x: Int) => x * x
+   val sq2: Int => Int = (x: Int) => x * x
+   def sq3(x: Int): Int = x * x
 
+   //   val sq4(x: Int): Int = x * x
 
-  def m3(f: Int => Int) = f(3)
+   println(sq1)
+   println(sq2)
+   //   println(sq3)
 
-
-  println(m3(sq))
+   println(sq3(3))
 
 }
