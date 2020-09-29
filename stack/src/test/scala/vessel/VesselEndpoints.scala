@@ -33,15 +33,10 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Produces.Directive.json[Vessel])
    ).run(imo => {
       val maybeVessel = vesselService.get(imo)
-//     val either: Either[String, Vessel] = ???
       maybeVessel match {
-         case Some(vessel)   => Directive.success(vessel)
-         case None => Directive.failure(Response[F](Status.Ok).withEntity("i am simple vessel 1"))
+         case Some(vessel) => Directive.success(vessel)
+         case None => Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
       }
-
-
-//     val result: Directive[F, Vessel] = eitherToDirective(either, )
-//     result
    })
 
   /*
