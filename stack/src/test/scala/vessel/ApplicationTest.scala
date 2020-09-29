@@ -7,11 +7,16 @@ import org.http4s.client.Client
 import org.http4s.server.Server
 import platform.implicits._
 import io.circe.literal._
+import org.scalatest.Assertion
 import platform.Database
 
 class ApplicationTest extends platform.test.SharedResourceSpec {
 
   override type FixtureParam = (Server[IO], Client[IO])
+
+  val existing = "1"
+  val nonExisting = "4"
+
   val dbPort = platform.test.availablePort
 
   override def resource: Resource[IO, FixtureParam] = {
@@ -29,11 +34,48 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
     "Get" in {
       case (application, httpClient) =>
+
+        assertImoHasStatus(httpClient, existing, Status.NotFound)
+/*
+        assert(hasImo(httpClient, existing))
         httpClient
-           .statusFromUri(Uri.unsafeFromString("http://localhost:1338/vessel"))
+           .status(Request[IO](Method.GET, uri(existing)))
+           .map(status => assert(status == Status.Ok))
+
+ */
+        httpClient
+           .status(Request[IO](Method.GET, uri(nonExisting)))
            .map(status => assert(status == Status.NotFound))
     }
 
+    "Put" in {
+      case (application, httpClient) =>
+        httpClient
+           .status(Request[IO](Method.GET, uri("4")))
+           .map(status => assert(status == Status.Ok))
+        httpClient
+           .status(Request[IO](Method.GET, uri("4")))
+           .map(status => assert(status == Status.NotFound))
+    }
+
+    "Using correct url" in {
+      case (app, httpClient) =>
+        val expected = json"""{"version":"NOT AN TAGGED VERSION","versionUrl":"NOT AN TAGGED VERSION"}"""
+        httpClient
+           .expect[Json](Request[IO](Method.GET, Uri.unsafeFromString("http://localhost:1338/health")))
+           .map(json => assert(json == expected))
+    }
+
+  }
+
+  def assertImoHasStatus(httpClient: Client[IO], imo: String, expectedStatus: Status): Assertion = {
+    httpClient
+    .status(Request[IO](Method.GET, uri(imo)))
+    .map(status => assert(status == expectedStatus)).unsafeRunSync()
+  }
+
+  def uri(imo: String): Uri = {
+    Uri.unsafeFromString("http://localhost:1338/vessel/" + imo)
   }
 
 }
