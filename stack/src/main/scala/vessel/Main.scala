@@ -12,7 +12,7 @@ import platform.Database
   */
 // Define your application as an resource
 
-object main extends IOApp {
+object Main extends IOApp {
 
   implicit def entityEncoder[A: Encoder] = org.http4s.circe.jsonEncoderOf[IO, A]
 
