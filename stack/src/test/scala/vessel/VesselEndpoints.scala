@@ -44,11 +44,17 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Method.PUT,
          Root / "imo".as[String],
          Accepts.json[Vessel],
-         Produces.json[Vessel])
+         Produces.Directive.json[Vessel])
    ).run(tuple => {
+      val imo = tuple._1
       val vessel = tuple._2
-      vesselService.put(vessel)
-      vessel
+      (imo == vessel.imo) match {
+         case true => {
+            vesselService.put(vessel)
+            Directive.success(vessel)
+         }
+         case false => Directive.error(Response[F](Status.BadRequest).withEntity(s"IMO-s not matching: $imo and ${vessel.imo}"))
+      }
    })
 
    val deleteByIMO: Complete = unsecure(
