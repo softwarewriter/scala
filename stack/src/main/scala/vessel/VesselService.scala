@@ -11,7 +11,7 @@ trait VesselService {
 
    def get(imo: String): Option[Vessel]
 
-   def put(vessel: Vessel): Unit
+   def put(vessel: Vessel): Vessel
 
    def delete(imo: String): Option[Vessel]
 
@@ -26,8 +26,9 @@ object SimpleVesselService extends VesselService {
       storage.get(imo)
    }
 
-   override def put(vessel: Vessel): Unit = {
+   override def put(vessel: Vessel): Vessel = {
       storage.put(vessel.imo, vessel)
+      vessel
    }
 
    override def delete(imo: String): Option[Vessel] = {

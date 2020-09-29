@@ -1,8 +1,10 @@
 package vessel
 
 import cats.effect.{ConcurrentEffect, Sync}
-import org.http4s.dsl.io.{->, GET, Root}
+import org.http4s.dsl.io._
 import org.http4s.{HttpRoutes, Response, Status}
+
+import cats.implicits._
 
 /**
  * HTTP endpoints definitions for vessel defined without using unsecurity.
@@ -11,21 +13,18 @@ import org.http4s.{HttpRoutes, Response, Status}
  */
 class SimpleVesselEndpoints[F[_]: ConcurrentEffect] {
 
-   def endpoints(path: String): List[(String, HttpRoutes[F])] = {
-      List(
-         path + "/vessel1" -> simpleVesselService1,
-         path + "/vessel2" -> simpleVesselService2
-      )
+   val endpoints: HttpRoutes[F] = {
+     simpleVesselService1 <+> simpleVesselService2
    }
 
    def simpleVesselService1: HttpRoutes[F] = HttpRoutes.of[F] {
-      case GET -> Root => Sync[F].pure {
+      case GET -> Root / "vessel1" => Sync[F].pure {
          Response[F](Status.Ok).withEntity("i am simple vessel 1")
       }
    }
 
    def simpleVesselService2: HttpRoutes[F] = HttpRoutes.of[F] {
-      case GET -> Root => Sync[F].pure {
+      case GET -> Root / "vessel2" => Sync[F].pure {
          Response[F](Status.Ok).withEntity("i am simple vessel 2")
       }
    }

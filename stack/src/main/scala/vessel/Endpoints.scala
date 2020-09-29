@@ -4,6 +4,7 @@ import cats.effect.{ConcurrentEffect, Resource, Sync, Timer}
 import org.http4s.dsl.io.{->, GET, Root}
 import org.http4s.server.{Router, Server}
 import org.http4s.{HttpRoutes, Response, Status}
+import io.unsecurity.Server.toHttpRoutes
 
 import scala.concurrent.ExecutionContext
 
@@ -27,13 +28,14 @@ object Endpoints {
 
       val simpleVesselEndpoints = new SimpleVesselEndpoints[F]
       val vesselEndpoints = new VesselEndpoints[F](unsecurity, configuration.vesselService)
-      val routes = List(
+      val routes = Router(
          "/health" -> health,
-         "/simple"-> simpleHttpService)
-         .appendedAll(simpleVesselEndpoints.endpoints("/simplevessel"))
-         .appendedAll(vesselEndpoints.endpoints("/vessel"))
+         "/simple"-> simpleHttpService,
+         "/" -> toHttpRoutes(vesselEndpoints.routes),
+        "/simplevessel" -> simpleVesselEndpoints.endpoints
+      )
 
-      platform.HttpServer[F](configuration.port, configuration.bindAddress, executionContext, Router(routes:_*))
+      platform.HttpServer[F](configuration.port, configuration.bindAddress, executionContext, routes)
    }
 
 }

@@ -9,7 +9,7 @@ class DoobieVesselService extends VesselService {
 
    override def get(imo: String): Option[Vessel] = ???
 
-   override def put(vessel: Vessel): Unit = ???
+   override def put(vessel: Vessel): Vessel = ???
 
    override def delete(imo: String): Option[Vessel] = ???
 

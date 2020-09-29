@@ -2,20 +2,18 @@ package vessel
 
 import cats.effect.{Blocker, IO, Resource}
 import io.circe.Json
-import org.http4s.{Method, Request, Status, Uri}
+import org.http4s.{EntityBody, Method, Request, Status, Uri, UrlForm}
 import org.http4s.client.Client
 import org.http4s.server.Server
 import platform.implicits._
 import io.circe.literal._
 import org.scalatest.Assertion
 import platform.Database
+import org.http4s.client.dsl.io._
 
 class ApplicationTest extends platform.test.SharedResourceSpec {
 
   override type FixtureParam = (Server[IO], Client[IO])
-
-  val existing = "1"
-  val nonExisting = "4"
 
   val dbPort = platform.test.availablePort
 
@@ -32,24 +30,36 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
   "Testing vessel api" - {
 
-    "Get" in {
+    val existing = "1"
+    val nonExisting = "4"
+
+    "Get existing" in {
       case (application, httpClient) =>
         assertImoHasStatus(httpClient, existing, Status.Ok)
-        assertImoHasStatus(httpClient, nonExisting, Status.NotFound)
-/*
-        assert(hasImo(httpClient, existing))
-        httpClient
-           .status(Request[IO](Method.GET, uri(existing)))
-           .map(status => assert(status == Status.Ok))
+    }
 
- */
-        httpClient
-           .status(Request[IO](Method.GET, uri(nonExisting)))
-           .map(status => assert(status == Status.NotFound))
+    "Get non existing" in {
+      case (application, httpClient) =>
+        assertImoHasStatus(httpClient, nonExisting, Status.NotFound)
     }
 
     "Put" in {
       case (application, httpClient) =>
+        val nonExisting = "5"
+        assertImoHasStatus(httpClient, nonExisting, Status.NotFound)
+
+        httpClient
+           .status(Request[IO](Method.PUT, uri(nonExisting))
+              .withEntity(Vessel(nonExisting, "Lars")))
+           .map(status => assert(status == Status.Ok))
+
+        val expected = json"""{"version":"NOT AN TAGGED VERSION","versionUrl":"NOT AN TAGGED VERSION"}"""
+        httpClient
+           .expect[Json](Request[IO](Method.GET, Uri.unsafeFromString("http://localhost:1338/health")))
+           .map(json => assert(json == expected))
+
+
+
         httpClient
            .status(Request[IO](Method.GET, uri("4")))
            .map(status => assert(status == Status.Ok))
@@ -68,10 +78,10 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
   }
 
-  def assertImoHasStatus(httpClient: Client[IO], imo: String, expectedStatus: Status): Assertion = {
+  def assertImoHasStatus(httpClient: Client[IO], imo: String, expectedStatus: Status): IO[Assertion] = {
     httpClient
     .status(Request[IO](Method.GET, uri(imo)))
-    .map(status => assert(status == expectedStatus)).unsafeRunSync()
+    .map(status => assert(status == expectedStatus))
   }
 
   def uri(imo: String): Uri = {
