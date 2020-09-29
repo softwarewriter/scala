@@ -16,8 +16,6 @@ object main extends IOApp {
 
   implicit def entityEncoder[A: Encoder] = org.http4s.circe.jsonEncoderOf[IO, A]
 
-//  implicit def entityDecoder[A: Decoder] = org.http4s.circe.jsonOf[IO, A]
-
   def createApplication(configuration: Configuration): Resource[IO, Server[IO]] = {
 
     //val ec: Resource[IO, ExecutionContext] = platform.ExecutionContexts.cpuBoundExecutionContext[IO]("main-ec")

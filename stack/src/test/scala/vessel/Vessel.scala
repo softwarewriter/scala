@@ -23,6 +23,6 @@ object Vessel {
    }
 
    implicit val decodeUser: Decoder[Vessel] =
-      Decoder.forProduct2("imo", "name")(Vessel.apply)
+      Decoder.forProduct2("IMO", "Name")(Vessel.apply)
 
 }
