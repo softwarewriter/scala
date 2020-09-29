@@ -47,12 +47,13 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
    ).run(tuple => {
       val imo = tuple._1
       val vessel = tuple._2
-      (imo == vessel.imo) match {
-         case true => {
-            vesselService.put(vessel)
-            Directive.success(vessel)
-         }
-         case false => Directive.error(Response[F](Status.BadRequest).withEntity(s"IMO-s not matching: $imo and ${vessel.imo}"))
+      if (imo == vessel.imo)
+      {
+         vesselService.put(vessel)
+         Directive.success(vessel)
+      }
+      else {
+         Directive.error(Response[F](Status.BadRequest).withEntity(s"IMO-s not matching: $imo and ${vessel.imo}"))
       }
    })
 
@@ -79,7 +80,6 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
 
   def noSuchVessel[A](imo: String): Directive[F, A] = {
      Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
-
   }
 
 }
