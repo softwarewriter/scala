@@ -2,7 +2,7 @@ import io.unsecurity.Unsecurity
 import io.unsecurity.auth.auth0.m2m.OauthAuthenticatedApplication
 
 /**
- * Provides package wide imports and definitions.
+ * What does this class do?
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */

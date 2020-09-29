@@ -1,6 +1,6 @@
 package vessel
 
-import cats.effect.{ConcurrentEffect, Sync, Timer}
+import cats.effect.{ConcurrentEffect, Sync}
 import org.http4s.dsl.io.{->, GET, Root}
 import org.http4s.{HttpRoutes, Response, Status}
 

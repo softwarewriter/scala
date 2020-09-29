@@ -1,8 +1,7 @@
 package vessel
 
-import io.circe.Decoder.Result
-import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.circe.syntax._
+import io.circe.{Decoder, Encoder, Json}
 
 /**
  * Representation of vessel.

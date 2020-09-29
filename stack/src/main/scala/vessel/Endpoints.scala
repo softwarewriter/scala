@@ -1,9 +1,9 @@
 package vessel
 
-import cats.effect.{ConcurrentEffect, IO, Resource, Sync, Timer}
-import org.http4s.{HttpRoutes, Response, Status}
-import org.http4s.dsl.io.{->, /, GET, NotFound, Ok, Root}
+import cats.effect.{ConcurrentEffect, Resource, Sync, Timer}
+import org.http4s.dsl.io.{->, GET, Root}
 import org.http4s.server.{Router, Server}
+import org.http4s.{HttpRoutes, Response, Status}
 
 import scala.concurrent.ExecutionContext
 

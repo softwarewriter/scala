@@ -1,12 +1,11 @@
 package vessel
 
-import io.unsecurity.hlinx.HLinx.Root
-import io.unsecurity.hlinx.HLinx._
-import org.http4s.{Method, Response, Status}
 import cats.effect.{ConcurrentEffect, Timer}
 import io.unsecurity.Server.toHttpRoutes
 import io.unsecurity.UnsecurityOps
+import io.unsecurity.hlinx.HLinx.{Root, _}
 import no.scalabin.http4s.directives.Directive
+import org.http4s.{Method, Response, Status}
 
 /**
  * Vessel endpoints using unsecurity.
