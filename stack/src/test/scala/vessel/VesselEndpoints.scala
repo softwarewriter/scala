@@ -18,9 +18,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
 
    def endpoints(path: String): List[(String, org.http4s.HttpRoutes[F])] = {
       List(
-         path + "/" -> toHttpRoutes(getByIMO),
-         path + "/put" -> toHttpRoutes(putByIMO),
-         path + "/delete" -> toHttpRoutes(deleteByIMO)
+         path + "/" -> toHttpRoutes(getByIMO.merge(putByIMO).merge(deleteByIMO))
       )
    }
 
