@@ -12,7 +12,7 @@ import io.unsecurity.Server.toHttpRoutes
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: ApplicationSecurity[F]) {
+class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: ApplicationSecurity[F], val vesselService: VesselService) {
 
    import unsecurity._
 
@@ -28,7 +28,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          "Get by IMO",
          Method.GET,
          Root / "imo".as[String],
-         Produces.json[String])
-   ).run(IMO => s"Titanic ($IMO)")
+         Produces.json[Option[Vessel]])
+   ).run(imo => vesselService.get(imo))
 
 }

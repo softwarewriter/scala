@@ -35,7 +35,8 @@ object main extends IOApp {
   }
 
   override def run(args: List[String]): IO[ExitCode] = {
-    val configuration = Configuration(1337, "0.0.0.0", Database.Config("url", "driverClassName", "sa", "Password1234", None))
+    val vesselService = SimpleVesselService
+    val configuration = Configuration(1337, "0.0.0.0", vesselService, Database.Config("url", "driverClassName", "sa", "Password1234", None))
     val application = createApplication(configuration)
     application.use(_ => IO.never)
   }

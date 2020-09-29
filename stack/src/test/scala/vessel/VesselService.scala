@@ -27,4 +27,8 @@ object SimpleVesselService extends VesselService {
       storage.put(vessel.imo, vessel)
    }
 
+   put(Vessel("1", "Titanic"))
+   put(Vessel("2", "Norge"))
+   put(Vessel("3", "Eidsvold"))
+
 }

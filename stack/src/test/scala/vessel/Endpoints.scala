@@ -26,7 +26,7 @@ object Endpoints {
       val unsecurity: ApplicationSecurity[F] = platform.UnsecurityInstances.m2m("issuer", "whoami", user => ConcurrentEffect[F].delay(Option(user)))
 
       val simpleVesselEndpoints = new SimpleVesselEndpoints[F]
-      val vesselEndpoints = new VesselEndpoints[F](unsecurity)
+      val vesselEndpoints = new VesselEndpoints[F](unsecurity, configuration.vesselService)
       val routes = List(
          "/health" -> health,
          "/simple"-> simpleHttpService)
