@@ -34,8 +34,8 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
     "Get" in {
       case (application, httpClient) =>
-
-        assertImoHasStatus(httpClient, existing, Status.NotFound)
+        assertImoHasStatus(httpClient, existing, Status.Ok)
+        assertImoHasStatus(httpClient, nonExisting, Status.NotFound)
 /*
         assert(hasImo(httpClient, existing))
         httpClient
