@@ -2,10 +2,11 @@ package vessel
 
 import io.unsecurity.hlinx.HLinx.Root
 import io.unsecurity.hlinx.HLinx._
-import org.http4s.Method
+import org.http4s.{Method, Response, Status}
 import cats.effect.{ConcurrentEffect, Timer}
 import io.unsecurity.Server.toHttpRoutes
 import io.unsecurity.UnsecurityOps
+import no.scalabin.http4s.directives.Directive
 
 /**
  * Vessel endpoints using unsecurity.
@@ -29,8 +30,35 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          "Get by IMO",
          Method.GET,
          Root / "imo".as[String],
-         Produces.json[Option[Vessel]])
-   ).run(imo => vesselService.get(imo))
+         Produces.Directive.json[Vessel])
+   ).run(imo => {
+      val maybeVessel = vesselService.get(imo)
+//     val either: Either[String, Vessel] = ???
+      maybeVessel match {
+         case Some(vessel)   => Directive.success(vessel)
+         case None => Directive.failure(Response[F](Status.Ok).withEntity("i am simple vessel 1"))
+      }
+
+
+//     val result: Directive[F, Vessel] = eitherToDirective(either, )
+//     result
+   })
+
+  /*
+      case GET -> Root => Sync[F].pure {
+         Response[F](Status.Ok).withEntity("i am simple vessel 1")
+      }
+
+   */
+/*
+      val maybeVessel = vesselService.get(imo)
+      maybeVessel match {
+         case (Some(vessel)) => TryDirectives()
+         case (None) => TryDirectives()
+      }
+   })
+
+ */
 
    val putByIMO: Complete = unsecure(
       Endpoint(
