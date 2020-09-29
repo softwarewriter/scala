@@ -27,8 +27,8 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       Endpoint(
          "Get by IMO",
          Method.GET,
-         Root / "vessel" / "imo".as[String],
+         Root / "imo".as[String],
          Produces.json[String])
-   ).run(IMO => "Titanic")
+   ).run(IMO => s"Titanic ($IMO)")
 
 }

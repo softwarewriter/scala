@@ -1,18 +1,15 @@
 package vessel
 
-import cats.effect.{ConcurrentEffect, Resource, Sync, Timer}
+import cats.effect.{ConcurrentEffect, Sync, Timer}
 import org.http4s.dsl.io.{->, GET, Root}
-import org.http4s.server.{Router, Server}
 import org.http4s.{HttpRoutes, Response, Status}
-
-import scala.concurrent.ExecutionContext
 
 /**
  * HTTP endpoints definitions for vessel defined without using unsecurity.
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class SimpleVesselEndpoints[F[_]: ConcurrentEffect: Timer](pelle: Int) {
+class SimpleVesselEndpoints[F[_]: ConcurrentEffect] {
 
    def endpoints(path: String): List[(String, HttpRoutes[F])] = {
       List(
