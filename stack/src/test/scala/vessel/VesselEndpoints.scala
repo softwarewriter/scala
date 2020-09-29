@@ -19,11 +19,10 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
 
    def endpoints(path: String): List[(String, org.http4s.HttpRoutes[F])] = {
       List(
-         path + "/" -> toHttpRoutes(getByIMO.merge(putByIMO).merge(deleteByIMO))
+         path + "/" -> toHttpRoutes(getByIMO.merge(putByIMO).merge(deleteByIMO)),
+         path + "/search" -> toHttpRoutes(search)
       )
    }
-
-   // Directives
 
    val getByIMO: Complete = unsecure(
       Endpoint(
@@ -69,6 +68,14 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          case None => noSuchVessel(imo)
       }
    })
+
+   val search: Complete = unsecure(
+      Endpoint(
+         "Search",
+         Method.GET,
+         Root / "query".as[String],
+         Produces.json[List[Vessel]])
+   ).run(query => vesselService.search(query))
 
   def noSuchVessel[A](imo: String): Directive[F, A] = {
      Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))

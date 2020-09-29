@@ -15,6 +15,7 @@ trait VesselService {
 
    def delete(imo: String): Option[Vessel]
 
+   def search(query: String): List[Vessel]
 }
 
 object SimpleVesselService extends VesselService {
@@ -31,6 +32,10 @@ object SimpleVesselService extends VesselService {
 
    override def delete(imo: String): Option[Vessel] = {
       storage.remove(imo)
+   }
+
+   override def search(query: String): List[Vessel] = {
+      storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList
    }
 
    put(Vessel("1", "Titanic"))
