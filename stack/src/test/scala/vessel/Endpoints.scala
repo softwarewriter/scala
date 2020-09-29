@@ -16,26 +16,16 @@ object Endpoints {
 
    def create[F[_] : ConcurrentEffect : Timer](configuration: Configuration, executionContext: ExecutionContext): Resource[F, Server[F]] = {
 
+      val health: HttpRoutes[F] = platform.HttpServer.healthCheck[F](mountOnRoot = true)
       val simpleHttpService: HttpRoutes[F] = HttpRoutes.of[F] {
-         case GET -> Root / "simple" => Sync[F].pure {
-            Response[F](Status.Ok).withEntity("hei")
+         case GET -> Root => Sync[F].pure {
+            Response[F](Status.Ok).withEntity("i am simple")
          }
       }
-     /*
-      case Method.GET -> Mnt =>
-        Sync[F].pure {
-          Response[F](Status.Ok).withEntity(
-            Json.obj(
-              "version"    -> Json.fromString(version.getOrElse("NOT AN TAGGED VERSION")),
-              "versionUrl" -> Json.fromString(versionUrl.getOrElse("NOT AN TAGGED VERSION"))
-            ))
-        }
-    }
-
-      */
 
       val routes = Router(
-         ("simple", simpleHttpService)
+         "/health" -> health,
+         "/simple"-> simpleHttpService
       )
 
       platform.HttpServer[F](configuration.port, configuration.bindAddress, executionContext, routes)
