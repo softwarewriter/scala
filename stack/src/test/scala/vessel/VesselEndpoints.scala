@@ -12,12 +12,12 @@ import scala.concurrent.ExecutionContext
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val pelle: Int) {
+class VesselEndpoints[F[_]: ConcurrentEffect: Timer](pelle: Int) {
 
-   def endpoints(): List[(String, HttpRoutes[F])] = {
+   def endpoints(path: String): List[(String, HttpRoutes[F])] = {
       List(
-         "vessel1" -> simpleVesselService1,
-         "vessel2" -> simpleVesselService2
+         path + "/vessel1" -> simpleVesselService1,
+         path + "/vessel2" -> simpleVesselService2
       )
    }
 

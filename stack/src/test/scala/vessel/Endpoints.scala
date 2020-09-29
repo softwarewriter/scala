@@ -27,7 +27,7 @@ object Endpoints {
       val routes = List(
          "/health" -> health,
          "/simple"-> simpleHttpService)
-         .appendedAll(vesselEndpoints.endpoints())
+         .appendedAll(vesselEndpoints.endpoints("/vessel"))
 
       platform.HttpServer[F](configuration.port, configuration.bindAddress, executionContext, Router(routes:_*))
    }
