@@ -13,6 +13,8 @@ trait VesselService {
 
    def put(vessel: Vessel): Unit
 
+   def delete(imo: String): Unit
+
 }
 
 object SimpleVesselService extends VesselService {
@@ -26,6 +28,11 @@ object SimpleVesselService extends VesselService {
    override def put(vessel: Vessel): Unit = {
       storage.put(vessel.imo, vessel)
    }
+
+   override def delete(imo: String): Unit = {
+      storage.remove(imo)
+   }
+
 
    put(Vessel("1", "Titanic"))
    put(Vessel("2", "Norge"))

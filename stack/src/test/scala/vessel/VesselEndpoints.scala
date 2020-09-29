@@ -19,7 +19,8 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
    def endpoints(path: String): List[(String, org.http4s.HttpRoutes[F])] = {
       List(
          path + "/" -> toHttpRoutes(getByIMO),
-         path + "/put/" -> toHttpRoutes(putByIMO)
+         path + "/put" -> toHttpRoutes(putByIMO),
+         path + "/delete" -> toHttpRoutes(deleteByIMO)
       )
    }
 
@@ -45,5 +46,13 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       vesselService.put(vessel)
       vessel
    })
+
+   val deleteByIMO: Complete = unsecure(
+      Endpoint(
+         "Delete by IMO",
+         Method.DELETE,
+         Root / "imo".as[String],
+         Produces.EmptyBody)
+   ).run(imo => vesselService.delete(imo))
 
 }
