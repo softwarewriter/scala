@@ -1,6 +1,7 @@
 package vessel
 
 import cats.effect.{Blocker, ExitCode, IO, IOApp, Resource}
+import io.circe.{Decoder, Encoder}
 import org.http4s.server.Server
 import platform.Database
 
@@ -12,6 +13,10 @@ import platform.Database
 // Define your application as an resource
 
 object main extends IOApp {
+
+  implicit def entityEncoder[A: Encoder] = org.http4s.circe.jsonEncoderOf[IO, A]
+
+//  implicit def entityDecoder[A: Decoder] = org.http4s.circe.jsonOf[IO, A]
 
   def createApplication(configuration: Configuration): Resource[IO, Server[IO]] = {
 

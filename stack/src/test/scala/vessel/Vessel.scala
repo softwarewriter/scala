@@ -1,7 +1,7 @@
 package vessel
 
-import cats.effect.IO
-import io.circe.{Encoder, Json}
+import io.circe.Decoder.Result
+import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.circe.syntax._
 
 /**
@@ -12,7 +12,8 @@ import io.circe.syntax._
 case class Vessel (imo: String, name: String)
 
 object Vessel {
-   implicit val personEncoder: Encoder[Vessel] = (vessel: Vessel) => {
+
+   implicit val vesselEncoder: Encoder[Vessel] = (vessel: Vessel) => {
       Json
          .obj(
             "IMO" := vessel.imo,
@@ -21,6 +22,7 @@ object Vessel {
          .dropNullValues
    }
 
-   implicit def entityEncoder[A: Encoder] = org.http4s.circe.jsonEncoderOf[IO, A]
+   implicit val decodeUser: Decoder[Vessel] =
+      Decoder.forProduct2("imo", "name")(Vessel.apply)
 
 }
