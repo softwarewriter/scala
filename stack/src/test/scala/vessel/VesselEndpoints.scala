@@ -32,28 +32,11 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Root / "imo".as[String],
          Produces.Directive.json[Vessel])
    ).run(imo => {
-      val maybeVessel = vesselService.get(imo)
-      maybeVessel match {
+      vesselService.get(imo) match {
          case Some(vessel) => Directive.success(vessel)
-         case None => Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
+         case None => noSuchVessel(imo)
       }
    })
-
-  /*
-      case GET -> Root => Sync[F].pure {
-         Response[F](Status.Ok).withEntity("i am simple vessel 1")
-      }
-
-   */
-/*
-      val maybeVessel = vesselService.get(imo)
-      maybeVessel match {
-         case (Some(vessel)) => TryDirectives()
-         case (None) => TryDirectives()
-      }
-   })
-
- */
 
    val putByIMO: Complete = unsecure(
       Endpoint(
@@ -73,7 +56,17 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          "Delete by IMO",
          Method.DELETE,
          Root / "imo".as[String],
-         Produces.EmptyBody)
-   ).run(imo => vesselService.delete(imo))
+         Produces.Directive.json[Vessel])
+   ).run(imo => {
+      vesselService.delete(imo) match {
+         case Some(vessel) => Directive.success(vessel)
+         case None => noSuchVessel(imo)
+      }
+   })
+
+  def noSuchVessel[A](imo: String): Directive[F, A] = {
+     Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
+
+  }
 
 }
