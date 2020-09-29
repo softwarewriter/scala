@@ -15,7 +15,9 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
 
    import unsecurity._
 
-   val getByIMO: Complete = unsecure(
+   val routes: List[Complete] = List(getByIMO, putByIMO, deleteByIMO, search)
+
+   def getByIMO: Complete = unsecure(
       Endpoint(
          "Get by IMO",
          Method.GET,
@@ -25,7 +27,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       vesselService.get(imo).toDirective(noSuchVessel(imo))
    }
 
-   val putByIMO: Complete = unsecure(
+   def putByIMO: Complete = unsecure(
       Endpoint(
          "Put by IMO",
          Method.PUT,
@@ -42,7 +44,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       }
    }
 
-   val deleteByIMO: Complete = unsecure(
+   def deleteByIMO: Complete = unsecure(
       Endpoint(
          "Delete by IMO",
          Method.DELETE,
@@ -52,7 +54,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       vesselService.delete(imo).toDirective(noSuchVessel(imo))
    }
 
-   val search: Complete = unsecure(
+   def search: Complete = unsecure(
       Endpoint(
          "Search",
          Method.GET,
@@ -62,9 +64,6 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
 
    def noSuchVessel(imo: String): Directive[F, Response[F]] = {
       Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
-      // NotFound
    }
-
-   val routes: List[Complete] = List(getByIMO, putByIMO, deleteByIMO, search)
 
 }
