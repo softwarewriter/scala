@@ -23,10 +23,14 @@ object Endpoints {
          }
       }
 
-      val vesselEndpoints = new VesselEndpoints[F](42)
+      val unsecurity: ApplicationSecurity[F] = platform.UnsecurityInstances.m2m("issuer", "whoami", user => ConcurrentEffect[F].delay(Option(user)))
+
+      val simpleVesselEndpoints = new SimpleVesselEndpoints[F](42)
+      val vesselEndpoints = new VesselEndpoints[F](unsecurity)
       val routes = List(
          "/health" -> health,
          "/simple"-> simpleHttpService)
+         .appendedAll(simpleVesselEndpoints.endpoints("/simplevessel"))
          .appendedAll(vesselEndpoints.endpoints("/vessel"))
 
       platform.HttpServer[F](configuration.port, configuration.bindAddress, executionContext, Router(routes:_*))
