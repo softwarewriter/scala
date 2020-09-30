@@ -23,12 +23,12 @@ object SimpleVesselService extends VesselService {
    private val storage: Map[String, Vessel] = new HashMap[String, Vessel]()
 
    override def get(imo: String): Option[Vessel] = {
-     println("pelle get");
+     println("pelle get: " + imo);
       storage.get(imo)
    }
 
    override def put(vessel: Vessel): Vessel = {
-      println("pelle put");
+      println("pelle put: " + vessel.imo);
       storage.put(vessel.imo, vessel)
       vessel
    }
