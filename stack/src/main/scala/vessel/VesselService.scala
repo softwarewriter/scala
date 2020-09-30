@@ -1,5 +1,7 @@
 package vessel
 
+import cats.effect.Sync
+
 import scala.collection.mutable._
 
 /**
@@ -18,25 +20,25 @@ trait VesselService[F[_]] {
    def search(query: String): F[List[Vessel]]
 }
 
-object SimpleVesselService extends VesselService[Option] {
+class SimpleVesselService[F[_]: Sync] extends VesselService[F] {
 
    private val storage: Map[String, Vessel] = new HashMap[String, Vessel]()
 
-   override def get(imo: String): Option[Option[Vessel]] = {
-      Option(storage.get(imo))
+   override def get(imo: String): F[Option[Vessel]] = {
+      Sync[F].pure(storage.get(imo))
    }
 
-   override def put(vessel: Vessel): Option[Vessel] = {
+   override def put(vessel: Vessel): F[Vessel] = {
       storage.put(vessel.imo, vessel)
-      Option(vessel)
+      Sync[F].pure(vessel)
    }
 
-   override def delete(imo: String): Option[Option[Vessel]] = {
-      Option(storage.remove(imo))
+   override def delete(imo: String): F[Option[Vessel]] = {
+      Sync[F].pure(storage.remove(imo))
    }
 
-   override def search(query: String): Option[List[Vessel]] = {
-      Option(storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList.sortBy(vessel => vessel.imo))
+   override def search(query: String): F[List[Vessel]] = {
+      Sync[F].pure(storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList.sortBy(vessel => vessel.imo))
    }
 
    put(Vessel("1", "Titanic"))

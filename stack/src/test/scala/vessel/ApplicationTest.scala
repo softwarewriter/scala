@@ -11,7 +11,6 @@ import org.scalatest.{Assertion, Succeeded}
 import platform.Database
 import org.http4s.client.dsl.io._
 import org.scalatest.compatible.Assertion
-import vessel.SimpleVesselService.put
 
 import scala.concurrent.Future
 
@@ -25,7 +24,7 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
   override def resource: Resource[IO, FixtureParam] = {
     for {
 //      blocker    <- Blocker[IO]
-      db         <- platform.test.Database[IO](testDBPort, "vessel", None)
+//      db         <- platform.test.Database[IO](testDBPort, "vessel", None)
 //      transactor <- platform.Database.transactor[IO](db, blocker)
       executionContext         <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("test-executionContext")
       application        <- Main.createApplication(Configuration(testHTTPPort, "0.0.0.0", Database.Config(s"jdbc:sqlserver://localhost:$testDBPort;databaseName=vessel", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sa", "Password123", None)))

@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
  */
 object Endpoints {
 
-   def create[F[_]: ConcurrentEffect: Timer](configuration: Configuration, executionContext: ExecutionContext, vesselService: VesselService): Resource[F, Server[F]] = {
+   def create[F[_]: ConcurrentEffect: Timer](configuration: Configuration, executionContext: ExecutionContext, vesselService: VesselService[F]): Resource[F, Server[F]] = {
 
       val health: HttpRoutes[F] = platform.HttpServer.healthCheck[F](mountOnRoot = true)
       val simpleHttpService: HttpRoutes[F] = HttpRoutes.of[F] {

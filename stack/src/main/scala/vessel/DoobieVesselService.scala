@@ -17,7 +17,9 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B:Bracke
 
    private implicit def listFactoryCompat[A]: FactoryCompat[A, List[A]] = FactoryCompat.fromFactor(List.iterableFactory)
 
-   override def get(imo: String): F[Option[Vessel]] = {
+   override def get(imo: String): F[Option[Vessel]] = ???
+  /*
+   {
       val statement: Fragment = sql"select imo from vessel"
       val query: Query0[String] = statement.query[String]
       val list: ConnectionIO[List[String]] = query.to[List]
@@ -32,6 +34,8 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B:Bracke
       }
    }
 
+   */
+
 
       /*{
       val statement: Fragment = sql"select imo, name from vessel"
@@ -42,11 +46,11 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B:Bracke
    }
    */
 
-   override def put(vessel: Vessel): Vessel = ???
+   override def put(vessel: Vessel): F[Vessel] = ???
 
-   override def delete(imo: String): Option[Vessel] = ???
+   override def delete(imo: String): F[Option[Vessel]] = ???
 
-   override def search(query: String): List[Vessel] = ???
+   override def search(query: String): F[List[Vessel]] = ???
 
 }
 
