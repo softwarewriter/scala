@@ -38,15 +38,13 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Root / "vessel" / "imo".as[String],
          Accepts.json[Vessel],
          Produces.Directive.json[Vessel])
-   ).run{case (imo, vessel) => ??? /*
+   ).run{case (imo, vessel) =>
       if (imo == vessel.imo) {
-         Directive.success(vesselService.put(vessel))
+         Directive.liftF(vesselService.put(vessel)).flatMap(vessel => Directive.success(vessel))
       }
       else {
-                  Directive.error(Response[F](Status.BadRequest).withEntity(s"IMO-s not matching: $imo and ${vessel.imo}"))
          BadRequest(s"IMO-s not matching: $imo and ${vessel.imo}")
       }
-      */
    }
 
    def deleteByIMO: Complete = unsecure(
@@ -55,17 +53,12 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Method.DELETE,
          Root / "vessel" / "imo".as[String],
          Produces.Directive.json[Vessel])
-   ).run{imo => ??? }
-  /*
-      val v1: F[Option[Vessel]] = vesselService.delete(imo)
-     Directive.getOrElseF(v1, x)
-     toDirective()
-     Directive.getOrElse(v1)
-//      val v2: Option[Vessel] = ???
-//      v2.toDirective(noSuchVessel(imo))
+   ).run{imo =>
+      Directive.liftF(vesselService.delete(imo)).flatMap {
+         case Some(vessel) => Directive.success(vessel)
+         case None => noSuchVessel2(imo)
+      }
    }
-
-   */
 
    def search: Complete = unsecure(
       Endpoint(
@@ -73,9 +66,8 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Method.GET,
          Root / "vessel" / "search" / "query".as[String],
          Produces.Directive.json[List[Vessel]])
-   ).run{query => ??? /*
-      Directive.success(vesselService.search(query))
-      */
+   ).run{query =>
+      Directive.liftF(vesselService.search(query)).flatMap(vessels => Directive.success(vessels))
    }
 
    def noSuchVessel(imo: String): Directive[F, Response[F]] = {
