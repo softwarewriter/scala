@@ -31,8 +31,8 @@ object Main extends IOApp {
     val httpServer = for {
       executionContext <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("main-execution-context")
       blocker          <- Blocker[IO]
-//      transactor <- platform.Database.transactor[IO](configuration.databaseConfiguration, blocker)
-      httpServer <- Endpoints.create[IO](configuration, executionContext, new SimpleVesselService[IO] /*new DoobieVesselService[IO](transactor)*/)
+      transactor <- platform.Database.transactor[IO](configuration.databaseConfiguration, blocker)
+      httpServer <- Endpoints.create[IO](configuration, executionContext, /*new SimpleVesselService[IO]*/ new DoobieVesselService[IO](transactor))
     } yield httpServer
 
     httpServer

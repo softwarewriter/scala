@@ -23,9 +23,9 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 // jdbc:sqlserver://localhost:1433;database=vessel
   override def resource: Resource[IO, FixtureParam] = {
     for {
-//      blocker    <- Blocker[IO]
-//      db         <- platform.test.Database[IO](testDBPort, "vessel", None)
-//      transactor <- platform.Database.transactor[IO](db, blocker)
+      blocker    <- Blocker[IO]
+      db         <- platform.test.Database[IO](testDBPort, "vessel", None)
+      transactor <- platform.Database.transactor[IO](db, blocker)
       executionContext         <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("test-executionContext")
       application        <- Main.createApplication(Configuration(testHTTPPort, "0.0.0.0", Database.Config(s"jdbc:sqlserver://localhost:$testDBPort;databaseName=vessel", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sa", "Password123", None)))
       httpClient <- platform.HttpClient.rpc[IO](executionContext)

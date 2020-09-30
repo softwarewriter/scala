@@ -1,9 +1,10 @@
 package vessel
 
-import java.sql.SQLException
-
-import cats.effect.Bracket
+import cats.effect.{Bracket}
+import cats.free.Free
+import cats.implicits._
 import doobie._
+import doobie.free.connection
 import doobie.implicits._
 import doobie.util.ExecutionContexts
 import doobie.util.compat.FactoryCompat
@@ -13,28 +14,22 @@ import doobie.util.compat.FactoryCompat
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
-class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B:Bracket[F,Throwable]) extends VesselService[F] {
+class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Bracket[F, Throwable]) extends VesselService[F] {
 
    private implicit def listFactoryCompat[A]: FactoryCompat[A, List[A]] = FactoryCompat.fromFactor(List.iterableFactory)
 
-   override def get(imo: String): F[Option[Vessel]] = ???
-  /*
-   {
-      val statement: Fragment = sql"select imo from vessel"
+   override def get(imo: String): F[Option[Vessel]] = {
+      val statement: Fragment = sql"select imo from vessel where imo = '$imo'"
       val query: Query0[String] = statement.query[String]
-      val list: ConnectionIO[List[String]] = query.to[List]
-      val transaction: F[List[String]] = list.transact(transactor)
-     transaction.map()
-//      val result: F[Either[SQLException, List[String]]] = transaction.attemptSql
 
-
-
-
-
-      }
+     query.to[List]
+     val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeImo => maybeImo.map(imo => Vessel(imo, "s")))
+     val r2: F[Option[Vessel]] = result.transact(transactor)
+     r2
    }
 
-   */
+  // onError.
+
 
 
       /*{
