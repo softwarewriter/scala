@@ -25,26 +25,10 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
          Root / "vessel" / "imo".as[String],
          Produces.Directive.json[Vessel])
    ).run{imo =>
-      Directive.liftF(vesselService.get(imo)).flatMap((maybyVessel: Option[Vessel]) => {
-         maybyVessel match {
-            case Some(vessel) => Directive.success(vessel)
-//            case None => noSuchVessel(imo)
-            case None => Directive.error(Response[F](Status.BadRequest).withEntity(s"No such imo: $imo"))
-         }
-      } )
-      //     v2
-//     val v3: Directive[F, Directive[F, Option[Vessel]]] = Directive.success(v2)
-//     val v2 = v1.toDirective.orElse()
-//     v2
-     /*
-
-
-//     val v2: Directive[F, F[Option[Vessel]]] = Directive.pure(v1)
-//      val v1: F[Option[Vessel]] =
-     val v3: Directive[F, F[Option[Vessel]]] = Directive.success(v1)
-     v3
-
-      */
+      Directive.liftF(vesselService.get(imo)).flatMap {
+         case Some(vessel) => Directive.success(vessel)
+         case None => noSuchVessel2(imo)
+      }
    }
 
    def putByIMO: Complete = unsecure(
@@ -98,7 +82,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
    }
 
-   def noSuchVessel2(imo: String): Directive[F, Response[F]] = {
+   def noSuchVessel2(imo: String): Directive[F, Vessel] = {
       Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
    }
 }

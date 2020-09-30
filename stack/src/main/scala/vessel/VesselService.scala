@@ -1,6 +1,6 @@
 package vessel
 
-import cats.effect.Sync
+import cats.Applicative
 
 import scala.collection.mutable._
 
@@ -20,25 +20,25 @@ trait VesselService[F[_]] {
    def search(query: String): F[List[Vessel]]
 }
 
-class SimpleVesselService[F[_]: Sync] extends VesselService[F] {
+class SimpleVesselService[F[_]](implicit F: Applicative[F]) extends VesselService[F] {
 
    private val storage: Map[String, Vessel] = new HashMap[String, Vessel]()
 
    override def get(imo: String): F[Option[Vessel]] = {
-      Sync[F].pure(storage.get(imo))
+      F.pure(storage.get(imo))
    }
 
    override def put(vessel: Vessel): F[Vessel] = {
       storage.put(vessel.imo, vessel)
-      Sync[F].pure(vessel)
+      F.pure(vessel)
    }
 
    override def delete(imo: String): F[Option[Vessel]] = {
-      Sync[F].pure(storage.remove(imo))
+      F.pure(storage.remove(imo))
    }
 
    override def search(query: String): F[List[Vessel]] = {
-      Sync[F].pure(storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList.sortBy(vessel => vessel.imo))
+      F.pure(storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList.sortBy(vessel => vessel.imo))
    }
 
    put(Vessel("1", "Titanic"))
