@@ -31,15 +31,15 @@ object Main extends IOApp {
     val httpServer = for {
       executionContext <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("main-execution-context")
       blocker          <- Blocker[IO]
-//      transactor <- platform.Database.transactor[IO](configuration.databaseConfiguration, blocker)
-      httpServer <- Endpoints.create[IO](configuration, executionContext, SimpleVesselService/*new DoobieVesselService[IO](transactor)*/)
+      transactor <- platform.Database.transactor[IO](configuration.databaseConfiguration, blocker)
+      httpServer <- Endpoints.create[IO](configuration, executionContext, /*SimpleVesselService*/ new DoobieVesselService[IO](transactor))
     } yield httpServer
 
     httpServer
   }
 
   override def run(args: List[String]): IO[ExitCode] = {
-    val databaseConfig = Database.Config("url", "driverClassName", "sa", "Password1234", None)
+    val databaseConfig = Database.Config("jdbc:sqlserver://databaseName=vessel", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sa", "Password123", None)
     val configuration = Configuration(1337, "0.0.0.0", databaseConfig)
     val application = createApplication(configuration)
     application.use(_ => IO.never)

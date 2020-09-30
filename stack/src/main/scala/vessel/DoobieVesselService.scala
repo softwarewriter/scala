@@ -11,7 +11,15 @@ import doobie.implicits._
  */
 class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B:Bracket[F,Throwable]) extends VesselService {
 
-   override def get(imo: String): Option[Vessel] = ???/*{
+   override def get(imo: String): Option[Vessel] = {
+      println(transactor)
+
+
+      Some(Vessel("1", "Titanic"))
+   }
+
+
+      /*{
       val statement: Fragment = sql"select imo, name from vessel"
       val query: Query0[Vessel] = statement.query[Vessel]
       val list: ConnectionIO[List[String]] = query.to[List]
