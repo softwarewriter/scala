@@ -22,7 +22,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
       val query: Query0[(String, String)] = statement.query[(String, String)]
 
 //     query.to[List]
-     val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeFields => maybeFields.map(fields => Vessel(fields._1, fields._2)))
+     val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeRow => maybeRow.map(row => Vessel(row._1, row._2)))
      val r2: F[Option[Vessel]] = result.transact(transactor)
      r2
    }
