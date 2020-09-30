@@ -23,23 +23,20 @@ object SimpleVesselService extends VesselService {
    private val storage: Map[String, Vessel] = new HashMap[String, Vessel]()
 
    override def get(imo: String): Option[Vessel] = {
-     println("pelle get: " + imo);
       storage.get(imo)
    }
 
    override def put(vessel: Vessel): Vessel = {
-      println("pelle put: " + vessel.imo);
       storage.put(vessel.imo, vessel)
       vessel
    }
 
    override def delete(imo: String): Option[Vessel] = {
-      println("pelle delete");
       storage.remove(imo)
    }
 
    override def search(query: String): List[Vessel] = {
-      storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList
+      storage.values.filter(vessel => vessel.imo.contains(query) || vessel.name.contains(query)).toList.sortBy(vessel => vessel.imo)
    }
 
    put(Vessel("1", "Titanic"))

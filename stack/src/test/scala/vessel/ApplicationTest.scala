@@ -11,6 +11,7 @@ import org.scalatest.{Assertion, Succeeded}
 import platform.Database
 import org.http4s.client.dsl.io._
 import org.scalatest.compatible.Assertion
+import vessel.SimpleVesselService.put
 
 import scala.concurrent.Future
 
@@ -93,34 +94,17 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
         combine(a1, a2, a3, a4, a5, a6)
     }
 
-      /*
-
-      val expected = json"""{"version":"NOT AN TAGGED VERSION","versionUrl":"NOT AN TAGGED VERSION"}"""
-      httpClient
-         .expect[Json](Request[IO](Method.GET, Uri.unsafeFromString("http://localhost:1338/health")))
-         .map(json => assert(json == expected))
-
-
-
-      httpClient
-         .status(Request[IO](Method.GET, uri("4")))
-         .map(status => assert(status == Status.Ok))
-      httpClient
-         .status(Request[IO](Method.GET, uri("4")))
-         .map(status => assert(status == Status.NotFound))
-
-    }
-       */
-/*
-    "Using correct url" in {
-      case (httpClient) =>
-        val expected = json"""{"version":"NOT AN TAGGED VERSION","versionUrl":"NOT AN TAGGED VERSION"}"""
+    "Search" in {
+      case httpClient =>
+        val expected = List(
+          Vessel("2", "Norge"),
+          Vessel("3", "Eidsvold")
+        )
+        val query = "o"
         httpClient
-           .expect[Json](Request[IO](Method.GET, Uri.unsafeFromString("http://localhost:1338/health")))
-           .map(json => assert(json == expected))
+           .expect[Json](Request[IO](Method.GET, Uri.unsafeFromString("http://localhost:1338/vessel/search/" + query)))
+           .map(json => assert(json == listOfVesselCodec.apply(expected)))
     }
-
- */
 
   }
 
