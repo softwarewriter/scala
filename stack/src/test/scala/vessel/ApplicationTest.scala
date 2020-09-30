@@ -19,6 +19,7 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
   override type FixtureParam = (Client[IO])
 
+  val testHTTPPort = 1338
   val dbPort = platform.test.availablePort
 
   override def resource: Resource[IO, FixtureParam] = {
@@ -27,7 +28,7 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 //      db         <- platform.test.Database[IO](dbPort, "vessel", None)
 //      transactor <- platform.Database.transactor[IO](db, blocker)
       executionContext         <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("test-executionContext")
-      application        <- Main.createApplication(Configuration(1338, "0.0.0.0", Database.Config("url", "driverClassName", "sa", "Password1234", None)))
+      application        <- Main.createApplication(Configuration(testHTTPPort, "0.0.0.0", Database.Config("url", "driverClassName", "sa", "Password1234", None)))
       httpClient <- platform.HttpClient.rpc[IO](executionContext)
     } yield httpClient
   }
@@ -121,7 +122,7 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
   }
 
   def uri(imo: String): Uri = {
-    Uri.unsafeFromString("http://localhost:1338/vessel/" + imo)
+    Uri.unsafeFromString(s"http://localhost:$testHTTPPort/vessel/" + imo)
   }
 
   def combine(futures: Future[Assertion]*): Future[Assertion] = {
