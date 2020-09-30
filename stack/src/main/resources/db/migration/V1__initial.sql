@@ -1,4 +1,5 @@
 create table vessel
 (
-    IMO NVARCHAR(255) NOT NULL
+    imo NVARCHAR(255) NOT NULL
+    name NVARCHAR(255) NOT NULL
 )

@@ -26,8 +26,8 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
       blocker    <- Blocker[IO]
 //      db         <- platform.test.Database[IO](dbPort, "vessel", None)
 //      transactor <- platform.Database.transactor[IO](db, blocker)
-      executionContext         <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("test-ec")
-      application        <- Main.createApplication(Configuration(1338, "0.0.0.0", SimpleVesselService, Database.Config("url", "driverClassName", "sa", "Password1234", None)))
+      executionContext         <- platform.ExecutionContexts.cpuBoundExecutionContext[IO]("test-executionContext")
+      application        <- Main.createApplication(Configuration(1338, "0.0.0.0", Database.Config("url", "driverClassName", "sa", "Password1234", None)))
       httpClient <- platform.HttpClient.rpc[IO](executionContext)
     } yield httpClient
   }

@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
  */
 object Endpoints {
 
-   def create[F[_]: ConcurrentEffect: Timer](configuration: Configuration, executionContext: ExecutionContext): Resource[F, Server[F]] = {
+   def create[F[_]: ConcurrentEffect: Timer](configuration: Configuration, executionContext: ExecutionContext, vesselService: VesselService): Resource[F, Server[F]] = {
 
       val health: HttpRoutes[F] = platform.HttpServer.healthCheck[F](mountOnRoot = true)
       val simpleHttpService: HttpRoutes[F] = HttpRoutes.of[F] {
@@ -27,7 +27,7 @@ object Endpoints {
       val unsecurity: ApplicationSecurity[F] = platform.UnsecurityInstances.m2m("issuer", "whoami", user => ConcurrentEffect[F].delay(Option(user)))
 
       val simpleVesselEndpoints = new SimpleVesselEndpoints[F]
-      val vesselEndpoints = new VesselEndpoints[F](unsecurity, configuration.vesselService)
+      val vesselEndpoints = new VesselEndpoints[F](unsecurity, vesselService)
       val routes = Router(
          "/health" -> health,
          "/simple"-> simpleHttpService,
