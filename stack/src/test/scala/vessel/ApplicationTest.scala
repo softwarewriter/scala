@@ -57,29 +57,27 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
     "Put" in {
       case httpClient =>
-        val vessel1 = Vessel(nonExisting, "Synker aldri")
-        val vessel2 = Vessel(nonExisting, "Synker sjelden")
-
-        val doesNotExist: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.NotFound)
-        val insertVessel: IO[Assertion] = httpClient
+        val vessel1 = Vessel(uniqueForPut, "Synker aldri")
+        val vessel2 = Vessel(uniqueForPut, "Synker sjelden")
+        val isNotFound: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.NotFound)
+        val putOk: IO[Assertion] = httpClient
            .status(Request[IO](Method.PUT, uri(uniqueForPut))
               .withEntity(vessel1))
            .map(status => assert(status == Status.Ok))
-        val checkValueStoredStatus: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.Ok)
-        val checkValueStoredValue: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel1)
-        val updateVessel: IO[Assertion] = httpClient
+        val hasVessel1: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel1)
+        val rePutOk: IO[Assertion] = httpClient
            .status(Request[IO](Method.PUT, uri(uniqueForPut))
               .withEntity(vessel2))
            .map(status => assert(status == Status.Ok))
-        val checkUpdatedStatus: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.Ok)
-        val checkUpdatedValue: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel2)
+        val hasVessel2: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel2)
 
-        val result: IO[Assertion] = for {
-          aDoesNotExist <- doesNotExist
-          wasInserted <- insertVessel
-          storedOk <- checkValueStoredStatus
-        } yield {assert(List(aDoesNotExist, wasInserted, storedOk).forall((assertion: Assertion) => assertion == Succeeded)) }
-        result
+        for {
+          isNotFoundResult <- isNotFound
+          putOkResult <- putOk
+          hasVessel1Result <- hasVessel1
+          rePutOkResult <- rePutOk
+          hasVessel2Result <- hasVessel2
+        } yield allTrue(isNotFoundResult, putOkResult, hasVessel1Result, rePutOkResult, hasVessel2Result)
     }
 
     "Delete" in {
