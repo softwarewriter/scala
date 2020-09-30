@@ -47,14 +47,14 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
     "Put" in {
       case (httpClient) =>
         val nonExisting = "5"
+        val vessel = Vessel(nonExisting, "Lars")
         val v1: Future[Assertion] = assertImoHasStatus(httpClient, nonExisting, Status.NotFound)
         val v2: Future[Assertion] = httpClient
            .status(Request[IO](Method.PUT, uri(nonExisting))
-              .withEntity(Vessel(nonExisting, "Lars")))
-           .map(status => assert(status == Status.Ok))
+              .withEntity(vessel))
+           .map(status => assert(status == Status.NotFound))
         val v3: Future[Assertion] = assertImoHasStatus(httpClient, nonExisting, Status.Ok)
 
-        //        v1 andThen v2
         combine(v1, v2, v3)
 
       /*
@@ -97,11 +97,9 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
   }
 
   def combine(futures: Future[Assertion]*): Future[Assertion] = {
-
     val v1: Future[List[Assertion]] = Future.sequence(futures.toList)
-
-    def f: Assertion => Boolean = (a: Assertion) => true
-    val v2: Future[Assertion] = v1.map(listOfAssertions => listOfAssertions.forall(f))
+    def f: Assertion => Boolean = (a: Assertion) => a == Succeeded
+    val v2: Future[Assertion] = v1.map(listOfAssertions => assert(listOfAssertions.forall(f)))
     v2
   }
 
