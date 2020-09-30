@@ -19,10 +19,10 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
    private implicit def listFactoryCompat[A]: FactoryCompat[A, List[A]] = FactoryCompat.fromFactor(List.iterableFactory)
 
    override def get(imo: String): F[Option[Vessel]] = {
-      val statement: Fragment = sql"select imo from vessel where imo = '$imo'"
+      val statement: Fragment = sql"select imo from vessel where imo='1'"
       val query: Query0[String] = statement.query[String]
 
-     query.to[List]
+//     query.to[List]
      val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeImo => maybeImo.map(imo => Vessel(imo, "s")))
      val r2: F[Option[Vessel]] = result.transact(transactor)
      r2
