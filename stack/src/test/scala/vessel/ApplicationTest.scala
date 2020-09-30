@@ -60,20 +60,27 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
       case httpClient =>
         val vessel1 = Vessel(nonExisting, "Synker aldri")
         val vessel2 = Vessel(nonExisting, "Synker sjelden")
-        val a1 = assertHasStatus(httpClient, uniqueForPut, Status.NotFound)
-        val a2 = httpClient
+
+        val doesNotExist: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.NotFound)
+        val insertVessel: IO[Assertion] = httpClient
            .status(Request[IO](Method.PUT, uri(uniqueForPut))
               .withEntity(vessel1))
            .map(status => assert(status == Status.Ok))
-        val a3 = assertHasStatus(httpClient, uniqueForPut, Status.Ok)
-        val a4 = assertHasVessel(httpClient, uniqueForPut, vessel1)
-        val a5 = httpClient
+        val checkValueStoredStatus: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.Ok)
+        val checkValueStoredValue: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel1)
+        val updateVessel: IO[Assertion] = httpClient
            .status(Request[IO](Method.PUT, uri(uniqueForPut))
               .withEntity(vessel2))
            .map(status => assert(status == Status.Ok))
-        val a6 = assertHasStatus(httpClient, uniqueForPut, Status.Ok)
-        val a7 = assertHasVessel(httpClient, uniqueForPut, vessel2)
-        combine(a1, a2, a3, a4, a5, a6, a7)
+        val checkUpdatedStatus: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.Ok)
+        val checkUpdatedValue: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel2)
+
+        val result: IO[Assertion] = for {
+          aDoesNotExist <- doesNotExist
+          wasInserted <- insertVessel
+          storedOk <- checkValueStoredStatus
+        } yield {assert(List(aDoesNotExist, wasInserted, storedOk).forall((assertion: Assertion) => assertion == Succeeded)) }
+        result
     }
 
     "Delete" in {
