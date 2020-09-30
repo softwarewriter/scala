@@ -84,21 +84,29 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
     "Delete" in {
       case httpClient =>
-        val vessel = Vessel(nonExisting, "Lars")
-        val a1 = assertHasStatus(httpClient, uniqueForDelete, Status.NotFound)
-        val a2 = httpClient
+        val vessel = Vessel(uniqueForDelete, "Lars")
+        val isNotFound = assertHasStatus(httpClient, uniqueForDelete, Status.NotFound)
+        val putOk = httpClient
            .status(Request[IO](Method.PUT, uri(uniqueForDelete))
               .withEntity(vessel))
            .map(status => assert(status == Status.Ok))
-        val a3 = assertHasStatus(httpClient, uniqueForDelete, Status.Ok)
-        val a4 = httpClient
+        val isFound = assertHasStatus(httpClient, uniqueForDelete, Status.Ok)
+        val deleteOk = httpClient
            .status(Request[IO](Method.DELETE, uri(uniqueForDelete)))
            .map(status => assert(status == Status.Ok))
-        val a5 = assertHasStatus(httpClient, uniqueForDelete, Status.NotFound)
-        val a6 = httpClient
+        val secondDeleteNotOK = assertHasStatus(httpClient, uniqueForDelete, Status.NotFound)
+        val isDeleted = httpClient
            .status(Request[IO](Method.DELETE, uri(uniqueForDelete)))
            .map(status => assert(status == Status.NotFound))
-        combine(a1, a2, a3, a4, a5, a6)
+
+        for {
+          isNotFoundResult <- isNotFound
+          putOkResult <- putOk
+          isFoundResult <- isFound
+          deleteOkResult <- deleteOk
+          secondDeleteNotOkResult <- secondDeleteNotOK
+          isDeletedResult <- isDeleted
+        } yield allTrue(isNotFoundResult, putOkResult, isFoundResult, deleteOkResult, secondDeleteNotOkResult, isDeletedResult)
     }
 
     "Search" in {
@@ -131,15 +139,34 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
     Uri.unsafeFromString(s"http://localhost:$testHTTPPort/vessel/" + imo)
   }
 
-  def combine(futures: Future[Assertion]*): Future[Assertion] = {
-//    val v1: Future[Assertion] = Future.foldLeft(futures)(assert(true))((r: Assertion, t: Assertion) => assert(r == Succeeded && t == Succeeded))
-//    v1
+  def allTrue(assertions: Assertion*): Assertion =
+  {
+    assert(assertions.forall((assertion: Assertion) => assertion == Succeeded))
+  }
 
-    val v1: Future[List[Assertion]] = Future.sequence(futures.toList)
-    def f: Assertion => Boolean = (a: Assertion) => a == Succeeded
-    val v2: Future[Assertion] = v1.map(listOfAssertions => assert(listOfAssertions.forall(f)))
-    v2
+  /*
+  def assertAll(assertions: IO[Assertion]*): IO[Assertion] = {
+
+    IO.eval(assert  (for {assertion <- assertions} yield assertion)
+    val result: Int = for {assertion <- assertions} yield assertion
+
+    val results: List[Assertion] = ???
+    assert(results.forall((assertion: Assertion) => assertion == Succeeded)) }
+
+
+
+    /*
+    val result: IO[Assertion] = for {
+      assertIsNotFound <- isNotFound
+      assertPutOk <- putOk
+      assertIsFound <- isFound
+    } yield {assert(List(assertIsNotFound, assertPutOk, assertIsFound).forall((assertion: Assertion) => assertion == Succeeded)) }
+    result
+
+     */
 
   }
+   */
+
 
 }
