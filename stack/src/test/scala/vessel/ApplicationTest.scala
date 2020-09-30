@@ -36,8 +36,10 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
     val existing = "1"
     val nonExisting = "4"
-    val uniqueForPut = "5"
-    val uniqueForDelete = "6"
+    val put = "5"
+    val putInconsistent1 = "6"
+    val putInconsistent2 = "7"
+    val delete = "8"
 
     "Get existing test status" in {
       case httpClient =>
@@ -57,19 +59,19 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
     "Put" in {
       case httpClient =>
-        val vessel1 = Vessel(uniqueForPut, "Synker aldri")
-        val vessel2 = Vessel(uniqueForPut, "Synker sjelden")
-        val isNotFound: IO[Assertion] = assertHasStatus(httpClient, uniqueForPut, Status.NotFound)
+        val vessel1 = Vessel(put, "Synker aldri")
+        val vessel2 = Vessel(put, "Synker sjelden")
+        val isNotFound: IO[Assertion] = assertHasStatus(httpClient, put, Status.NotFound)
         val putOk: IO[Assertion] = httpClient
-           .status(Request[IO](Method.PUT, uri(uniqueForPut))
+           .status(Request[IO](Method.PUT, uri(put))
               .withEntity(vessel1))
            .map(status => assert(status == Status.Ok))
-        val hasVessel1: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel1)
+        val hasVessel1: IO[Assertion] = assertHasVessel(httpClient, put, vessel1)
         val rePutOk: IO[Assertion] = httpClient
-           .status(Request[IO](Method.PUT, uri(uniqueForPut))
+           .status(Request[IO](Method.PUT, uri(put))
               .withEntity(vessel2))
            .map(status => assert(status == Status.Ok))
-        val hasVessel2: IO[Assertion] = assertHasVessel(httpClient, uniqueForPut, vessel2)
+        val hasVessel2: IO[Assertion] = assertHasVessel(httpClient, put, vessel2)
 
         for {
           isNotFoundResult <- isNotFound
@@ -80,21 +82,30 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
         } yield allTrue(isNotFoundResult, putOkResult, hasVessel1Result, rePutOkResult, hasVessel2Result)
     }
 
+    "Put inconsistent imo" in {
+      case httpClient =>
+        val vessel = Vessel(putInconsistent1, "Synker aldri")
+        httpClient
+           .status(Request[IO](Method.PUT, uri(putInconsistent2))
+              .withEntity(vessel))
+           .map(status => assert(status == Status.BadRequest))
+    }
+
     "Delete" in {
       case httpClient =>
-        val vessel = Vessel(uniqueForDelete, "Lars")
-        val isNotFound = assertHasStatus(httpClient, uniqueForDelete, Status.NotFound)
+        val vessel = Vessel(delete, "Lars")
+        val isNotFound = assertHasStatus(httpClient, delete, Status.NotFound)
         val putOk = httpClient
-           .status(Request[IO](Method.PUT, uri(uniqueForDelete))
+           .status(Request[IO](Method.PUT, uri(delete))
               .withEntity(vessel))
            .map(status => assert(status == Status.Ok))
-        val isFound = assertHasStatus(httpClient, uniqueForDelete, Status.Ok)
+        val isFound = assertHasStatus(httpClient, delete, Status.Ok)
         val deleteOk = httpClient
-           .status(Request[IO](Method.DELETE, uri(uniqueForDelete)))
+           .status(Request[IO](Method.DELETE, uri(delete)))
            .map(status => assert(status == Status.Ok))
-        val secondDeleteNotOK = assertHasStatus(httpClient, uniqueForDelete, Status.NotFound)
+        val secondDeleteNotOK = assertHasStatus(httpClient, delete, Status.NotFound)
         val isDeleted = httpClient
-           .status(Request[IO](Method.DELETE, uri(uniqueForDelete)))
+           .status(Request[IO](Method.DELETE, uri(delete)))
            .map(status => assert(status == Status.NotFound))
 
         for {
@@ -141,30 +152,5 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
   {
     assert(assertions.forall((assertion: Assertion) => assertion == Succeeded))
   }
-
-  /*
-  def assertAll(assertions: IO[Assertion]*): IO[Assertion] = {
-
-    IO.eval(assert  (for {assertion <- assertions} yield assertion)
-    val result: Int = for {assertion <- assertions} yield assertion
-
-    val results: List[Assertion] = ???
-    assert(results.forall((assertion: Assertion) => assertion == Succeeded)) }
-
-
-
-    /*
-    val result: IO[Assertion] = for {
-      assertIsNotFound <- isNotFound
-      assertPutOk <- putOk
-      assertIsFound <- isFound
-    } yield {assert(List(assertIsNotFound, assertPutOk, assertIsFound).forall((assertion: Assertion) => assertion == Succeeded)) }
-    result
-
-     */
-
-  }
-   */
-
 
 }
