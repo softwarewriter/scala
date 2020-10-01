@@ -46,30 +46,26 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
    }
 
    override def search(queryString: String): F[List[Vessel]] = {
-      val queryStringWithWildcards = s"%$queryString%"
-      val statement: Fragment = sql"""select imo, name from vessel where imo like $queryStringWithWildcards or name like $queryStringWithWildcards"""
-      val query: Query0[Vessel] = statement.query[Vessel]
-      query.to[List].transact(transactor)
+      Q.search(queryString)
+         .to[List]
+         .transact(transactor)
    }
 
   object Connection {
 
      def get(imo: String): ConnectionIO[Option[Vessel]] = {
-        val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
-        val query: Query0[Vessel] = statement.query[Vessel]
-        query.option
+        Q.get(imo)
+           .option
      }
 
      def insert(vessel: Vessel): ConnectionIO[Int] = {
-        val statement: Fragment = sql"""insert into vessel (imo, name) values (${vessel.imo}, ${vessel.name})"""
-        val update: Update0 = statement.update
-        update.run
+       Q.insert(vessel)
+           .run
      }
 
      def delete(imo: String): ConnectionIO[Int] = {
-        val statement: Fragment = sql"""delete from vessel where imo = $imo"""
-        val update: Update0 = statement.update
-        update.run
+       Q.delete(imo)
+           .run
      }
 
   }
@@ -77,8 +73,28 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
   // DoobieChecker i Vessel api.
 
-  // GitLab Kan du høre med Alekxander Koch på Intility kanalen?
   object Q {
+
+     def get(imo: String): Query0[Vessel] = {
+        sql"""select imo, name from vessel where imo = $imo"""
+           .query[Vessel]
+     }
+
+     def insert(vessel: Vessel): Update0 = {
+        sql"""insert into vessel (imo, name) values (${vessel.imo}, ${vessel.name})"""
+           .update
+     }
+
+     def delete(imo: String): Update0 = {
+        sql"""delete from vessel where imo = $imo"""
+           .update
+     }
+
+     def search(queryString: String): Query0[Vessel] = {
+        val queryStringWithWildcards = s"%$queryString%"
+        sql"""select imo, name from vessel where imo like $queryStringWithWildcards or name like $queryStringWithWildcards"""
+              .query[Vessel]
+     }
 
   }
 
