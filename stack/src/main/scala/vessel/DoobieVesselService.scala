@@ -17,7 +17,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
    private implicit def listFactoryCompat[A]: FactoryCompat[A, List[A]] = FactoryCompat.fromFactor(List.iterableFactory)
 
-   override def get(imo: String): F[Option[Vessel]] = {
+  /*
       val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
       val query: Query0[(String, String)] = statement.query[(String, String)]
 
@@ -25,26 +25,40 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
      val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeRow => maybeRow.map(row => Vessel(row._1, row._2)))
      val r2: F[Option[Vessel]] = result.transact(transactor)
      r2
-   }
 
-  // onError.
-
-
-
-      /*{
-      val statement: Fragment = sql"select imo, name from vessel"
-      val query: Query0[Vessel] = statement.query[Vessel]
-      val list: ConnectionIO[List[String]] = query.to[List]
-      val transaction: F[List[String]] = list.transact(transactor)
-
-   }
    */
+
+
+
+   // onError.
+
+
+
+   /*{
+   val statement: Fragment = sql"select imo, name from vessel"
+   val query: Query0[Vessel] = statement.query[Vessel]
+   val list: ConnectionIO[List[String]] = query.to[List]
+   val transaction: F[List[String]] = list.transact(transactor)
+
+}
+*/
+
+   override def get(imo: String): F[Option[Vessel]] = {
+      val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
+      val query: Query0[(String, String)] = statement.query[(String, String)]
+      query.option.map(maybeRow => maybeRow.map(row => Vessel(row._1, row._2))).transact(transactor)
+   }
 
    override def put(vessel: Vessel): F[Vessel] = ???
 
    override def delete(imo: String): F[Option[Vessel]] = ???
 
-   override def search(query: String): F[List[Vessel]] = ???
+   override def search(queryString: String): F[List[Vessel]] = {
+      val queryStringWithWildcards = s"%$queryString%"
+      val statement: Fragment = sql"""select imo, name from vessel where imo like $queryStringWithWildcards or name like $queryStringWithWildcards"""
+      val query: Query0[(String, String)] = statement.query[(String, String)]
+      query.to[List].map(listOfRows => listOfRows.map(row => Vessel(row._1, row._2))).transact(transactor)
+   }
 
 }
 
