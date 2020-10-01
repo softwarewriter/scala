@@ -34,12 +34,12 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
   "Testing vessel api" - {
 
-    val existing = "1"
-    val nonExisting = "4"
-    val put = "5"
-    val putInconsistent1 = "6"
-    val putInconsistent2 = "7"
-    val delete = "8"
+    val existing = IMO("1")
+    val nonExisting = IMO("4")
+    val put = IMO("5")
+    val putInconsistent1 = IMO("6")
+    val putInconsistent2 = IMO("7")
+    val delete = IMO("8")
 
     "Get existing test status" in {
       case httpClient =>
@@ -121,8 +121,8 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
     "Search" in {
       case httpClient =>
         val expected = List(
-          Vessel("2", "Norge"),
-          Vessel("3", "Eidsvold")
+          Vessel(IMO("2"), "Norge"),
+          Vessel(IMO("3"), "Eidsvold")
         )
         val query = "o"
         httpClient
@@ -132,20 +132,20 @@ class ApplicationTest extends platform.test.SharedResourceSpec {
 
   }
 
-  def assertHasStatus(httpClient: Client[IO], imo: String, expectedStatus: Status): IO[Assertion] = {
+  def assertHasStatus(httpClient: Client[IO], imo: IMO, expectedStatus: Status): IO[Assertion] = {
     httpClient
     .status(Request[IO](Method.GET, uri(imo)))
     .map(status => assert(status == expectedStatus))
   }
 
-  def assertHasVessel(httpClient: Client[IO], imo: String, expected: Vessel): IO[Assertion] = {
+  def assertHasVessel(httpClient: Client[IO], imo: IMO, expected: Vessel): IO[Assertion] = {
     httpClient
        .expect[Json](Request[IO](Method.GET, uri(imo)))
        .map(json => assert(json == vesselCodec.apply(expected)))
   }
 
-  def uri(imo: String): Uri = {
-    Uri.unsafeFromString(s"http://localhost:$testHTTPPort/vessel/" + imo)
+  def uri(imo: IMO): Uri = {
+    Uri.unsafeFromString(s"http://localhost:$testHTTPPort/vessel/" + imo.value)
   }
 
   def allTrue(assertions: Assertion*): Assertion =

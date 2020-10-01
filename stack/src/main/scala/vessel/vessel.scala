@@ -15,7 +15,10 @@ package object vessel {
 
    implicit val listOfVesselCodec = io.circe.generic.semiauto.deriveCodec[List[Vessel]]
 
+   implicit val imoCodec = io.circe.generic.semiauto.deriveCodec[IMO]
+
    implicit val vesselCodec = io.circe.generic.semiauto.deriveCodec[Vessel]
+
 
    /*
     implicit val vesselEncoder: Encoder[Vessel] = (vessel: Vessel) => {

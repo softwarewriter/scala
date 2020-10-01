@@ -1,9 +1,9 @@
 package vessel
 
-import cats.Monad
 import cats.effect.{ConcurrentEffect, Timer}
 import io.unsecurity.UnsecurityOps
 import io.unsecurity.hlinx.HLinx.{Root, _}
+import io.unsecurity.hlinx.ParamConverter
 import no.scalabin.http4s.directives.Directive
 import org.http4s.{Method, Response, Status}
 
@@ -16,13 +16,17 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
 
    import unsecurity._
 
+  implicit val imoParamConverter = new ParamConverter[IMO] {
+     override def convert(s: String): Either[String, IMO] = Right(IMO(s))
+  }
+
    val routes: List[Complete] = List(getByIMO, putByIMO, deleteByIMO, search)
 
    def getByIMO: Complete = unsecure(
       Endpoint(
          "Get by IMO",
          Method.GET,
-         Root / "vessel" / "imo".as[String],
+         Root / "vessel" / "imo".as[IMO],
          Produces.Directive.json[Vessel])
    ).run{imo =>
       Directive.liftF(vesselService.get(imo)).flatMap {
@@ -51,7 +55,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       Endpoint(
          "Delete by IMO",
          Method.DELETE,
-         Root / "vessel" / "imo".as[String],
+         Root / "vessel" / "imo".as[IMO],
          Produces.Directive.json[Vessel])
    ).run{imo =>
       Directive.liftF(vesselService.delete(imo)).flatMap {
@@ -70,11 +74,11 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       Directive.liftF(vesselService.search(query)).flatMap(vessels => Directive.success(vessels))
    }
 
-   def noSuchVessel(imo: String): Directive[F, Response[F]] = {
+   def noSuchVessel(imo: IMO): Directive[F, Response[F]] = {
       Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
    }
 
-   def noSuchVessel2(imo: String): Directive[F, Vessel] = {
+   def noSuchVessel2(imo: IMO): Directive[F, Vessel] = {
       Directive.error(Response[F](Status.NotFound).withEntity(s"No such vessel: $imo"))
    }
 }

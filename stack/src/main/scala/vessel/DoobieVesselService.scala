@@ -4,6 +4,7 @@ import cats.effect.Bracket
 import cats.free.Free
 import cats.implicits._
 import doobie._
+import doobie.`enum`.JdbcType
 import doobie.free.connection
 import doobie.implicits._
 import doobie.util.compat.FactoryCompat
@@ -19,7 +20,31 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
    private implicit def listFactoryCompat[A]: FactoryCompat[A, List[A]] = FactoryCompat.fromFactor(List.iterableFactory)
 
-   override def get(imo: String): F[Option[Vessel]] = {
+  /*
+   implicit val IMOMeta: Meta[IMO] = //eq json Codec
+      Meta[String].timap(s => IMO(s))(imo => imo.value)
+
+   */
+
+/*
+   implicit val imoReader: Get[IMO] = Get[String].map(IMO) // samme som decoder
+   implicit val imoWriter: Put[IMO] = Put[String].contramap(_.value) //samme som encoder
+
+ */
+
+  /*
+   implicit val JsonMeta: Meta[Json] =
+      Meta.other[PGobject]("json").nxmap[Json](
+         a => Parse.parse(a.getValue).leftMap[Json](sys.error).merge, // failure raises an exception
+         a => new PGobject <| (_.setType("json")) <| (_.setValue(a.nospaces))
+      )
+
+
+   )
+   */
+
+
+   override def get(imo: IMO): F[Option[Vessel]] = {
       Connection.get(imo).transact(transactor)
    }
 
@@ -35,7 +60,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
       }.map(_ => vessel).transact(transactor)
    }
 
-   override def delete(imo: String): F[Option[Vessel]] = {
+   override def delete(imo: IMO): F[Option[Vessel]] = {
       val v1: ConnectionIO[Option[Vessel]] = Connection.get(imo).flatMap{
          case Some(vessel) =>
             Connection.delete(imo).map(_ => Option(vessel))
@@ -53,7 +78,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
   object Connection {
 
-     def get(imo: String): ConnectionIO[Option[Vessel]] = {
+     def get(imo: IMO): ConnectionIO[Option[Vessel]] = {
         Q.get(imo)
            .option
      }
@@ -63,7 +88,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
            .run
      }
 
-     def delete(imo: String): ConnectionIO[Int] = {
+     def delete(imo: IMO): ConnectionIO[Int] = {
        Q.delete(imo)
            .run
      }
@@ -73,9 +98,12 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
   // DoobieChecker i Vessel api.
 
+  // case class Vessel(imo: IMO, name: String) //case class
+  //                  (imo: IMO, name: String) //Tuple(IMO, String)
+
   object Q {
 
-     def get(imo: String): Query0[Vessel] = {
+     def get(imo: IMO): Query0[Vessel] = {
         sql"""select imo, name from vessel where imo = $imo"""
            .query[Vessel]
      }
@@ -85,7 +113,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
            .update
      }
 
-     def delete(imo: String): Update0 = {
+     def delete(imo: IMO): Update0 = {
         sql"""delete from vessel where imo = $imo"""
            .update
      }

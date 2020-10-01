@@ -1,4 +1,4 @@
-//enablePlugins(JavaAppPackaging)
+enablePlugins(JavaAppPackaging)
 
 name := "stack"
 
@@ -23,5 +23,6 @@ scalacOptions := Seq(
 libraryDependencies ++= Seq(
   "com.klavenessdigital" %% "platform-sdk"  % "15",
   "org.scalatest"        %% "scalatest"     % "3.2.0" % "test",
-  "io.circe"             %% "circe-literal" % "0.13.0" % "test"
+  "io.circe"             %% "circe-literal" % "0.13.0" % "test",
+  "org.tpolecat"         %% "doobie-scalatest" % "0.9.2" % "test"
 )

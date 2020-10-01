@@ -10,15 +10,14 @@ import io.circe.{Decoder, Encoder, Json}
  */
 case class IMO(value: String) extends AnyVal
 
-case class IIMO(value: String) extends AnyRef
-
-case class Vessel (imo: String, name: String)
+case class Vessel (imo: IMO, name: String)
 
 object Vessel {
 
 //  implicit val vesselEncoder = io.circe.generic.semiauto.deriveEncoder[Vessel]
 //   implicit val vesselDecoder = io.circe.generic.semiauto.deriveDecoder[Vessel]
 
+  implicit val imoCodec = io.circe.generic.semiauto.deriveCodec[IMO]
   implicit val vesselCodec = io.circe.generic.semiauto.deriveCodec[Vessel]
 
   /*
