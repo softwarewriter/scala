@@ -45,8 +45,8 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
    override def get(imo: String): F[Option[Vessel]] = {
       val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
-      val query: Query0[(String, String)] = statement.query[(String, String)]
-      query.option.map(maybeRow => maybeRow.map(row => Vessel(row._1, row._2))).transact(transactor)
+      val query: Query0[Vessel] = statement.query[Vessel]
+      query.option.transact(transactor)
    }
 
    override def put(vessel: Vessel): F[Vessel] = ???
@@ -56,8 +56,8 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
    override def search(queryString: String): F[List[Vessel]] = {
       val queryStringWithWildcards = s"%$queryString%"
       val statement: Fragment = sql"""select imo, name from vessel where imo like $queryStringWithWildcards or name like $queryStringWithWildcards"""
-      val query: Query0[(String, String)] = statement.query[(String, String)]
-      query.to[List].map(listOfRows => listOfRows.map(row => Vessel(row._1, row._2))).transact(transactor)
+      val query: Query0[Vessel] = statement.query[Vessel]
+      query.to[List].transact(transactor)
    }
 
 }
