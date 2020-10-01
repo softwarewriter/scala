@@ -19,16 +19,16 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
    private implicit def listFactoryCompat[A]: FactoryCompat[A, List[A]] = FactoryCompat.fromFactor(List.iterableFactory)
 
-  /*
-      val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
-      val query: Query0[(String, String)] = statement.query[(String, String)]
+   /*
+       val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
+       val query: Query0[(String, String)] = statement.query[(String, String)]
 
-//     query.to[List]
-     val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeRow => maybeRow.map(row => Vessel(row._1, row._2)))
-     val r2: F[Option[Vessel]] = result.transact(transactor)
-     r2
+ //     query.to[List]
+      val result: Free[connection.ConnectionOp, Option[Vessel]] = query.option.map(maybeRow => maybeRow.map(row => Vessel(row._1, row._2)))
+      val r2: F[Option[Vessel]] = result.transact(transactor)
+      r2
 
-   */
+    */
 
 
 
@@ -50,18 +50,21 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
    }
 
    override def put(vessel: Vessel): F[Vessel] = {
-     getConnection(vessel.imo).map {
-        case Some(_) => {
-           deleteConnection(vessel.imo).flatMap(_ => insertConnection(vessel))
-        }
-        case None => {
-          insertConnection(vessel)
-        }
-     }.map(_ => vessel)transact(transactor)
+      /*
+       Implemented as update sql does not exists.
+       */
+      getConnection(vessel.imo).flatMap {
+         case Some(_) => {
+            deleteConnection(vessel.imo).flatMap(_ => insertConnection(vessel))
+         }
+         case None => {
+            insertConnection(vessel)
+         }
+      }.map(_ => vessel).transact(transactor)
    }
 
    override def delete(imo: String): F[Option[Vessel]] = {
-      getConnection(imo).map(maybeVessel => maybeVessel match {
+      getConnection(imo).flatMap(maybeVessel => maybeVessel match {
          case Some(vessel) => {
             deleteConnection(imo)
          }
@@ -84,14 +87,14 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
       query.option
    }
 
-   private def deleteConnection(imo: String): ConnectionIO[Int] = {
-      val statement: Fragment = sql"""delete from vessel where = $imo"""
+   private def insertConnection(vessel: Vessel): ConnectionIO[Int] = {
+      val statement: Fragment = sql"""insert into vessel (imo, name) values (${vessel.imo}, ${vessel.name})"""
       val update: Update0 = statement.update
-     update.run
+      update.run
    }
 
-   private def insertConnection(vessel: Vessel): ConnectionIO[Int] = {
-      val statement: Fragment = sql"""insert into from vessel (imo, name) values (${vessel.imo}, ${vessel.name}"""
+   private def deleteConnection(imo: String): ConnectionIO[Int] = {
+      val statement: Fragment = sql"""delete from vessel where imo = $imo"""
       val update: Update0 = statement.update
       update.run
    }
