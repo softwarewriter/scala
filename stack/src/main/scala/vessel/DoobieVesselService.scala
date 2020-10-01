@@ -51,7 +51,7 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 
    override def put(vessel: Vessel): F[Vessel] = {
       /*
-       Implemented as update sql does not exists.
+       Implemented as if update sql does not exists.
        */
       getConnection(vessel.imo).flatMap {
          case Some(_) => {
