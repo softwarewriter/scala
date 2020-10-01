@@ -1,12 +1,14 @@
 package vessel
 
-import cats.effect.{Bracket}
+import cats.effect.Bracket
 import cats.free.Free
 import cats.implicits._
 import doobie._
 import doobie.free.connection
 import doobie.implicits._
 import doobie.util.compat.FactoryCompat
+
+import scala.None
 
 /**
  * Implementation of [[VesselService]] that targets doobie.
@@ -44,20 +46,54 @@ class DoobieVesselService[F[_]](val transactor: Transactor[F])(implicit B: Brack
 */
 
    override def get(imo: String): F[Option[Vessel]] = {
-      val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
-      val query: Query0[Vessel] = statement.query[Vessel]
-      query.option.transact(transactor)
+      getConnection(imo).transact(transactor)
    }
 
-   override def put(vessel: Vessel): F[Vessel] = ???
+   override def put(vessel: Vessel): F[Vessel] = {
+     getConnection(vessel.imo).map {
+        case Some(_) => {
+           deleteConnection(vessel.imo).flatMap(_ => insertConnection(vessel))
+        }
+        case None => {
+          insertConnection(vessel)
+        }
+     }.map(_ => vessel)transact(transactor)
+   }
 
-   override def delete(imo: String): F[Option[Vessel]] = ???
+   override def delete(imo: String): F[Option[Vessel]] = {
+      getConnection(imo).map(maybeVessel => maybeVessel match {
+         case Some(vessel) => {
+            deleteConnection(imo)
+         }
+         case None => {
+            deleteConnection(imo)
+         }
+      }).map(deletedRows => if (deletedRows == 0) None else Some(Vessel(imo, "pelle"))).transact(transactor)
+   }
 
    override def search(queryString: String): F[List[Vessel]] = {
       val queryStringWithWildcards = s"%$queryString%"
       val statement: Fragment = sql"""select imo, name from vessel where imo like $queryStringWithWildcards or name like $queryStringWithWildcards"""
       val query: Query0[Vessel] = statement.query[Vessel]
       query.to[List].transact(transactor)
+   }
+
+   private def getConnection(imo: String): ConnectionIO[Option[Vessel]] = {
+      val statement: Fragment = sql"""select imo, name from vessel where imo = $imo"""
+      val query: Query0[Vessel] = statement.query[Vessel]
+      query.option
+   }
+
+   private def deleteConnection(imo: String): ConnectionIO[Int] = {
+      val statement: Fragment = sql"""delete from vessel where = $imo"""
+      val update: Update0 = statement.update
+     update.run
+   }
+
+   private def insertConnection(vessel: Vessel): ConnectionIO[Int] = {
+      val statement: Fragment = sql"""insert into from vessel (imo, name) values (${vessel.imo}, ${vessel.name}"""
+      val update: Update0 = statement.update
+      update.run
    }
 
 }
