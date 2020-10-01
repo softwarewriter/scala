@@ -13,12 +13,9 @@ package object vessel {
    //  implicit val vesselEncoder = io.circe.generic.semiauto.deriveEncoder[Vessel]
    //   implicit val vesselDecoder = io.circe.generic.semiauto.deriveDecoder[Vessel]
 
-   implicit val listOfVesselCodec = io.circe.generic.semiauto.deriveCodec[List[Vessel]]
-
    implicit val imoCodec = io.circe.generic.semiauto.deriveCodec[IMO]
-
    implicit val vesselCodec = io.circe.generic.semiauto.deriveCodec[Vessel]
-
+   implicit val listOfVesselCodec = io.circe.generic.semiauto.deriveCodec[List[Vessel]]
 
    /*
     implicit val vesselEncoder: Encoder[Vessel] = (vessel: Vessel) => {
