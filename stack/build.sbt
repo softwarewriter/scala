@@ -1,4 +1,6 @@
-enablePlugins(JavaAppPackaging)
+// Does not work even if plugins.sbt contains reference to plugins@
+// Problem caused by multi-project build?
+//enablePlugins(JavaAppPackaging)
 
 name := "stack"
 
