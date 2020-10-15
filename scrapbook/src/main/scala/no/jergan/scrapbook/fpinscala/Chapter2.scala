@@ -7,7 +7,7 @@ object Chapter2 {
   object Ex2 {
 
     @tailrec
-    def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = {
+    def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = {
       if (as.length < 2)
         true
       else
@@ -24,23 +24,31 @@ object Chapter2 {
   }
 
   object Ex3 {
-
-    def partial1[A,B,C](a: A, f: (A,B) => C): B => C = {
+    def partial1[A, B, C](a: A, f: (A, B) => C): B => C = {
       (b: B) => f(a, b)
     }
 
     def test(): Unit = {
       val f: (Int => String) = partial1[String, Int, String]("ole", (a: String, b: Int) => String.valueOf(a.length + b))
-
       println(f(3))
     }
-
-
   }
 
-  def main(args: Array[String]): Unit = {
+  object Ex4 {
+    def curry[A, B, C](f: (A, B) => C): A => (B => C) = {
+      (a: A) => (b: B) => f(a, b)
+    }
 
-    Ex3.test()
+    def test(): Unit = {
+      def f: (String, String) => String = (a, b) => a + b
+      println(curry(f)("ole")("dole"))
+    }
+  }
+
+
+
+  def main(args: Array[String]): Unit = {
+    Ex4.test()
   }
 
 }
