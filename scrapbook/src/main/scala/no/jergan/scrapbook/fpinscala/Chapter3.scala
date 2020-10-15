@@ -68,6 +68,26 @@ object Chapter3 {
     }
   }
 
+  def foldRight[A,B](l: Liste[A], z: B)(f: (A, B) => B): B = {
+    println("right")
+    l match {
+      case Nil => z
+      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }
+  }
+
+  def sum2(l: Liste[Int]) = {
+    foldRight(l, 0.0)(_ + _)
+  }
+
+  def product2(l: Liste[Double]) = {
+    foldRight(l, 1.0)((a, b) => a * b)
+  }
+
+  def length[A](l: Liste[A]) = {
+    foldRight(l, 0)((a, b) => b + 1)
+  }
+
   object Ex1 {
     def test(): Unit = {
       val x: Int = apply(1,2,3,4,5) match {
@@ -80,7 +100,6 @@ object Chapter3 {
       println(x)
     }
   }
-
 
   object Ex2 {
     def test() = {
@@ -112,8 +131,27 @@ object Chapter3 {
     }
   }
 
+  object Ex7 {
+    def test() = {
+      println(product2(apply(1, 2, 0, 3, 4)))
+      // Can not short-circuit if using foldRight
+    }
+  }
+
+  object Ex8 {
+    def test() = {
+      println(foldRight(apply(1, 2, 3), Nil: Liste[Int])((a, b) => Cons(a, b)))
+    }
+  }
+
+  object Ex9 {
+    def test() = {
+      println(length(apply(0, 0, 0)))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex6.test()
+    Ex9.test()
   }
 
 }
