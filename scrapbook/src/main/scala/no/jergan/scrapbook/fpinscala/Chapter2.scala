@@ -56,8 +56,20 @@ object Chapter2 {
     }
   }
 
+  object Ex6 {
+    def compose[A,B,C](f: B => C, g: A => B): A => C = {
+      (a: A) => f(g(a))
+    }
+
+    def test(): Unit = {
+      def f: String => String = (a) => "f of " + a
+      def g: String => String = (a) => "g of " + a
+      println(compose(f, g)("ole"))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex5.test()
+    Ex6.test()
   }
 
 }
