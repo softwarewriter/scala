@@ -53,6 +53,21 @@ object Chapter3 {
     }
   }
 
+  def setHead[A](l: Liste[A], head: A): Liste[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(x, xs) => Cons(head, xs)
+    }
+  }
+
+  def init[A](l: Liste[A]): Liste[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(_, Nil) => Nil
+      case Cons(x, xs) => Cons(x, init(xs))
+    }
+  }
+
   object Ex1 {
     def test(): Unit = {
       val x: Int = apply(1,2,3,4,5) match {
@@ -68,28 +83,37 @@ object Chapter3 {
 
 
   object Ex2 {
-
     def test() = {
       println(tail(apply(1, 2, 3)))
     }
   }
 
   object Ex3 {
-
     def test() = {
       println(drop(apply(1, 2, 3), 2))
     }
   }
 
   object Ex4 {
-
     def test() = {
       println(dropWhile(apply(1, 2, 3, 4), (a: Int) => a < 3))
     }
   }
 
+  object Ex5 {
+    def test() = {
+      println(setHead(apply(1, 2, 3, 4), 42))
+    }
+  }
+
+  object Ex6 {
+    def test() = {
+      println(init(apply(1, 2, 3, 4)))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex4.test()
+    Ex6.test()
   }
 
 }
