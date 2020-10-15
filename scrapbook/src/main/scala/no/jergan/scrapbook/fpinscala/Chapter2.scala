@@ -35,7 +35,7 @@ object Chapter2 {
   }
 
   object Ex4 {
-    def curry[A, B, C](f: (A, B) => C): A => (B => C) = {
+    def curry[A, B, C](f: (A, B) => C): A => B => C = {
       (a: A) => (b: B) => f(a, b)
     }
 
@@ -45,10 +45,19 @@ object Chapter2 {
     }
   }
 
+  object Ex5 {
+    def uncurry[A, B, C](f: A => B => C): (A, B) => C = {
+      (a: A, b: B) => f(a)(b)
+    }
 
+    def test(): Unit = {
+      def f: String => String => String = (a) => (b) => a + b
+      println(uncurry(f)("ole", "dole"))
+    }
+  }
 
   def main(args: Array[String]): Unit = {
-    Ex4.test()
+    Ex5.test()
   }
 
 }
