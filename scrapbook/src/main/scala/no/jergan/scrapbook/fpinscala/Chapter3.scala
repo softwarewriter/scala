@@ -37,6 +37,22 @@ object Chapter3 {
     }
   }
 
+  @tailrec
+  def drop[A](l: Liste[A], n: Int): Liste[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(x, xs) => if (n == 0) l else drop(xs, n - 1)
+    }
+  }
+
+  @tailrec
+  def dropWhile[A](l: Liste[A], p: A => Boolean): Liste[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(x, xs) => if (p(x)) dropWhile(xs, p) else l
+    }
+  }
+
   object Ex1 {
     def test(): Unit = {
       val x: Int = apply(1,2,3,4,5) match {
@@ -58,8 +74,22 @@ object Chapter3 {
     }
   }
 
+  object Ex3 {
+
+    def test() = {
+      println(drop(apply(1, 2, 3), 2))
+    }
+  }
+
+  object Ex4 {
+
+    def test() = {
+      println(dropWhile(apply(1, 2, 3, 4), (a: Int) => a < 3))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex2.test()
+    Ex4.test()
   }
 
 }
