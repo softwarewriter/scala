@@ -306,7 +306,7 @@ object Chapter3 {
     }
   }
 
-  object Ex22 {
+  object Ex22AndEx23 {
 
     def zip[A](l1: Liste[A], l2: Liste[A])(add: (A, A) => A): Liste[A] = {
       (l1, l2) match {
@@ -322,8 +322,30 @@ object Chapter3 {
     }
   }
 
+  object Ex24 {
+    def hasSubsequence[A](l: Liste[A], sub: Liste[A]): Boolean = {
+      (l, sub) match {
+        case (_, Nil) => true
+        case (Nil, _) => false
+        case (Cons(x, xs), Cons(y, ys)) => if (x == y) hasSubsequence(xs, ys) else hasSubsequence(xs, sub)
+      }
+    }
+
+    def test() = {
+      val l = apply(1, 2, 3, 4, 5)
+      println(hasSubsequence(Nil, Nil))
+      println(!hasSubsequence(Nil, apply(1)))
+
+      println(hasSubsequence(l, Nil))
+      println(hasSubsequence(l, apply(1)))
+      println(hasSubsequence(l, apply(1, 2)))
+      println(hasSubsequence(l, apply(4, 5)))
+      println(!hasSubsequence(l, apply(2, 1)))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex22.test()
+    Ex24.test()
   }
 
 }
