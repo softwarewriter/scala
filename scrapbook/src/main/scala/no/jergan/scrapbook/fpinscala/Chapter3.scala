@@ -61,10 +61,17 @@ object Chapter3 {
     }
   }
 
-  def map[A,B](l: Liste[A])(f: A => B): Liste[B] = {
+  def map[A, B](l: Liste[A])(f: A => B): Liste[B] = {
     l match {
       case Nil => Nil
       case Cons(x, xs) => Cons(f(x), map(xs)(f))
+    }
+  }
+
+  def filter[A](l: Liste[A])(f: A => Boolean): Liste[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(x, xs) => if (f(x)) Cons(x, filter(xs)(f)) else filter(xs)(f)
     }
   }
 
@@ -266,8 +273,14 @@ object Chapter3 {
     }
   }
 
+  object Ex19 {
+    def test() = {
+      println(filter(apply(1, 2, 3, 4, 5))(_ % 2 == 0))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex18.test()
+    Ex19.test()
   }
 
 }
