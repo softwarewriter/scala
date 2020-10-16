@@ -384,6 +384,13 @@ object Chapter3 {
     }
   }
 
+  def map[A, B](tree: Tree[A])(f: (A) => B): Tree[B] = {
+    tree match {
+      case Leaf(value) => Leaf(f(value))
+      case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+    }
+  }
+
   val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
 
   object Ex25 {
@@ -404,8 +411,14 @@ object Chapter3 {
     }
   }
 
+  object Ex28 {
+    def test() = {
+      println(map(tree)(_ + 1))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex27.test()
+    Ex28.test()
   }
 
 }
