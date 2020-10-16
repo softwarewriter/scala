@@ -86,7 +86,25 @@ object Chapter3 {
   def foldLeft[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = {
     l match {
       case Nil => z
-      case Cons(x, xs) =>foldLeft(xs, f(z, x))(f)
+      case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+  }
+
+  def foldLeftUsingRight[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = ???
+
+  def append[A](l1: Liste[A], l2: Liste[A]): Liste[A] = {
+    (l1, l2) match {
+      case (Nil, Nil) => Nil
+      case (l1, Nil) => l1
+      case (Nil, l2) => l2
+      case (l1, l2) => foldRight(l1, l2)((a, b) => Cons(a, b))
+    }
+  }
+
+  def flatten[A](l: Liste[Liste[A]]): Liste[A] = {
+    (l) match {
+      case Nil => Nil
+      case _ => foldRight(l, Nil: Liste[A])((a, b) => append(a, b))
     }
   }
 
@@ -194,8 +212,30 @@ object Chapter3 {
     }
   }
 
+  object Ex13 {
+    def test() = {
+      println(foldLeft(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
+      println(foldLeftUsingRight(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
+
+      // The other way is not possible, as foldLeft is tail recursive and foldRight is not.
+      // If it was possible, it would be a curious performance improvement.
+    }
+  }
+
+  object Ex14 {
+    def test() = {
+      println(append(apply(1, 2, 3), apply(4, 5, 6)))
+    }
+  }
+
+  object Ex15 {
+    def test() = {
+      println(flatten(apply(apply(1, 2, 3), apply(4, 5, 6), apply(7, 8, 9))))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex12.test()
+    Ex15.test()
   }
 
 }
