@@ -69,23 +69,42 @@ object Chapter3 {
   }
 
   def foldRight[A,B](l: Liste[A], z: B)(f: (A, B) => B): B = {
-    println("right")
     l match {
       case Nil => z
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
   }
 
-  def sum2(l: Liste[Int]) = {
+  @tailrec
+  def foldLeft[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = {
+    l match {
+      case Nil => z
+      case Cons(x, xs) =>foldLeft(xs, f(z, x))(f)
+    }
+  }
+
+  def sumRight(l: Liste[Int]) = {
     foldRight(l, 0.0)(_ + _)
   }
 
-  def product2(l: Liste[Double]) = {
+  def productRight(l: Liste[Double]) = {
     foldRight(l, 1.0)((a, b) => a * b)
   }
 
-  def length[A](l: Liste[A]) = {
-    foldRight(l, 0)((a, b) => b + 1)
+  def lengthRight[A](l: Liste[A]) = {
+    foldRight(l, 0)((_, b) => b + 1)
+  }
+
+  def sumLeft(l: Liste[Int]) = {
+    foldLeft(l, 0.0)(_ + _)
+  }
+
+  def productLeft(l: Liste[Double]) = {
+    foldLeft(l, 1.0)((a, b) => a * b)
+  }
+
+  def lengthLeft[A](l: Liste[A]) = {
+    foldLeft(l, 0)((a, _) => a + 1)
   }
 
   object Ex1 {
@@ -133,7 +152,7 @@ object Chapter3 {
 
   object Ex7 {
     def test() = {
-      println(product2(apply(1, 2, 0, 3, 4)))
+      println(productRight(apply(1, 2, 0, 3, 4)))
       // Can not short-circuit if using foldRight
     }
   }
@@ -146,12 +165,24 @@ object Chapter3 {
 
   object Ex9 {
     def test() = {
-      println(length(apply(0, 0, 0)))
+      println(lengthRight(apply(0, 0, 0)))
     }
   }
 
+  object Ex10 {
+    // Implemented foldLeft
+  }
+
+  object Ex11 {
+    def test() = {
+      println(sumLeft(apply(1, 2, 3)))
+      println(productLeft(apply(1, 2, 4, 0)))
+      println(lengthLeft(apply(1, 2, 3)))
+      
+    }
+  }
   def main(args: Array[String]): Unit = {
-    Ex9.test()
+    Ex11.test()
   }
 
 }
