@@ -75,6 +75,13 @@ object Chapter3 {
     }
   }
 
+  def reverse[A](l: Liste[A]): Liste[A] = {
+    l match {
+      case Nil => l
+      case Cons(x, xs) => foldLeft(xs, Cons(x, Nil))((a: Liste[A], b: A) => Cons(b, a))
+    }
+  }
+
   @tailrec
   def foldLeft[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = {
     l match {
@@ -178,11 +185,17 @@ object Chapter3 {
       println(sumLeft(apply(1, 2, 3)))
       println(productLeft(apply(1, 2, 4, 0)))
       println(lengthLeft(apply(1, 2, 3)))
-      
     }
   }
+
+  object Ex12 {
+    def test() = {
+      println(reverse(apply(1, 2, 3)))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex11.test()
+    Ex12.test()
   }
 
 }
