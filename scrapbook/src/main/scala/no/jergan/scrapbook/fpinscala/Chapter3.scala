@@ -323,9 +323,11 @@ object Chapter3 {
   }
 
   object Ex24 {
+    @tailrec
     def hasSubsequence[A](l: Liste[A], sub: Liste[A]): Boolean = {
 
-      def hasAtStart[A](l: Liste[A], sub: Liste[A]): Boolean = {
+      @tailrec
+      def hasAtStart(l: Liste[A], sub: Liste[A]): Boolean = {
         (l, sub) match {
           case (_, Nil) => true
           case (Nil, _) => false
