@@ -324,10 +324,19 @@ object Chapter3 {
 
   object Ex24 {
     def hasSubsequence[A](l: Liste[A], sub: Liste[A]): Boolean = {
+
+      def hasAtStart[A](l: Liste[A], sub: Liste[A]): Boolean = {
+        (l, sub) match {
+          case (_, Nil) => true
+          case (Nil, _) => false
+          case (Cons(x, xs), Cons(y, ys)) => if (x == y) hasAtStart(xs, ys) else false
+        }
+      }
+
       (l, sub) match {
         case (_, Nil) => true
         case (Nil, _) => false
-        case (Cons(x, xs), Cons(y, ys)) => if (x == y) hasSubsequence(xs, ys) else hasSubsequence(xs, sub)
+        case (Cons(x, xs), sub) => if (hasAtStart(l, sub)) true else hasSubsequence(xs, sub)
       }
     }
 
@@ -341,6 +350,9 @@ object Chapter3 {
       println(hasSubsequence(l, apply(1, 2)))
       println(hasSubsequence(l, apply(4, 5)))
       println(!hasSubsequence(l, apply(2, 1)))
+      println(!hasSubsequence(l, apply(1, 3, 5)))
+
+      println(hasSubsequence(apply(1, 1, 2, 3), apply(1, 2, 3)))
     }
   }
 
