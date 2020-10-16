@@ -351,15 +351,61 @@ object Chapter3 {
       println(hasSubsequence(l, apply(1)))
       println(hasSubsequence(l, apply(1, 2)))
       println(hasSubsequence(l, apply(4, 5)))
-      println(!hasSubsequence(l, apply(2, 1)))
+      println(hasSubsequence(l, apply(5)))
       println(!hasSubsequence(l, apply(1, 3, 5)))
 
-      println(hasSubsequence(apply(1, 1, 2, 3), apply(1, 2, 3)))
+      println(hasSubsequence(apply(1, 2, 1, 2, 3), apply(1, 2, 3)))
+      println(hasSubsequence(apply(1, 1, 1, 2), apply(1, 1, 2)))
+    }
+  }
+
+  sealed trait Tree[+A]
+  case class Leaf[A](value: A) extends Tree[A]
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
+  def size(tree: Tree[_]): Int = {
+    tree match {
+      case Leaf(_) => 1
+      case Branch(left, right) => size(left) + size(right)
+    }
+  }
+
+  def max(tree: Tree[Int]): Int = {
+    tree match {
+      case Leaf(value) => value
+      case Branch(left, right) => max(left).max(max(right))
+    }
+  }
+
+  def depth(tree: Tree[Any]): Int = {
+    tree match {
+      case Leaf(value) => 1
+      case Branch(left, right) => 1 + depth(left).max(depth(right))
+    }
+  }
+
+  val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
+
+  object Ex25 {
+    def test() = {
+      println(size(tree))
+    }
+  }
+
+  object Ex26 {
+    def test() = {
+      println(max(tree))
+    }
+  }
+
+  object Ex27 {
+    def test() = {
+      println(depth(tree))
     }
   }
 
   def main(args: Array[String]): Unit = {
-    Ex24.test()
+    Ex27.test()
   }
 
 }
