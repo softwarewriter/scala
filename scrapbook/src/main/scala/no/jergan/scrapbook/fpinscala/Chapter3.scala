@@ -292,8 +292,21 @@ object Chapter3 {
     }
   }
 
+  object Ex21 {
+    def filterUsingFlatMap[A](l: Liste[A])(f: A => Boolean): Liste[A] = {
+      l match {
+        case Nil => Nil
+        case _ => flatMap(l)((a: A) => if (f(a)) apply(a) else Nil)
+      }
+    }
+
+    def test() = {
+      println(filterUsingFlatMap(apply(1, 2, 3, 4, 5))(_ % 2 == 0))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex20.test()
+    Ex21.test()
   }
 
 }
