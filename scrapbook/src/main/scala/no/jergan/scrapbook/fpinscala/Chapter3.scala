@@ -13,6 +13,7 @@ object Chapter3 {
    */
 
   sealed trait Liste[+A]
+
   case object Nil extends Liste[Nothing]
   case class Cons[+A](head: A, tail: Liste[A]) extends Liste[A]
 
@@ -305,8 +306,24 @@ object Chapter3 {
     }
   }
 
+  object Ex22 {
+
+    def zip[A](l1: Liste[A], l2: Liste[A])(add: (A, A) => A): Liste[A] = {
+      (l1, l2) match {
+        case (Nil, Nil) => Nil
+        case (l1, Nil) => l1
+        case (Nil, l2) => l2
+        case (Cons(x, xs), Cons(y, ys)) => Cons(add(x, y), zip(xs, ys)(add))
+      }
+    }
+
+    def test() = {
+      println(zip(apply(1, 2, 3, 0), apply(4, 5, 6))((a, b) => a + b))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex21.test()
+    Ex22.test()
   }
 
 }
