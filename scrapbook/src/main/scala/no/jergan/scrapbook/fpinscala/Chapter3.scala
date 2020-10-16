@@ -68,6 +68,13 @@ object Chapter3 {
     }
   }
 
+  def flatMap[A, B](l: Liste[A])(f: A => Liste[B]): Liste[B] = {
+    l match {
+      case Nil => Nil
+      case Cons(x, xs) => append(f(x), flatMap(xs)(f))
+    }
+  }
+
   def filter[A](l: Liste[A])(f: A => Boolean): Liste[A] = {
     l match {
       case Nil => Nil
@@ -279,8 +286,14 @@ object Chapter3 {
     }
   }
 
+  object Ex20 {
+    def test() = {
+      println(flatMap(apply(1, 2, 3))(i => apply(i,i)))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex19.test()
+    Ex20.test()
   }
 
 }
