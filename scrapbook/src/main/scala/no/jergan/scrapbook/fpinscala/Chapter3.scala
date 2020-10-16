@@ -37,34 +37,12 @@ object Chapter3 {
     }
   }
 
-  @tailrec
-  def drop[A](l: Liste[A], n: Int): Liste[A] = {
-    l match {
-      case Nil => Nil
-      case Cons(x, xs) => if (n == 0) l else drop(xs, n - 1)
-    }
-  }
-
-  @tailrec
-  def dropWhile[A](l: Liste[A], p: A => Boolean): Liste[A] = {
-    l match {
-      case Nil => Nil
-      case Cons(x, xs) => if (p(x)) dropWhile(xs, p) else l
-    }
-  }
-
-  def setHead[A](l: Liste[A], head: A): Liste[A] = {
-    l match {
-      case Nil => Nil
-      case Cons(x, xs) => Cons(head, xs)
-    }
-  }
-
-  def init[A](l: Liste[A]): Liste[A] = {
-    l match {
-      case Nil => Nil
-      case Cons(_, Nil) => Nil
-      case Cons(x, xs) => Cons(x, init(xs))
+  def append[A](l1: Liste[A], l2: Liste[A]): Liste[A] = {
+    (l1, l2) match {
+      case (Nil, Nil) => Nil
+      case (l1, Nil) => l1
+      case (Nil, l2) => l2
+      case (l1, l2) => foldRight(l1, l2)((a, b) => Cons(a, b))
     }
   }
 
@@ -72,13 +50,6 @@ object Chapter3 {
     l match {
       case Nil => z
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-    }
-  }
-
-  def reverse[A](l: Liste[A]): Liste[A] = {
-    l match {
-      case Nil => l
-      case Cons(x, xs) => foldLeft(xs, Cons(x, Nil))((a: Liste[A], b: A) => Cons(b, a))
     }
   }
 
@@ -90,46 +61,11 @@ object Chapter3 {
     }
   }
 
-  def foldLeftUsingRight[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = ???
-
-  def append[A](l1: Liste[A], l2: Liste[A]): Liste[A] = {
-    (l1, l2) match {
-      case (Nil, Nil) => Nil
-      case (l1, Nil) => l1
-      case (Nil, l2) => l2
-      case (l1, l2) => foldRight(l1, l2)((a, b) => Cons(a, b))
-    }
-  }
-
-  def flatten[A](l: Liste[Liste[A]]): Liste[A] = {
-    (l) match {
+  def map[A,B](l: Liste[A])(f: A => B): Liste[B] = {
+    l match {
       case Nil => Nil
-      case _ => foldRight(l, Nil: Liste[A])((a, b) => append(a, b))
+      case Cons(x, xs) => Cons(f(x), map(xs)(f))
     }
-  }
-
-  def sumRight(l: Liste[Int]) = {
-    foldRight(l, 0.0)(_ + _)
-  }
-
-  def productRight(l: Liste[Double]) = {
-    foldRight(l, 1.0)((a, b) => a * b)
-  }
-
-  def lengthRight[A](l: Liste[A]) = {
-    foldRight(l, 0)((_, b) => b + 1)
-  }
-
-  def sumLeft(l: Liste[Int]) = {
-    foldLeft(l, 0.0)(_ + _)
-  }
-
-  def productLeft(l: Liste[Double]) = {
-    foldLeft(l, 1.0)((a, b) => a * b)
-  }
-
-  def lengthLeft[A](l: Liste[A]) = {
-    foldLeft(l, 0)((a, _) => a + 1)
   }
 
   object Ex1 {
@@ -152,30 +88,65 @@ object Chapter3 {
   }
 
   object Ex3 {
+    @tailrec
+    def drop[A](l: Liste[A], n: Int): Liste[A] = {
+      l match {
+        case Nil => Nil
+        case Cons(x, xs) => if (n == 0) l else drop(xs, n - 1)
+      }
+    }
+
     def test() = {
       println(drop(apply(1, 2, 3), 2))
     }
   }
 
   object Ex4 {
+    @tailrec
+    def dropWhile[A](l: Liste[A], p: A => Boolean): Liste[A] = {
+      l match {
+        case Nil => Nil
+        case Cons(x, xs) => if (p(x)) dropWhile(xs, p) else l
+      }
+    }
+
     def test() = {
       println(dropWhile(apply(1, 2, 3, 4), (a: Int) => a < 3))
     }
   }
 
   object Ex5 {
+    def setHead[A](l: Liste[A], head: A): Liste[A] = {
+      l match {
+        case Nil => Nil
+        case Cons(x, xs) => Cons(head, xs)
+      }
+    }
+
     def test() = {
       println(setHead(apply(1, 2, 3, 4), 42))
     }
   }
 
   object Ex6 {
+    def init[A](l: Liste[A]): Liste[A] = {
+      l match {
+        case Nil => Nil
+        case Cons(_, Nil) => Nil
+        case Cons(x, xs) => Cons(x, init(xs))
+      }
+    }
+
     def test() = {
       println(init(apply(1, 2, 3, 4)))
     }
   }
 
   object Ex7 {
+    def productRight(l: Liste[Double]) = {
+      foldRight(l, 1.0)((a, b) => a * b)
+    }
+
     def test() = {
       println(productRight(apply(1, 2, 0, 3, 4)))
       // Can not short-circuit if using foldRight
@@ -189,6 +160,10 @@ object Chapter3 {
   }
 
   object Ex9 {
+    def lengthRight[A](l: Liste[A]) = {
+      foldRight(l, 0)((_, b) => b + 1)
+    }
+
     def test() = {
       println(lengthRight(apply(0, 0, 0)))
     }
@@ -199,6 +174,18 @@ object Chapter3 {
   }
 
   object Ex11 {
+    def sumLeft(l: Liste[Int]) = {
+      foldLeft(l, 0.0)(_ + _)
+    }
+
+    def productLeft(l: Liste[Double]) = {
+      foldLeft(l, 1.0)((a, b) => a * b)
+    }
+
+    def lengthLeft[A](l: Liste[A]) = {
+      foldLeft(l, 0)((a, _) => a + 1)
+    }
+
     def test() = {
       println(sumLeft(apply(1, 2, 3)))
       println(productLeft(apply(1, 2, 4, 0)))
@@ -207,12 +194,22 @@ object Chapter3 {
   }
 
   object Ex12 {
+    def reverse[A](l: Liste[A]): Liste[A] = {
+      l match {
+        case Nil => l
+        case Cons(x, xs) => foldLeft(xs, Cons(x, Nil))((a: Liste[A], b: A) => Cons(b, a))
+      }
+    }
+
     def test() = {
       println(reverse(apply(1, 2, 3)))
     }
   }
 
   object Ex13 {
+    def foldLeftUsingRight[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = ???
+
+    // TODO: Not done yet.
     def test() = {
       println(foldLeft(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
       println(foldLeftUsingRight(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
@@ -229,13 +226,48 @@ object Chapter3 {
   }
 
   object Ex15 {
+    def flatten[A](l: Liste[Liste[A]]): Liste[A] = {
+      (l) match {
+        case Nil => Nil
+        case _ => foldRight(l, Nil: Liste[A])((a, b) => append(a, b))
+      }
+    }
+
     def test() = {
       println(flatten(apply(apply(1, 2, 3), apply(4, 5, 6), apply(7, 8, 9))))
     }
   }
 
+  object Ex16 {
+    def addOne(l: Liste[Int]): Liste[Int] = {
+      l match {
+        case Nil => Nil
+        case Cons(x, xs) => Cons(x + 1, addOne(xs))
+      }
+    }
+  }
+
+  object Ex17 {
+    def doubleToStrng(l: Liste[Double]): Liste[String] = {
+      l match {
+        case Nil => Nil
+        case Cons(x, xs) => Cons(x.toString, doubleToStrng(xs))
+      }
+    }
+
+    def test() = {
+      println(doubleToStrng(apply(1.1, 2.2, 3.3)))
+    }
+  }
+
+  object Ex18 {
+    def test() = {
+      println(map(apply(1, 2, 3))(a => a + 1))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex15.test()
+    Ex18.test()
   }
 
 }
