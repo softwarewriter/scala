@@ -39,18 +39,18 @@ object Chapter3 {
     }
   }
 
-  def foldRight[A,B](l: Liste[A], z: B)(f: (A, B) => B): B = {
-    l match {
-      case Nil => z
-      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-    }
-  }
-
   @tailrec
   def foldLeft[A, B](l: Liste[A], z: B)(f: (B, A) => B): B = {
     l match {
       case Nil => z
       case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+  }
+
+  def foldRight[A,B](l: Liste[A], z: B)(f: (A, B) => B): B = {
+    l match {
+      case Nil => z
+      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
   }
 
@@ -214,15 +214,18 @@ object Chapter3 {
   }
 
   object Ex13 {
-    def foldLeftUsingRight[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = ???
 
-    // TODO: Not done yet.
+    def foldRightUsingFoldLeft[A,B](l: Liste[A], z: B)(f: (A, B) => B): B = {
+      val reversed = foldLeft(l, Nil: Liste[A])((a, b) => Cons(b, a))
+      foldLeft(reversed, z)((b: B, a: A) => f(a, b))
+    }
+
     def test() = {
       println(foldLeft(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
-      println(foldLeftUsingRight(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
+      println(foldRight(apply("a", "b", "c"), "z")((a, b) => b + ", " + a))
+      println(foldRightUsingFoldLeft(apply("a", "b", "c"), "z")((a, b) => b + ", " + a))
 
-      // The other way is not possible, as foldLeft is tail recursive and foldRight is not.
-      // If it was possible, it would be a curious performance improvement.
+      // The other way is not possible, as foldRight does not reverse the list
     }
   }
 
@@ -425,7 +428,7 @@ object Chapter3 {
 
   object Ex29 {
     def sizeByFold(tree: Tree[_]): Int = {
-      foldWithZ(tree, 0)((b, _) => b + 1)((left, right) => left + right)
+      foldWithZ(tree, 0)((_, _) => 1)((left, right) => left + right)
     }
 
     def maxByFold(tree: Tree[Int]): Int = {
@@ -433,7 +436,7 @@ object Chapter3 {
     }
 
     def depthByFold(tree: Tree[Any]): Int = {
-      foldWithZ(tree, 0)((b, _) => b + 1)((left, right) => 1 + left.max(right))
+      foldWithZ(tree, 0)((_, _) => 1)((left, right) => 1 + left.max(right))
     }
 
     def mapByFold[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
@@ -449,7 +452,7 @@ object Chapter3 {
   }
 
   def main(args: Array[String]): Unit = {
-    Ex29.test()
+    Ex13.test()
   }
 
 }
