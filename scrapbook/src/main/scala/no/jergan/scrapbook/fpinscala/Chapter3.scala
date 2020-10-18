@@ -4,14 +4,6 @@ import scala.annotation.tailrec
 
 object Chapter3 {
 
-  /*
-  final case class Cons[A] (x: A, xs:List[A]) extends List[A] {
-  }
-
-  case object Nil extends List[Nothing] {
-
-   */
-
   sealed trait Liste[+A]
 
   case object Nil extends Liste[Nothing]
@@ -55,7 +47,7 @@ object Chapter3 {
   }
 
   @tailrec
-  def foldLeft[A,B](l: Liste[A], z: B)(f: (B, A) => B): B = {
+  def foldLeft[A, B](l: Liste[A], z: B)(f: (B, A) => B): B = {
     l match {
       case Nil => z
       case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
@@ -379,19 +371,33 @@ object Chapter3 {
 
   def depth(tree: Tree[Any]): Int = {
     tree match {
-      case Leaf(value) => 1
+      case Leaf(_) => 1
       case Branch(left, right) => 1 + depth(left).max(depth(right))
     }
   }
 
-  def map[A, B](tree: Tree[A])(f: (A) => B): Tree[B] = {
+  def map[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
     tree match {
       case Leaf(value) => Leaf(f(value))
       case Branch(left, right) => Branch(map(left)(f), map(right)(f))
     }
   }
 
-  val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
+  def fold[A, B](tree: Tree[A])(fLeaf: A => B)(fBranch: (B, B) => B): B = {
+    tree match {
+      case Leaf(value) => fLeaf(value)
+      case Branch(left, right) => fBranch(fold(left)(fLeaf)(fBranch), fold(right)(fLeaf)(fBranch))
+    }
+  }
+
+  def foldWithZ[A, B](tree: Tree[A], z: B)(fLeaf: (B, A) => B)(fBranch: (B, B) => B): B = {
+    tree match {
+      case Leaf(value) => fLeaf(z, value)
+      case Branch(left, right) => fBranch(foldWithZ(left, z)(fLeaf)(fBranch), foldWithZ(right, z)(fLeaf)(fBranch))
+    }
+  }
+
+  val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(55))))
 
   object Ex25 {
     def test() = {
@@ -417,8 +423,33 @@ object Chapter3 {
     }
   }
 
+  object Ex29 {
+    def sizeByFold(tree: Tree[_]): Int = {
+      foldWithZ(tree, 0)((b, _) => b + 1)((left, right) => left + right)
+    }
+
+    def maxByFold(tree: Tree[Int]): Int = {
+      fold(tree)(a => a)((left, right) => left.max(right))
+    }
+
+    def depthByFold(tree: Tree[Any]): Int = {
+      foldWithZ(tree, 0)((b, _) => b + 1)((left, right) => 1 + left.max(right))
+    }
+
+    def mapByFold[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
+      fold[A, Tree[B]](tree)(a => Leaf(f(a))) ((left, right) => Branch(left, right))
+    }
+
+    def test() = {
+      println(sizeByFold(tree))
+      println(maxByFold(tree))
+      println(depthByFold(tree))
+      println(mapByFold(tree)(_ + 1))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex28.test()
+    Ex29.test()
   }
 
 }
