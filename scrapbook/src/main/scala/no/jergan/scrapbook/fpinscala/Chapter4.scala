@@ -80,7 +80,13 @@ object Chapter4 {
       mean(xs)
         .flatMap(m => if (xs.size < 2) None else Some(xs.map(x => math.pow(x - m, 2)).sum / (xs.size - 1)))
     }
+  }
 
+
+  object Ex3 {
+    def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+      a.map(aa => b.map(bb => f(aa, bb)).getOrElse(None))
+    }
   }
 
   def main(args: Array[String]): Unit = {
