@@ -37,10 +37,7 @@ object Chapter4 {
     }
 
     def filter(f: A => Boolean): Option[A] = {
-      this match {
-        case Some(value) => if (f(value)) Some(value) else None
-        case None => None
-      }
+      flatMap(value => if (f(value)) Some(value) else None)
     }
 
   }
