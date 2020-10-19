@@ -82,15 +82,18 @@ object Chapter4 {
     }
   }
 
-
   object Ex3 {
     def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
-      a.map(aa => b.map(bb => f(aa, bb)).getOrElse(None))
+      a.flatMap(aa => b.map(bb => f(aa, bb)))
+    }
+
+    def test() = {
+      println(map2(Some("a"), Some("b"))((a, b) => a + " and " + b))
     }
   }
 
   def main(args: Array[String]): Unit = {
-    Ex1.test()
+    Ex3.test()
   }
 
 }
