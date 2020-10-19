@@ -5,6 +5,8 @@ import scala.annotation.tailrec
 object Chapter4 {
 
   sealed trait Option[+A] {
+
+    // match allowed
     def map[B](f: A => B): Option[B] = {
       this match {
         case Some(value) => Some(f(value))
@@ -19,6 +21,7 @@ object Chapter4 {
       }
     }
 
+    // match allowed
     def getOrElse[B >: A](default: => B): B = {
       this match {
         case Some(value) => value
@@ -69,6 +72,19 @@ object Chapter4 {
 
       println(None.orElse(None).orElse(None).orElse(Some(new A2)))
 
+    }
+
+  }
+
+  object Ex2 {
+
+    def mean(xs: Seq[Double]): Option[Double] = {
+      if (xs.isEmpty) None else Some(xs.sum / xs.size)
+    }
+
+    def variance(xs: Seq[Double]): Option[Double] = {
+      mean(xs)
+        .flatMap(m => if (xs.size < 2) None else Some(xs.map(x => math.pow(x - m, 2)).sum / (xs.size - 1)))
     }
 
   }
