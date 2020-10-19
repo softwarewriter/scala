@@ -15,10 +15,7 @@ object Chapter4 {
     }
 
     def flatMap[B](f: A => Option[B]): Option[B] = {
-      this match {
-        case Some(value) => f(value)
-        case None => None
-      }
+      map(f).getOrElse(None)
     }
 
     // match allowed
