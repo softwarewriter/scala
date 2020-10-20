@@ -128,14 +128,14 @@ object Chapter4 {
     }
   }
 
+  // TODO: Do we have to use two match statements?
   object Ex6 {
     def traverse[A, B](as: Liste[A])(f: A => Option[B]): Option[Liste[B]] = {
       as match {
         case Cons(h, t) => {
           f(h) match {
             case Some(b) => {
-              val rest: Option[Liste[B]] = traverse(t)(f)
-              rest match {
+              traverse(t)(f) match {
                 case Some(l) => Some(Cons(b, l))
                 case None => None
               }
