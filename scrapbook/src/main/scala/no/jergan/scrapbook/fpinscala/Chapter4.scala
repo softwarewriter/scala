@@ -130,31 +130,28 @@ object Chapter4 {
 
   object Ex6 {
     def traverse[A, B](as: Liste[A])(f: A => Option[B]): Option[Liste[B]] = {
-
-      def go(as: Liste[A]): Option[Liste[B]] = {
-        as match {
-          case Cons(h, t) => {
-            f(h) match {
-              case Some(b) => {
-                val rest: Option[Liste[B]] = go(t)
-                rest match {
-                  case Some(l) => Some(Cons(b, l))
-                  case None => None
-                }
+      as match {
+        case Cons(h, t) => {
+          f(h) match {
+            case Some(b) => {
+              val rest: Option[Liste[B]] = traverse(t)(f)
+              rest match {
+                case Some(l) => Some(Cons(b, l))
+                case None => None
               }
-              case None => None
             }
+            case None => None
           }
-          case Nil => Some(Nil)
         }
+        case Nil => Some(Nil)
       }
-      go(as)
     }
 
     def test(): Unit = {
 
       val l: Liste[Int] = Chapter3.apply(1, 2, 3)
       println(traverse(l)(a => Some(a)))
+      println(traverse(l)(a => if (a % 2 == 0) Some(a) else None))
       println(traverse(l)(a => if (a % 2 == 1) Some(a) else None))
     }
   }
