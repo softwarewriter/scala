@@ -113,8 +113,23 @@ object Chapter4 {
     }
   }
 
+  object Ex5 {
+    def sequence[A](l: List[Option[A]]): Option[List[A]] = {
+      // None if at least one is None
+      val as: List[A] = l
+        .collect { case sa: Some[A] => sa.get }
+      if (l.size == as.size) Some(as) else None
+    }
+
+    def test() = {
+
+      println(sequence(List(Some(1), Some(2))))
+      println(sequence(List(Some(1), None, Some(2))))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex4.test()
+    Ex5.test()
   }
 
 }
