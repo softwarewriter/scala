@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
-import scala.annotation.tailrec
+import no.jergan.scrapbook.fpinscala.Chapter3.{Liste, Cons, Nil}
+
 
 object Chapter4 {
 
@@ -43,7 +44,7 @@ object Chapter4 {
 
   object Ex1 {
 
-    def test() = {
+    def test(): Unit = {
       class A1
       class A2 extends A1
       class A3 extends A2
@@ -88,7 +89,7 @@ object Chapter4 {
           .map(bb => f(aa, bb)))
     }
 
-    def test() = {
+    def test(): Unit = {
       println(map2(Some("a"), Some("b"))((a: String, b: String) => a + " and " + b))
     }
   }
@@ -108,7 +109,7 @@ object Chapter4 {
       Ex3.map2(mkMatcher(pat1), mkMatcher(pat2)) ((a, b) => a(s) && b(s))
     }
 
-    def test() = {
+    def test(): Unit = {
       println(bothMatch_2("ole", "dole", "ole og dole"))
     }
   }
@@ -121,15 +122,44 @@ object Chapter4 {
       if (l.size == as.size) Some(as) else None
     }
 
-    def test() = {
-
+    def test(): Unit = {
       println(sequence(List(Some(1), Some(2))))
       println(sequence(List(Some(1), None, Some(2))))
     }
   }
 
+  object Ex6 {
+    def traverse[A, B](as: Liste[A])(f: A => Option[B]): Option[Liste[B]] = {
+
+      def go(as: Liste[A]): Liste[B] = {
+        as match {
+          case Cons(h, t) => {
+            val ob = f(h)
+            ob match {
+              case Some(b) => Cons[B](b, go(t))
+              case None => Nil
+            }
+          }
+          case Nil => Nil
+        }
+      }
+      val bs = go(as)
+      bs match {
+        case Nil => None
+        case _ => Some(bs)
+      }
+    }
+
+    def test(): Unit = {
+
+      val l: Liste[Int] = Chapter3.apply(1, 2, 3)
+      println(traverse(l)(a => Some(a)))
+      println(traverse(l)(a => if (a % 2 == 0) Some(a) else None))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex5.test()
+    Ex6.test()
   }
 
 }
