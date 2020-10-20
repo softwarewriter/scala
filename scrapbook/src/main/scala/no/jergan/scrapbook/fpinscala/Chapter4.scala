@@ -134,9 +134,8 @@ object Chapter4 {
       def go(as: Liste[A]): Liste[B] = {
         as match {
           case Cons(h, t) => {
-            val ob = f(h)
-            ob match {
-              case Some(b) => Cons[B](b, go(t))
+            f(h) match {
+              case Some(b) => Cons(b, go(t))
               case None => Nil
             }
           }
