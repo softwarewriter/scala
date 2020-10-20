@@ -143,6 +143,7 @@ object Chapter4 {
         }
       }
       val bs = go(as)
+
       bs match {
         case Nil => None
         case _ => Some(bs)
@@ -153,7 +154,7 @@ object Chapter4 {
 
       val l: Liste[Int] = Chapter3.apply(1, 2, 3)
       println(traverse(l)(a => Some(a)))
-      println(traverse(l)(a => if (a % 2 == 0) Some(a) else None))
+      println(traverse(l)(a => if (a % 2 == 1) Some(a) else None))
     }
   }
 
