@@ -6,7 +6,6 @@ object Chapter4 {
 
   sealed trait Option[+A] {
 
-    // match allowed
     def map[B](f: A => B): Option[B] = {
       this match {
         case Some(value) => Some(f(value))
@@ -18,7 +17,6 @@ object Chapter4 {
       map(f).getOrElse(None)
     }
 
-    // match allowed
     def getOrElse[B >: A](default: => B): B = {
       this match {
         case Some(value) => value
@@ -26,6 +24,7 @@ object Chapter4 {
       }
     }
 
+    // TODO: How can this be implemented without match?
     def orElse[B >: A](ob: => Option[B]): Option[B] = {
       this match {
         case Some(value) => Some(value)
@@ -84,16 +83,38 @@ object Chapter4 {
 
   object Ex3 {
     def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
-      a.flatMap(aa => b.map(bb => f(aa, bb)))
+      a
+        .flatMap(aa => b
+          .map(bb => f(aa, bb)))
     }
 
     def test() = {
-      println(map2(Some("a"), Some("b"))((a, b) => a + " and " + b))
+      println(map2(Some("a"), Some("b"))((a: String, b: String) => a + " and " + b))
+    }
+  }
+
+  object Ex4 {
+    import java.util.regex._
+    def pattern(s: String): Option[Pattern] =
+      try {
+        Some(Pattern.compile(s)) }
+      catch {
+        case e: PatternSyntaxException => None
+      }
+
+    def mkMatcher(pat: String): Option[String => Boolean] = pattern(pat) map (p => (s: String) => p.matcher(s).matches)
+
+    def bothMatch_2(pat1: String, pat2: String, s: String): Option[Boolean] = {
+      Ex3.map2(mkMatcher(pat1), mkMatcher(pat2)) ((a, b) => a(s) && b(s))
+    }
+
+    def test() = {
+      println(bothMatch_2("ole", "dole", "ole og dole"))
     }
   }
 
   def main(args: Array[String]): Unit = {
-    Ex3.test()
+    Ex4.test()
   }
 
 }
