@@ -37,11 +37,27 @@ object Chapter4 {
     def filter(f: A => Boolean): Option[A] = {
       flatMap(value => if (f(value)) Some(value) else None)
     }
-
   }
 
   case class Some[+A](get: A) extends Option[A]
   case object None extends Option[Nothing]
+
+  sealed trait Either[+E, +A] {
+    def map[B](f: A => B): Either[E, B] = {
+      this match {
+        case Right(a) => Right(f(a))
+        case Left(e) => Left(e)
+      }
+    }
+
+    def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = ???
+    def orElse[EE >: E,B >: A](b: => Either[EE, B]): Either[EE, B] = ???
+    def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = ???
+  }
+
+  case class Left[+E](value: E) extends Either[E, Nothing]
+  case class Right[+A](value: A) extends Either[Nothing, A]
+
 
   object Ex1 {
 
@@ -163,8 +179,16 @@ object Chapter4 {
     }
   }
 
+  object Ex7 {
+
+    def test(): Unit = {
+
+      Right("hei").map(a => a + a)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex6.test()
+    Ex7.test()
   }
 
 }
