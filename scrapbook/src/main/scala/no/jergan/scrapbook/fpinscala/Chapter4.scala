@@ -146,10 +146,11 @@ object Chapter4 {
         }
         case Nil => Some(Nil)
       }
-
     }
 
-    def sequenceUsingTraverse[A](l: List[Option[A]]): Option[List[A]] = ???
+    def sequenceUsingTraverse[A](l: Liste[Option[A]]): Option[Liste[A]] = {
+      traverse(l)(a => a)
+    }
 
     def test(): Unit = {
       val l: Liste[Int] = Chapter3.apply(1, 2, 3)
@@ -157,8 +158,8 @@ object Chapter4 {
       println(traverse(l)(a => if (a % 2 == 0) Some(a) else None))
       println(traverse(l)(a => if (a % 2 == 1) Some(a) else None))
 
-      println(sequenceUsingTraverse(List(Some(1), Some(2))))
-      println(sequenceUsingTraverse(List(Some(1), None, Some(2))))
+      println(sequenceUsingTraverse(Chapter3.apply(Some(1), Some(2))))
+      println(sequenceUsingTraverse(Chapter3.apply(Some(1), None, Some(2))))
     }
   }
 
