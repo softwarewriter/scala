@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter3.{Liste, Cons, Nil}
+import no.jergan.scrapbook.fpinscala.Chapter3.{Cons, Liste, Nil}
+import org.http4s.Uri
 
 
 object Chapter4 {
@@ -145,14 +146,19 @@ object Chapter4 {
         }
         case Nil => Some(Nil)
       }
+
     }
 
-    def test(): Unit = {
+    def sequenceUsingTraverse[A](l: List[Option[A]]): Option[List[A]] = ???
 
+    def test(): Unit = {
       val l: Liste[Int] = Chapter3.apply(1, 2, 3)
       println(traverse(l)(a => Some(a)))
       println(traverse(l)(a => if (a % 2 == 0) Some(a) else None))
       println(traverse(l)(a => if (a % 2 == 1) Some(a) else None))
+
+      println(sequenceUsingTraverse(List(Some(1), Some(2))))
+      println(sequenceUsingTraverse(List(Some(1), None, Some(2))))
     }
   }
 
