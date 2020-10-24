@@ -20,9 +20,6 @@ object Chapter3 {
     case Cons(x,xs) => x * product(xs)
   }
 
-  def apply[A](as: A*): Liste[A] =
-    if (as.isEmpty) Nil else Cons(as.head, apply(as.tail: _*))
-
   def tail[A](l: Liste[A]): Liste[A] = {
     l match {
       case Nil => Nil
@@ -75,9 +72,13 @@ object Chapter3 {
     }
   }
 
+  object Liste {
+    def apply[A](as: A*): Liste[A] = if (as.isEmpty) Nil else Cons(as.head, apply(as.tail: _*))
+  }
+
   object Ex1 {
     def test(): Unit = {
-      val x: Int = apply(1,2,3,4,5) match {
+      val x: Int = Liste(1,2,3,4,5) match {
         case Cons(x, Cons(2, Cons(4, _))) => x
         case Nil => 42
         case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y
@@ -90,7 +91,7 @@ object Chapter3 {
 
   object Ex2 {
     def test() = {
-      println(tail(apply(1, 2, 3)))
+      println(tail(Liste(1, 2, 3)))
     }
   }
 
@@ -104,7 +105,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(drop(apply(1, 2, 3), 2))
+      println(drop(Liste(1, 2, 3), 2))
     }
   }
 
@@ -118,7 +119,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(dropWhile(apply(1, 2, 3, 4), (a: Int) => a < 3))
+      println(dropWhile(Liste(1, 2, 3, 4), (a: Int) => a < 3))
     }
   }
 
@@ -131,7 +132,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(setHead(apply(1, 2, 3, 4), 42))
+      println(setHead(Liste(1, 2, 3, 4), 42))
     }
   }
 
@@ -145,7 +146,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(init(apply(1, 2, 3, 4)))
+      println(init(Liste(1, 2, 3, 4)))
     }
   }
 
@@ -155,14 +156,14 @@ object Chapter3 {
     }
 
     def test() = {
-      println(productRight(apply(1, 2, 0, 3, 4)))
+      println(productRight(Liste(1, 2, 0, 3, 4)))
       // Can not short-circuit if using foldRight
     }
   }
 
   object Ex8 {
     def test() = {
-      println(foldRight(apply(1, 2, 3), Nil: Liste[Int])((a, b) => Cons(a, b)))
+      println(foldRight(Liste(1, 2, 3), Nil: Liste[Int])((a, b) => Cons(a, b)))
     }
   }
 
@@ -172,7 +173,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(lengthRight(apply(0, 0, 0)))
+      println(lengthRight(Liste(0, 0, 0)))
     }
   }
 
@@ -194,9 +195,9 @@ object Chapter3 {
     }
 
     def test() = {
-      println(sumLeft(apply(1, 2, 3)))
-      println(productLeft(apply(1, 2, 4, 0)))
-      println(lengthLeft(apply(1, 2, 3)))
+      println(sumLeft(Liste(1, 2, 3)))
+      println(productLeft(Liste(1, 2, 4, 0)))
+      println(lengthLeft(Liste(1, 2, 3)))
     }
   }
 
@@ -209,7 +210,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(reverse(apply(1, 2, 3)))
+      println(reverse(Liste(1, 2, 3)))
     }
   }
 
@@ -221,9 +222,9 @@ object Chapter3 {
     }
 
     def test() = {
-      println(foldLeft(apply("a", "b", "c"), "z")((b, a) => b + ", " + a))
-      println(foldRight(apply("a", "b", "c"), "z")((a, b) => b + ", " + a))
-      println(foldRightUsingFoldLeft(apply("a", "b", "c"), "z")((a, b) => b + ", " + a))
+      println(foldLeft(Liste("a", "b", "c"), "z")((b, a) => b + ", " + a))
+      println(foldRight(Liste("a", "b", "c"), "z")((a, b) => b + ", " + a))
+      println(foldRightUsingFoldLeft(Liste("a", "b", "c"), "z")((a, b) => b + ", " + a))
 
       // The other way is not possible, as foldRight does not reverse the list
     }
@@ -231,7 +232,7 @@ object Chapter3 {
 
   object Ex14 {
     def test() = {
-      println(append(apply(1, 2, 3), apply(4, 5, 6)))
+      println(append(Liste(1, 2, 3), Liste(4, 5, 6)))
     }
   }
 
@@ -244,7 +245,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(flatten(apply(apply(1, 2, 3), apply(4, 5, 6), apply(7, 8, 9))))
+      println(flatten(Liste(Liste(1, 2, 3), Liste(4, 5, 6), Liste(7, 8, 9))))
     }
   }
 
@@ -266,25 +267,25 @@ object Chapter3 {
     }
 
     def test() = {
-      println(doubleToStrng(apply(1.1, 2.2, 3.3)))
+      println(doubleToStrng(Liste(1.1, 2.2, 3.3)))
     }
   }
 
   object Ex18 {
     def test() = {
-      println(map(apply(1, 2, 3))(a => a + 1))
+      println(map(Liste(1, 2, 3))(a => a + 1))
     }
   }
 
   object Ex19 {
     def test() = {
-      println(filter(apply(1, 2, 3, 4, 5))(_ % 2 == 0))
+      println(filter(Liste(1, 2, 3, 4, 5))(_ % 2 == 0))
     }
   }
 
   object Ex20 {
     def test() = {
-      println(flatMap(apply(1, 2, 3))(i => apply(i,i)))
+      println(flatMap(Liste(1, 2, 3))(i => Liste(i,i)))
     }
   }
 
@@ -292,12 +293,12 @@ object Chapter3 {
     def filterUsingFlatMap[A](l: Liste[A])(f: A => Boolean): Liste[A] = {
       l match {
         case Nil => Nil
-        case _ => flatMap(l)((a: A) => if (f(a)) apply(a) else Nil)
+        case _ => flatMap(l)((a: A) => if (f(a)) Liste(a) else Nil)
       }
     }
 
     def test() = {
-      println(filterUsingFlatMap(apply(1, 2, 3, 4, 5))(_ % 2 == 0))
+      println(filterUsingFlatMap(Liste(1, 2, 3, 4, 5))(_ % 2 == 0))
     }
   }
 
@@ -313,7 +314,7 @@ object Chapter3 {
     }
 
     def test() = {
-      println(zip(apply(1, 2, 3, 0), apply(4, 5, 6))((a, b) => a + b))
+      println(zip(Liste(1, 2, 3, 0), Liste(4, 5, 6))((a, b) => a + b))
     }
   }
 
@@ -338,19 +339,19 @@ object Chapter3 {
     }
 
     def test() = {
-      val l = apply(1, 2, 3, 4, 5)
+      val l = Liste(1, 2, 3, 4, 5)
       println(hasSubsequence(Nil, Nil))
-      println(!hasSubsequence(Nil, apply(1)))
+      println(!hasSubsequence(Nil, Liste(1)))
 
       println(hasSubsequence(l, Nil))
-      println(hasSubsequence(l, apply(1)))
-      println(hasSubsequence(l, apply(1, 2)))
-      println(hasSubsequence(l, apply(4, 5)))
-      println(hasSubsequence(l, apply(5)))
-      println(!hasSubsequence(l, apply(1, 3, 5)))
+      println(hasSubsequence(l, Liste(1)))
+      println(hasSubsequence(l, Liste(1, 2)))
+      println(hasSubsequence(l, Liste(4, 5)))
+      println(hasSubsequence(l, Liste(5)))
+      println(!hasSubsequence(l, Liste(1, 3, 5)))
 
-      println(hasSubsequence(apply(1, 2, 1, 2, 3), apply(1, 2, 3)))
-      println(hasSubsequence(apply(1, 1, 1, 2), apply(1, 1, 2)))
+      println(hasSubsequence(Liste(1, 2, 1, 2, 3), Liste(1, 2, 3)))
+      println(hasSubsequence(Liste(1, 1, 1, 2), Liste(1, 1, 2)))
     }
   }
 

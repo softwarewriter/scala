@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter3.{Cons, Liste, Nil}
+import no.jergan.scrapbook.fpinscala.Chapter4.Ex8.traverse
 import org.http4s.Uri
 
 
@@ -70,7 +71,7 @@ object Chapter4 {
         case Left(ea) => {
           b match {
             case Right(b) => Right(b)
-            case Left(eb) => Left(ea, eb)
+            case Left(eb) => Left(ea ++ eb)
           }
         }
       }
@@ -85,10 +86,19 @@ object Chapter4 {
 
   }
 
-  case class Left[+E](values: E*) extends Either[E, Nothing]
+  case class Left[+E](values: List[E]) extends Either[E, Nothing] {
+  }
+
+  object Left {
+    def apply[E](value: E): Left[E] = Left(List(value))
+  }
+
   case class Right[+A](values: A) extends Either[Nothing, A]
 
   object Ex1 {
+
+    Left(List("a"))
+    Left("a")
 
     def test(): Unit = {
       class A1
@@ -198,13 +208,13 @@ object Chapter4 {
     }
 
     def test(): Unit = {
-      val l: Liste[Int] = Chapter3.apply(1, 2, 3)
+      val l: Liste[Int] = Liste(1, 2, 3)
       println(traverse(l)(a => Some(a)))
       println(traverse(l)(a => if (a % 2 == 0) Some(a) else None))
       println(traverse(l)(a => if (a % 2 == 1) Some(a) else None))
 
-      println(sequenceUsingTraverse(Chapter3.apply(Some(1), Some(2))))
-      println(sequenceUsingTraverse(Chapter3.apply(Some(1), None, Some(2))))
+      println(sequenceUsingTraverse(Liste(Some(1), Some(2))))
+      println(sequenceUsingTraverse(Liste(Some(1), None, Some(2))))
     }
   }
 
@@ -260,10 +270,10 @@ object Chapter4 {
 
     def test(): Unit = {
 
-      println(sequence(Chapter3.apply(Right("ole"), Right("dole"), Left("doff"))))
-      println(sequence(Chapter3.apply(Right("ole"), Right("dole"), Right("doff"))))
+      println(sequence(Liste(Right("ole"), Right("dole"), Left("doff"))))
+      println(sequence(Liste(Right("ole"), Right("dole"), Right("doff"))))
 
-      val l: Liste[Int] = Chapter3.apply(1, 2, 3)
+      val l: Liste[Int] = Liste(1, 2, 3)
       println(traverse(l)(a => Right(a)))
       println(traverse(l)(a => if (a % 2 == 0) Right(a) else Left(a + " is not even")))
       println(traverse(l)(a => if (a % 2 == 1) Right(a) else Left(a + " is not odd")))
@@ -274,27 +284,41 @@ object Chapter4 {
 
     def sequenceAllErrors[E, A](l: Liste[Either[E, A]]): Either[E, Liste[A]] = {
       l match {
-        case Cons(head, tail) => head match {
-          case Right(r1) => {
-            sequenceAllErrors(tail) match {
-              case Right(r2) => Right(Cons(r1, r2))
-              case Left(l2) =>Left(l2)
-            }
+        case Cons(head, tail) => {
+          (head, sequenceAllErrors(tail)) match {
+            case (Right(a), Right(as)) => Right(Cons(a, as))
+            case (Left(e), Right(as)) => Left(e)
+            case (Right(a), Left(es)) => Left(es)
+            case (Left(e), Left(es)) => Left(e ++ es)
           }
-          case Left(l1) => Left(l1)
         }
         case Nil => Right(Nil)
       }
     }
 
-    def traverseAllErrors[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = ???
+    def traverseAllErrors[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = {
+      as match {
+        case Cons(head, tail) => {
+          f(head) match {
+            case Right(b) => {
+              traverseAllErrors(tail)(f) match {
+                case Right(r2) => Right(Cons(b, r2))
+                case Left(l2) => Left(l2)
+              }
+            }
+            case Left(l1) => Left(l1)
+          }
+        }
+        case Nil => Right(Nil)
+      }
+    }
 
     def test(): Unit = {
 
-      println(sequenceAllErrors(Chapter3.apply(Right("ole"), Right("dole"), Left("doff"), Left("doffen"))))
-      println(sequenceAllErrors(Chapter3.apply(Right("ole"), Right("dole"), Right("doff"), Right("doffen"))))
+      println(sequenceAllErrors(Liste(Right("ole"), Right("dole"), Left("doff"), Left("doffen"))))
+      println(sequenceAllErrors(Liste(Right("ole"), Right("dole"), Right("doff"), Right("doffen"))))
 
-      val l: Liste[Int] = Chapter3.apply(1, 2, 3, 4)
+      val l: Liste[Int] = Liste(1, 2, 3, 4)
       println(traverseAllErrors(l)(a => Right(a)))
       println(traverseAllErrors(l)(a => if (a % 2 == 0) Right(a) else Left(a + " is not even")))
       println(traverseAllErrors(l)(a => if (a % 2 == 1) Right(a) else Left(a + " is not odd")))
