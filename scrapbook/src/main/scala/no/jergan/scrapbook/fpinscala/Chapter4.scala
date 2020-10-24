@@ -64,6 +64,18 @@ object Chapter4 {
       }
     }
 
+    def orElseAllErrors[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = {
+      this match {
+        case Right(a) => Right(a)
+        case Left(ea) => {
+          b match {
+            case Right(b) => Right(b)
+            case Left(eb) => Left(ea, eb)
+          }
+        }
+      }
+    }
+
     def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
       this
         .flatMap(ra => {
@@ -73,8 +85,8 @@ object Chapter4 {
 
   }
 
-  case class Left[+E](value: E) extends Either[E, Nothing]
-  case class Right[+A](value: A) extends Either[Nothing, A]
+  case class Left[+E](values: E*) extends Either[E, Nothing]
+  case class Right[+A](values: A) extends Either[Nothing, A]
 
   object Ex1 {
 
@@ -228,6 +240,7 @@ object Chapter4 {
       }
     }
 
+    // TODO: Do we have to use two match statements on Either?
     def traverse[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = {
       as match {
         case Cons(head, tail) => {
@@ -257,8 +270,39 @@ object Chapter4 {
     }
   }
 
+  object Ex9 {
+
+    def sequenceAllErrors[E, A](l: Liste[Either[E, A]]): Either[E, Liste[A]] = {
+      l match {
+        case Cons(head, tail) => head match {
+          case Right(r1) => {
+            sequenceAllErrors(tail) match {
+              case Right(r2) => Right(Cons(r1, r2))
+              case Left(l2) =>Left(l2)
+            }
+          }
+          case Left(l1) => Left(l1)
+        }
+        case Nil => Right(Nil)
+      }
+    }
+
+    def traverseAllErrors[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = ???
+
+    def test(): Unit = {
+
+      println(sequenceAllErrors(Chapter3.apply(Right("ole"), Right("dole"), Left("doff"), Left("doffen"))))
+      println(sequenceAllErrors(Chapter3.apply(Right("ole"), Right("dole"), Right("doff"), Right("doffen"))))
+
+      val l: Liste[Int] = Chapter3.apply(1, 2, 3, 4)
+      println(traverseAllErrors(l)(a => Right(a)))
+      println(traverseAllErrors(l)(a => if (a % 2 == 0) Right(a) else Left(a + " is not even")))
+      println(traverseAllErrors(l)(a => if (a % 2 == 1) Right(a) else Left(a + " is not odd")))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex8.test()
+    Ex9.test()
   }
 
 }
