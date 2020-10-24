@@ -50,14 +50,37 @@ object Chapter4 {
       }
     }
 
-    def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = ???
-    def orElse[EE >: E,B >: A](b: => Either[EE, B]): Either[EE, B] = ???
-    def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = ???
+    def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = {
+      this match {
+        case Right(a) => f(a)
+        case Left(e) => Left(e)
+      }
+    }
+
+    def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = {
+      this match {
+        case Right(a) => Right(a)
+        case Left(e) => b
+      }
+    }
+
+    def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
+      this.flatMap(a => {
+        b match {
+          case Right(b) => Right(f(a, b))
+          case Left(eb) => Left(eb)
+        }
+      })
+    }
+
+    def sequence[A](l: List[Option[A]]): Option[List[A]] = ???
+
+    def traverse[A, B](as: Liste[A])(f: A => Option[B]): Option[Liste[B]] = ???
+
   }
 
   case class Left[+E](value: E) extends Either[E, Nothing]
   case class Right[+A](value: A) extends Either[Nothing, A]
-
 
   object Ex1 {
 
@@ -183,7 +206,13 @@ object Chapter4 {
 
     def test(): Unit = {
 
-      Right("hei").map(a => a + a)
+      println(Right("hei").map(a => a + a))
+      val result: Either[String, (Nothing, Int, Double)] = for {
+        age <- Right(42)
+        name <- Left("invalid name")
+        salary <- Right(1000000.0)
+      } yield (name, age, salary)
+
     }
   }
 
