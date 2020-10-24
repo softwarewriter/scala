@@ -65,11 +65,9 @@ object Chapter4 {
     }
 
     def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
-      this.flatMap(a => {
-        b match {
-          case Right(b) => Right(f(a, b))
-          case Left(eb) => Left(eb)
-        }
+      this
+        .flatMap(ra => {
+          b.map(rb => f(ra, rb))
       })
     }
 
