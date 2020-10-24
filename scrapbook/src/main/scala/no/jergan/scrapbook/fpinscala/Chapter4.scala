@@ -86,14 +86,12 @@ object Chapter4 {
 
   }
 
-  case class Left[+E](values: List[E]) extends Either[E, Nothing] {
-  }
+  case class Left[+E](values: List[E]) extends Either[E, Nothing]
+  case class Right[+A](values: A) extends Either[Nothing, A]
 
   object Left {
     def apply[E](value: E): Left[E] = Left(List(value))
   }
-
-  case class Right[+A](values: A) extends Either[Nothing, A]
 
   object Ex1 {
 
@@ -299,14 +297,11 @@ object Chapter4 {
     def traverseAllErrors[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = {
       as match {
         case Cons(head, tail) => {
-          f(head) match {
-            case Right(b) => {
-              traverseAllErrors(tail)(f) match {
-                case Right(r2) => Right(Cons(b, r2))
-                case Left(l2) => Left(l2)
-              }
-            }
-            case Left(l1) => Left(l1)
+          (f(head), traverseAllErrors(tail)(f)) match {
+            case (Right(a), Right(as)) => Right(Cons(a, as))
+            case (Left(e), Right(as)) => Left(e)
+            case (Right(a), Left(es)) => Left(es)
+            case (Left(e), Left(es)) => Left(e ++ es)
           }
         }
         case Nil => Right(Nil)
