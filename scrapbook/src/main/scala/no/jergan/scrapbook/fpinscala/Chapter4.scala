@@ -233,11 +233,9 @@ object Chapter4 {
     def traverse[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = {
       as match {
         case Cons(head, tail) => {
-          val eb = f(head)
-          eb match {
+          f(head) match {
             case Right(b) => {
-              val t: Either[E, Liste[B]] = traverse(tail)(f)
-              t match {
+              traverse(tail)(f) match {
                 case Right(r2) => Right(Cons(b, r2))
                 case Left(l2) => Left(l2)
               }
@@ -256,8 +254,8 @@ object Chapter4 {
 
       val l: Liste[Int] = Chapter3.apply(1, 2, 3)
       println(traverse(l)(a => Right(a)))
-      println(traverse(l)(a => if (a % 2 == 0) Right(a) else Left(a + " is not odd")))
-      println(traverse(l)(a => if (a % 2 == 1) Right(a) else Left(a + " is not even")))
+      println(traverse(l)(a => if (a % 2 == 0) Right(a) else Left(a + " is not even")))
+      println(traverse(l)(a => if (a % 2 == 1) Right(a) else Left(a + " is not odd")))
     }
   }
 
