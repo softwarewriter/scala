@@ -219,8 +219,7 @@ object Chapter4 {
       l match {
         case Cons(head, tail) => head match {
           case Right(r1) => {
-            val rest = sequence(tail)
-            rest match {
+            sequence(tail) match {
               case Right(r2) => Right(Cons(r1, r2))
               case Left(l2) =>Left(l2)
             }
@@ -231,7 +230,24 @@ object Chapter4 {
       }
     }
 
-    def traverse[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = ???
+    def traverse[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = {
+      as match {
+        case Cons(head, tail) => {
+          val eb = f(head)
+          eb match {
+            case Right(b) => {
+              val t: Either[E, Liste[B]] = traverse(tail)(f)
+              t match {
+                case Right(r2) => Right(Cons(b, r2))
+                case Left(l2) => Left(l2)
+              }
+            }
+            case Left(l1) => Left(l1)
+          }
+        }
+        case Nil => Right(Nil)
+      }
+    }
 
     def test(): Unit = {
 
