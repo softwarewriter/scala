@@ -73,10 +73,6 @@ object Chapter4 {
       })
     }
 
-    def sequence[A](l: List[Option[A]]): Option[List[A]] = ???
-
-    def traverse[A, B](as: Liste[A])(f: A => Option[B]): Option[Liste[B]] = ???
-
   }
 
   case class Left[+E](value: E) extends Either[E, Nothing]
@@ -168,7 +164,7 @@ object Chapter4 {
     }
   }
 
-  // TODO: Do we have to use two match statements?
+  // TODO: Do we have to use two match statements on Option?
   object Ex6 {
     def traverse[A, B](as: Liste[A])(f: A => Option[B]): Option[Liste[B]] = {
       as match {
@@ -216,8 +212,41 @@ object Chapter4 {
     }
   }
 
+  object Ex8 {
+
+    // TODO: Do we have to use two match statements on Either?
+    def sequence[E, A](l: Liste[Either[E, A]]): Either[E, Liste[A]] = {
+      l match {
+        case Cons(head, tail) => head match {
+          case Right(r1) => {
+            val rest = sequence(tail)
+            rest match {
+              case Right(r2) => Right(Cons(r1, r2))
+              case Left(l2) =>Left(l2)
+            }
+          }
+          case Left(l1) => Left(l1)
+        }
+        case Nil => Right(Nil)
+      }
+    }
+
+    def traverse[E, A, B](as: Liste[A])(f: A => Either[E, B]): Either[E, Liste[B]] = ???
+
+    def test(): Unit = {
+
+      println(sequence(Chapter3.apply(Right("ole"), Right("dole"), Left("doff"))))
+      println(sequence(Chapter3.apply(Right("ole"), Right("dole"), Right("doff"))))
+
+      val l: Liste[Int] = Chapter3.apply(1, 2, 3)
+      println(traverse(l)(a => Right(a)))
+      println(traverse(l)(a => if (a % 2 == 0) Right(a) else Left(a + " is not odd")))
+      println(traverse(l)(a => if (a % 2 == 1) Right(a) else Left(a + " is not even")))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex7.test()
+    Ex8.test()
   }
 
 }
