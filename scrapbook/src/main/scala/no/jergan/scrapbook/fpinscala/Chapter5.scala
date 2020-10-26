@@ -5,18 +5,28 @@ object Chapter5 {
   trait Stream[+A] {
     def uncons: Option[(A, Stream[A])]
 
+    def toList: List[A]
+
     def isEmpty: Boolean = uncons.isEmpty
+
   }
 
   object Stream {
     def empty[A]: Stream[A] =
       new Stream[A] {
         def uncons = None
+
+        override def toList: List[A] = List.empty
       }
 
     def cons[A](hd: => A, tl: => Stream[A]): Stream[A] =
       new Stream[A] {
         lazy val uncons = Some((hd, tl))
+
+        override def toList: List[A] = {
+          val s = uncons.get
+          List(s._1) ++ s._2.toList
+        }
       }
 
     def apply[A](as: A*): Stream[A] =
