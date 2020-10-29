@@ -44,7 +44,7 @@ object Chapter3 {
     }
   }
 
-  def foldRight[A,B](l: Liste[A], z: B)(f: (A, B) => B): B = {
+  def foldRight[A, B](l: Liste[A], z: B)(f: (A, B) => B): B = {
     l match {
       case Nil => z
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))

@@ -47,6 +47,10 @@ object Chapter5 {
       foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
     }
 
+    def map[B](f: A => B): Stream[B] = {
+      foldRight(empty[B])((a, b) => cons(f(a), b))
+    }
+
   }
 
   object Stream {
@@ -98,8 +102,14 @@ object Chapter5 {
     }
   }
 
+  object Ex6 {
+    def test(): Unit = {
+      println(Stream("ole", "dole", "doff").map(_.length).toList)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex5.test()
+    Ex6.test()
   }
 
 }
