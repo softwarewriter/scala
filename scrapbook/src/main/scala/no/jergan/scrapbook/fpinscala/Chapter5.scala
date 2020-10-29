@@ -1,21 +1,55 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.empty
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty}
 
 object Chapter5 {
 
   trait Stream[+A] {
     def uncons: Option[(A, Stream[A])]
 
-    def toList: List[A]
-
-    def take(n: Int): Stream[A]
-
-    def takeWhile(p: A => Boolean): Stream[A]
-
-    def forAll(p: A => Boolean): Boolean
-
     def isEmpty: Boolean = uncons.isEmpty
+
+    def toList: List[A] = {
+      uncons match {
+        case Some((hd, tl)) => List(hd) ++ tl.toList
+        case None => List.empty
+      }
+    }
+
+    def take(n: Int): Stream[A] = {
+      uncons match {
+        case Some((hd, tl)) => if (n == 0) empty else cons(hd, tl.take(n - 1))
+        case None => empty
+      }
+    }
+
+    def takeWhile(p: A => Boolean): Stream[A] = {
+      uncons match {
+        case Some((hd, tl)) => if (p(hd)) cons(hd, tl.takeWhile(p)) else empty
+        case None => empty
+      }
+    }
+
+    def forAll(p: A => Boolean): Boolean = {
+      uncons match {
+        case Some((hd, tl)) => if (p(hd)) tl.forAll(p) else false
+        case None => true
+      }
+    }
+
+    def foldRight[B](z: => B)(f: (A, => B) => B): B =
+      uncons match {
+        case Some((h, t)) => f(h, t.foldRight(z)(f))
+        case None => z
+      }
+
+    def takeWhileUsingFoldRight(p: A => Boolean): Stream[A] = {
+      def f(a: A, b: => Stream[A]): Stream[A] = {
+        println("test of " + a)
+        if (p(a)) cons(a, b) else empty
+      }
+      foldRight[Stream[A]](empty)(f)
+    }
 
   }
 
@@ -23,42 +57,12 @@ object Chapter5 {
     def empty[A]: Stream[A] =
       new Stream[A] {
         def uncons = None
-
-        override def toList: List[A] = List.empty
-
-        override def take(n: Int): Stream[A] = empty
-
-        override def takeWhile(p: A => Boolean): Stream[A] = empty
-
-        override def forAll(p: A => Boolean): Boolean = true
       }
 
     def cons[A](hd: => A, tl: => Stream[A]): Stream[A] =
       new Stream[A] {
         lazy val uncons = Some((hd, tl))
 
-        override def toList: List[A] = uncons match {
-            case Some((hd, tl)) => List(hd) ++ tl.toList
-          }
-
-        override def take(n: Int): Stream[A] =
-          if (n == 0) empty else
-            uncons match {
-              case Some((hd, tl)) => cons(hd, tl.take(n - 1))
-            }
-
-        override def takeWhile(p: A => Boolean): Stream[A] = {
-            uncons match {
-              case Some((hd, tl)) => if (p(hd)) cons(hd, tl.takeWhile(p)) else empty
-            }
-        }
-
-        override def forAll(p: A => Boolean): Boolean = {
-          uncons match {
-            case Some((hd, tl)) => if (p(hd)) tl.forAll(p) else false
-          }
-
-        }
       }
 
     def apply[A](as: A*): Stream[A] =
@@ -91,8 +95,15 @@ object Chapter5 {
     }
   }
 
+  object Ex5 {
+    def test(): Unit = {
+      println(Stream(1, 2, 3, 4, 5, 6, 7, 8).takeWhileUsingFoldRight(e => e < 4).toList)
+      println(Stream(1, 2, 3, 2, 1).takeWhileUsingFoldRight(e => e < 4).toList)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex4.test()
+    Ex5.test()
   }
 
 }
