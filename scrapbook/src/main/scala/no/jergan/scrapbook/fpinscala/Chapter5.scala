@@ -32,14 +32,13 @@ object Chapter5 {
             case Some((hd, tl)) => List(hd) ++ tl.toList
           }
 
-        /**
-         * Assume returned stream is original stream minus n elements (n elements arew thrown away).
-         */
         override def take(n: Int): Stream[A] =
-          if (n == 0 || isEmpty) this else
+          if (n == 0) empty else
             uncons match {
-              case Some((hd, tl)) => tl.take(n - 1)
+              case Some((hd, tl)) => cons(hd, tl.take(n - 1))
             }
+
+        def takeWhile(p: A => Boolean): Stream[A] = ???
       }
 
     def apply[A](as: A*): Stream[A] =
@@ -49,12 +48,21 @@ object Chapter5 {
   object Ex1 {
 
     def test(): Unit = {
+      println(Stream(1, 2, 3).toList)
     }
+  }
+
+  object Ex2 {
+
+    def test(): Unit = {
+     println(Stream(1, 2, 3).take(2).toList)
+    }
+
   }
 
   def main(args: Array[String]): Unit = {
 
-    Ex1.test()
+    Ex2.test()
 
   }
 
