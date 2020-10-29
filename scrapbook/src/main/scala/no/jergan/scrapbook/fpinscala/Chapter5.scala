@@ -44,11 +44,7 @@ object Chapter5 {
       }
 
     def takeWhileUsingFoldRight(p: A => Boolean): Stream[A] = {
-      def f(a: A, b: => Stream[A]): Stream[A] = {
-        println("test of " + a)
-        if (p(a)) cons(a, b) else empty
-      }
-      foldRight[Stream[A]](empty)(f)
+      foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
     }
 
   }
