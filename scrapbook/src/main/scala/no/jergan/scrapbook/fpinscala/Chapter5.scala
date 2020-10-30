@@ -1,6 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty}
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{append, cons, empty}
 
 object Chapter5 {
 
@@ -51,6 +51,10 @@ object Chapter5 {
       foldRight(empty[B])((a, b) => cons(f(a), b))
     }
 
+    def filter(p: A => Boolean): Stream[A] = {
+      foldRight(empty[A])((a, b) => if (p(a)) cons(a, b) else b)
+    }
+
   }
 
   object Stream {
@@ -67,6 +71,14 @@ object Chapter5 {
 
     def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+    // TODO: Should move to trait , but then I get
+    // covariant type A occurs in contravariant position in type A of value a
+    // https://stackoverflow.com/questions/43180310/covariant-type-a-occurs-in-contravariant-position-in-type-a-of-value-a
+    def append[A](s1: Stream[A], s2: Stream[A]): Stream[A] = {
+      s1.foldRight(s2)((a, b) => cons(a, b))
+    }
+
   }
 
   object Ex1 {
@@ -103,8 +115,11 @@ object Chapter5 {
   }
 
   object Ex6 {
+
     def test(): Unit = {
       println(Stream("ole", "dole", "doff").map(_.length).toList)
+      println(Stream(1, 2, 3, 4).filter(_ % 2 == 0).toList)
+      println(append(Stream(1, 2, 3, 4), Stream(5, 6, 7, 8)).toList)
     }
   }
 
