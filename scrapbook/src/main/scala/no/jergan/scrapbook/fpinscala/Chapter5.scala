@@ -50,6 +50,15 @@ object Chapter5 {
       foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
     }
 
+    def takeWhileUsingUnfold(p: A => Boolean): Stream[A] = {
+      unfold(this)(_.uncons match {
+        case Some((hd, tl)) => if (p(hd)) Some((hd, tl)) else None
+        case None => None
+      })
+
+      foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
+    }
+
     def takeUsingUnfold(n: Int): Stream[A] = {
       unfold((this, n)) (s => {
         val (stream, n) = s
@@ -239,6 +248,7 @@ object Chapter5 {
     def test() = {
       println(Stream("ole", "dole", "doff").mapUsingUnfold(_.length).toList)
       println(ones.takeUsingUnfold(3).toList)
+      println(Stream(1, 2, 3, 4).takeWhileUsingUnfold(_ < 3).toList)
     }
   }
 
