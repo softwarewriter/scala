@@ -170,17 +170,53 @@ object Chapter5 {
   }
 
   object Ex9 {
-    def fib(a: Int, b: Int): Stream[Int] = {
-      cons(a, fib(a + b, a))
+    def fibs(a: Int, b: Int): Stream[Int] = {
+      cons(a, fibs(a + b, a))
     }
 
     def test() = {
-      println(fib(0, 1).take(8).toList)
+      println(fibs(0, 1).take(8).toList)
+    }
+  }
+
+  object Ex10 {
+    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+      f(z) match {
+        case Some((a, s)) => cons(a, unfold(s)(f))
+        case None => empty[A]
+      }
+    }
+  }
+
+  object Ex11 {
+   import Ex10.unfold
+
+    def ones: Stream[Int] = {
+      unfold(1)(_ => Option(1, 1))
+    }
+
+    def constant(n: Int): Stream[Int] = {
+      unfold(n)(_ => Option(n, n))
+    }
+
+    def from(n: Int): Stream[Int] = {
+      unfold(n)(n => Option(n, n + 1))
+    }
+
+    def fibs(): Stream[Int] = {
+      unfold((0, 1)) (a => Option(a._1, (a._1 + a._2, a._1)))
+    }
+
+    def test() = {
+      println(ones.take(3).toList)
+      println(constant(42).take(3).toList)
+      println(from(42).take(3).toList)
+      println(fibs.take(8).toList)
     }
   }
 
   def main(args: Array[String]): Unit = {
-    Ex9.test()
+    Ex11.test()
   }
 
 }
