@@ -55,6 +55,23 @@ object Chapter5 {
       foldRight(empty[A])((a, b) => if (p(a)) cons(a, b) else b)
     }
 
+    def append[B >: A](s: Stream[B]): Stream[B] = {
+      this.foldRight(s)((a, b) => cons(a, b))
+    }
+
+    /*
+    def append[A](s1: Stream[A], s2: Stream[A]): Stream[A] = {
+      s1.foldRight(s2)((a, b) => cons(a, b))
+    }
+
+     */
+//    def append(b: b): Unit = ???
+
+//    def append(s: Stream[A]): Unit = ???
+
+//    def flatMap[B](f: A => Stream[A]): Stream[A] = ???
+//      foldRight(empty[B])((a, b) => cons(f(a), b))
+
   }
 
   object Stream {
@@ -117,9 +134,48 @@ object Chapter5 {
   object Ex6 {
 
     def test(): Unit = {
+
+      class A1() {
+
+      }
+
+      class A2() extends A1 {
+
+      }
+
+      class A3() extends A2 {
+
+      }
+
+      val a1 = new A1
+      val a2 = new A2
+
+      val a: A2 = a2
+
+
+      trait Box[A] {
+
+        val a: A
+
+        def get: A = a
+
+//        def set(a: A): Unit = ???
+
+        def set[B <: A](a: A, b: B): Unit = {
+
+//          val v1: B = a
+          val v2: A = b
+
+        }
+
+      }
+
       println(Stream("ole", "dole", "doff").map(_.length).toList)
       println(Stream(1, 2, 3, 4).filter(_ % 2 == 0).toList)
       println(append(Stream(1, 2, 3, 4), Stream(5, 6, 7, 8)).toList)
+//      println(Stream(1, 2, 3, 4).append(Stream(5, 6, 7, 8)).toList)
+
+      //      println(Stream(1, 2, 3, 4).flatMap(a => Stream(a, a)))
     }
   }
 
