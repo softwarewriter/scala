@@ -2,8 +2,9 @@ package no.jergan.scrapbook.fpinscala
 
 import java.util
 
+import no.jergan.scrapbook.fpinscala.Chapter3.Liste
 import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold}
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold, zip}
 
 object Chapter5 {
 
@@ -26,11 +27,32 @@ object Chapter5 {
       }
     }
 
+    def takeUsingUnfold(n: Int): Stream[A] = {
+      unfold((this, n)) (s => {
+        val (stream, n) = s
+        if (n == 0) None else stream.uncons match {
+          case Some((hd, tl)) => Some((hd, (tl, n - 1)))
+          case None => None
+        }
+      })
+    }
+
     def takeWhile(p: A => Boolean): Stream[A] = {
       uncons match {
         case Some((hd, tl)) => if (p(hd)) cons(hd, tl.takeWhile(p)) else empty
         case None => empty
       }
+    }
+
+    def takeWhileUsingFoldRight(p: A => Boolean): Stream[A] = {
+      foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
+    }
+
+    def takeWhileUsingUnfold(p: A => Boolean): Stream[A] = {
+      unfold(this)(_.uncons match {
+        case Some((hd, tl)) => if (p(hd)) Some((hd, tl)) else None
+        case None => None
+      })
     }
 
     def forAll(p: A => Boolean): Boolean = {
@@ -45,29 +67,6 @@ object Chapter5 {
         case Some((h, t)) => f(h, t.foldRight(z)(f))
         case None => z
       }
-
-    def takeWhileUsingFoldRight(p: A => Boolean): Stream[A] = {
-      foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
-    }
-
-    def takeWhileUsingUnfold(p: A => Boolean): Stream[A] = {
-      unfold(this)(_.uncons match {
-        case Some((hd, tl)) => if (p(hd)) Some((hd, tl)) else None
-        case None => None
-      })
-
-      foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
-    }
-
-    def takeUsingUnfold(n: Int): Stream[A] = {
-      unfold((this, n)) (s => {
-        val (stream, n) = s
-        if (n == 0) None else stream.uncons match {
-          case Some((hd, tl)) => Some((hd, (tl, n - 1)))
-          case None => None
-        }
-      })
-    }
 
     def map[B](f: A => B): Stream[B] = {
       foldRight(empty[B])((a, b) => cons(f(a), b))
@@ -92,6 +91,7 @@ object Chapter5 {
       foldRight(empty[B])((a, b) => f(a).append(b))
     }
 
+
   }
 
   object Stream {
@@ -114,6 +114,16 @@ object Chapter5 {
         case Some((a, s)) => cons(a, unfold(s)(f))
         case None => empty[A]
       }
+    }
+
+    def zip[A](s1: Stream[A], s2: Stream[A], add: (A, A) => A): Stream[A] = {
+      unfold((s1, s2))(s => {
+        val (s1, s2) = s
+        (s1.uncons, s2.uncons) match {
+          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some(add(hd1, hd2), (tl1, tl2))
+          case _ => None
+        }
+      })
     }
 
   }
@@ -249,6 +259,7 @@ object Chapter5 {
       println(Stream("ole", "dole", "doff").mapUsingUnfold(_.length).toList)
       println(ones.takeUsingUnfold(3).toList)
       println(Stream(1, 2, 3, 4).takeWhileUsingUnfold(_ < 3).toList)
+      println(zip[Int](Stream(1, 2, 3, 4), Stream(4, 5, 6), (a, b) => a + b).toList)
     }
   }
 
