@@ -62,7 +62,6 @@ object Chapter5 {
     }
 
     def flatMap[B >: A](f: B => Stream[B]): Stream[B] = {
-
       foldRight(empty[B])((a, b) => f(a).append(b))
     }
 
@@ -77,7 +76,6 @@ object Chapter5 {
     def cons[A](hd: => A, tl: => Stream[A]): Stream[A] =
       new Stream[A] {
         lazy val uncons = Some((hd, tl))
-
       }
 
     def apply[A](as: A*): Stream[A] =
