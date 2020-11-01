@@ -73,10 +73,11 @@ object Chapter5 {
         def uncons = None
       }
 
-    def cons[A](hd: => A, tl: => Stream[A]): Stream[A] =
+    def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
       new Stream[A] {
         lazy val uncons = Some((hd, tl))
       }
+    }
 
     def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
@@ -148,8 +149,38 @@ object Chapter5 {
     }
   }
 
+  object Ex7 {
+    def constant[A](a: A): Stream[A] = {
+      cons(a, constant(a))
+    }
+
+    def test() = {
+      println(constant(42).take(3).toList)
+    }
+  }
+
+  object Ex8 {
+    def from(n: Int): Stream[Int] = {
+      cons(n, from(n + 1))
+    }
+
+    def test() = {
+      println(from(42).take(3).toList)
+    }
+  }
+
+  object Ex9 {
+    def fib(a: Int, b: Int): Stream[Int] = {
+      cons(a, fib(a + b, a))
+    }
+
+    def test() = {
+      println(fib(0, 1).take(8).toList)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex6.test()
+    Ex9.test()
   }
 
 }
