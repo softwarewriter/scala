@@ -1,6 +1,8 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{append, cons, empty}
+import java.util
+
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty}
 
 object Chapter5 {
 
@@ -55,7 +57,15 @@ object Chapter5 {
       foldRight(empty[A])((a, b) => if (p(a)) cons(a, b) else b)
     }
 
+    // A extends B
     def append[B >: A](s: Stream[B]): Stream[B] = {
+
+      val thisA: Stream[A] = this
+      val thisB: Stream[B] = this
+//      val sA: Stream[A] = s
+      val sB: Stream[B] = s
+
+      //      val v2: Stream[A] = s
       this.foldRight(s)((a, b) => cons(a, b))
     }
 
@@ -88,13 +98,6 @@ object Chapter5 {
 
     def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
-
-    // TODO: Should move to trait , but then I get
-    // covariant type A occurs in contravariant position in type A of value a
-    // https://stackoverflow.com/questions/43180310/covariant-type-a-occurs-in-contravariant-position-in-type-a-of-value-a
-    def append[A](s1: Stream[A], s2: Stream[A]): Stream[A] = {
-      s1.foldRight(s2)((a, b) => cons(a, b))
-    }
 
   }
 
@@ -135,45 +138,29 @@ object Chapter5 {
 
     def test(): Unit = {
 
-      class A1() {
+      class A1(a1: Int) {
 
+        override def toString() = "A1 with " + a1
       }
 
-      class A2() extends A1 {
+      class A2(a2: Int) extends A1(42) {
 
-      }
-
-      class A3() extends A2 {
-
-      }
-
-      val a1 = new A1
-      val a2 = new A2
-
-      val a: A2 = a2
-
-
-      trait Box[A] {
-
-        val a: A
-
-        def get: A = a
-
-//        def set(a: A): Unit = ???
-
-        def set[B <: A](a: A, b: B): Unit = {
-
-//          val v1: B = a
-          val v2: A = b
-
-        }
-
+        override def toString() = "A2 with " + a2
       }
 
       println(Stream("ole", "dole", "doff").map(_.length).toList)
       println(Stream(1, 2, 3, 4).filter(_ % 2 == 0).toList)
-      println(append(Stream(1, 2, 3, 4), Stream(5, 6, 7, 8)).toList)
-//      println(Stream(1, 2, 3, 4).append(Stream(5, 6, 7, 8)).toList)
+      println(Stream(1, 2, 3, 4).append(Stream(5, 6, 7, 8)).toList)
+
+      val s1: Stream[A1] = Stream[A1](new A1(1), new A1(2))
+      val s2: Stream[A2] = Stream[A2](new A2(3), new A2(4))
+      val s21: Stream[A1] = s2
+
+      val s3: Stream[A1] = s1.append[A1](s21)
+      val s4: Stream[A1] = s2.append[A1](s1)
+
+      println(s3.toList)
+      println(s4.toList)
 
       //      println(Stream(1, 2, 3, 4).flatMap(a => Stream(a, a)))
     }
