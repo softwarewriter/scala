@@ -57,30 +57,14 @@ object Chapter5 {
       foldRight(empty[A])((a, b) => if (p(a)) cons(a, b) else b)
     }
 
-    // A extends B
     def append[B >: A](s: Stream[B]): Stream[B] = {
-
-      val thisA: Stream[A] = this
-      val thisB: Stream[B] = this
-//      val sA: Stream[A] = s
-      val sB: Stream[B] = s
-
-      //      val v2: Stream[A] = s
       this.foldRight(s)((a, b) => cons(a, b))
     }
 
-    /*
-    def append[A](s1: Stream[A], s2: Stream[A]): Stream[A] = {
-      s1.foldRight(s2)((a, b) => cons(a, b))
+    def flatMap[B >: A](f: B => Stream[B]): Stream[B] = {
+
+      foldRight(empty[B])((a, b) => f(a).append(b))
     }
-
-     */
-//    def append(b: b): Unit = ???
-
-//    def append(s: Stream[A]): Unit = ???
-
-//    def flatMap[B](f: A => Stream[A]): Stream[A] = ???
-//      foldRight(empty[B])((a, b) => cons(f(a), b))
 
   }
 
@@ -162,7 +146,7 @@ object Chapter5 {
       println(s3.toList)
       println(s4.toList)
 
-      //      println(Stream(1, 2, 3, 4).flatMap(a => Stream(a, a)))
+      println(Stream(1, 2, 3, 4).flatMap(a => Stream(a, a)).toList)
     }
   }
 
