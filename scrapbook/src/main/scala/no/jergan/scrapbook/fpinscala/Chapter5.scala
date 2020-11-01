@@ -4,7 +4,7 @@ import java.util
 
 import no.jergan.scrapbook.fpinscala.Chapter3.Liste
 import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold, zip}
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold, zip, zipAll}
 
 object Chapter5 {
 
@@ -116,16 +116,27 @@ object Chapter5 {
       }
     }
 
-    def zip[A](s1: Stream[A], s2: Stream[A], add: (A, A) => A): Stream[A] = {
+    def zip[A, B](s1: Stream[A], s2: Stream[B]): Stream[(A, B)] = {
       unfold((s1, s2))(s => {
         val (s1, s2) = s
         (s1.uncons, s2.uncons) match {
-          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some(add(hd1, hd2), (tl1, tl2))
+          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some((hd1, hd2), (tl1, tl2))
           case _ => None
         }
       })
     }
 
+    def zipAll[A, B](s1: Stream[A], s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+      unfold((s1, s2))(s => {
+        val (s1, s2) = s
+        (s1.uncons, s2.uncons) match {
+          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some((Some(hd1), Some(hd2)), (tl1, tl2))
+          case (Some((hd1, tl1)), None) => Some((Some(hd1), None), (tl1, empty))
+          case (None, Some((hd2, tl2))) => Some((None, Some(hd2)), (empty, tl2))
+          case _ => None
+        }
+      })
+    }
   }
 
   object Ex1 {
@@ -259,7 +270,7 @@ object Chapter5 {
       println(Stream("ole", "dole", "doff").mapUsingUnfold(_.length).toList)
       println(ones.takeUsingUnfold(3).toList)
       println(Stream(1, 2, 3, 4).takeWhileUsingUnfold(_ < 3).toList)
-      println(zip[Int](Stream(1, 2, 3, 4), Stream(4, 5, 6), (a, b) => a + b).toList)
+      println(zipAll(Stream(1, 2, 3, 4), Stream("a", "b", "c")).toList)
     }
   }
 
