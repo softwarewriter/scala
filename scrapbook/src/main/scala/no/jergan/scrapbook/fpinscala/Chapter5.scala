@@ -2,7 +2,8 @@ package no.jergan.scrapbook.fpinscala
 
 import java.util
 
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty}
+import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold}
 
 object Chapter5 {
 
@@ -49,8 +50,25 @@ object Chapter5 {
       foldRight[Stream[A]](empty)((a, b) => if (p(a)) cons(a, b) else empty)
     }
 
+    def takeUsingUnfold(n: Int): Stream[A] = {
+      unfold((this, n)) (s => {
+        val (stream, n) = s
+        if (n == 0) None else stream.uncons match {
+          case Some((hd, tl)) => Some((hd, (tl, n - 1)))
+          case None => None
+        }
+      })
+    }
+
     def map[B](f: A => B): Stream[B] = {
       foldRight(empty[B])((a, b) => cons(f(a), b))
+    }
+
+    def mapUsingUnfold[B](f: A => B): Stream[B] = {
+      unfold(this)(_.uncons match {
+        case Some((hd, tl)) => Some((f(hd), tl))
+        case None => None
+      })
     }
 
     def filter(p: A => Boolean): Stream[A] = {
@@ -81,6 +99,13 @@ object Chapter5 {
 
     def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+      f(z) match {
+        case Some((a, s)) => cons(a, unfold(s)(f))
+        case None => empty[A]
+      }
+    }
 
   }
 
@@ -180,16 +205,10 @@ object Chapter5 {
   }
 
   object Ex10 {
-    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
-      f(z) match {
-        case Some((a, s)) => cons(a, unfold(s)(f))
-        case None => empty[A]
-      }
-    }
+    // unfold put in Stream companion object
   }
 
   object Ex11 {
-   import Ex10.unfold
 
     def ones: Stream[Int] = {
       unfold(1)(_ => Option(1, 1))
@@ -215,8 +234,16 @@ object Chapter5 {
     }
   }
 
+  object Ex12 {
+
+    def test() = {
+      println(Stream("ole", "dole", "doff").mapUsingUnfold(_.length).toList)
+      println(ones.takeUsingUnfold(3).toList)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex11.test()
+    Ex12.test()
   }
 
 }
