@@ -1,10 +1,8 @@
 package no.jergan.scrapbook.fpinscala
 
-import java.util
-
-import no.jergan.scrapbook.fpinscala.Chapter3.Liste
 import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
-import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold, zip, zipAll}
+import no.jergan.scrapbook.fpinscala.Chapter5.Ex12.zip
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold}
 
 object Chapter5 {
 
@@ -114,28 +112,6 @@ object Chapter5 {
         case Some((a, s)) => cons(a, unfold(s)(f))
         case None => empty[A]
       }
-    }
-
-    def zip[A, B](s1: Stream[A], s2: Stream[B]): Stream[(A, B)] = {
-      unfold((s1, s2))(s => {
-        val (s1, s2) = s
-        (s1.uncons, s2.uncons) match {
-          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some((hd1, hd2), (tl1, tl2))
-          case _ => None
-        }
-      })
-    }
-
-    def zipAll[A, B](s1: Stream[A], s2: Stream[B]): Stream[(Option[A], Option[B])] = {
-      unfold((s1, s2))(s => {
-        val (s1, s2) = s
-        (s1.uncons, s2.uncons) match {
-          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some((Some(hd1), Some(hd2)), (tl1, tl2))
-          case (Some((hd1, tl1)), None) => Some((Some(hd1), None), (tl1, empty))
-          case (None, Some((hd2, tl2))) => Some((None, Some(hd2)), (empty, tl2))
-          case _ => None
-        }
-      })
     }
   }
 
@@ -266,16 +242,54 @@ object Chapter5 {
 
   object Ex12 {
 
+    def zip[A, B](s1: Stream[A], s2: Stream[B]): Stream[(A, B)] = {
+      unfold((s1, s2))(s => {
+        val (s1, s2) = s
+        (s1.uncons, s2.uncons) match {
+          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some((hd1, hd2), (tl1, tl2))
+          case _ => None
+        }
+      })
+    }
+
+    def zipAll[A, B](s1: Stream[A], s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+      unfold((s1, s2))(s => {
+        val (s1, s2) = s
+        (s1.uncons, s2.uncons) match {
+          case (Some((hd1, tl1)), Some((hd2, tl2))) => Some((Some(hd1), Some(hd2)), (tl1, tl2))
+          case (Some((hd1, tl1)), None) => Some((Some(hd1), None), (tl1, empty))
+          case (None, Some((hd2, tl2))) => Some((None, Some(hd2)), (empty, tl2))
+          case _ => None
+        }
+      })
+    }
+
     def test() = {
       println(Stream("ole", "dole", "doff").mapUsingUnfold(_.length).toList)
       println(ones.takeUsingUnfold(3).toList)
       println(Stream(1, 2, 3, 4).takeWhileUsingUnfold(_ < 3).toList)
+      println(zip(Stream(1, 2, 3, 4), Stream("a", "b", "c")).toList)
       println(zipAll(Stream(1, 2, 3, 4), Stream("a", "b", "c")).toList)
     }
   }
 
+  object Ex13 {
+    def startsWith[A](s: Stream[A], pre: Stream[A]): Boolean = {
+      zip(s, pre)
+        .foldRight(true)((a, b) => b && (a._1 == a._2))
+    }
+
+    def test() = {
+
+      println(startsWith(Stream(1, 2, 3, 4), Stream()))
+      println(startsWith(Stream(1, 2, 3, 4), Stream(1, 2, 3, 4)))
+      println(startsWith(Stream(1, 2, 3, 4), Stream(1, 2)))
+      println(startsWith(Stream(1, 2, 3, 4), Stream(2, 1)))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex12.test()
+    Ex13.test()
   }
 
 }
