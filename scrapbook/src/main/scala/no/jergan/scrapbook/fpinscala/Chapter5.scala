@@ -89,7 +89,14 @@ object Chapter5 {
       foldRight(empty[B])((a, b) => f(a).append(b))
     }
 
-
+    def tails: Stream[Stream[A]] = {
+      unfold(this)(s => {
+        s.uncons match {
+          case Some((hd, tl)) => Some(s, tl)
+          case None => None
+        }
+      }).append(Stream(empty)) // TODO: Could we somehow avoid this append?
+    }
   }
 
   object Stream {
@@ -280,7 +287,6 @@ object Chapter5 {
     }
 
     def test() = {
-
       println(startsWith(Stream(1, 2, 3, 4), Stream()))
       println(startsWith(Stream(1, 2, 3, 4), Stream(1, 2, 3, 4)))
       println(startsWith(Stream(1, 2, 3, 4), Stream(1, 2)))
@@ -288,8 +294,14 @@ object Chapter5 {
     }
   }
 
+  object Ex14 {
+
+    def test() = {
+      println(Stream(1, 2, 3).tails.toList.map(_.toList))
+    }
+  }
   def main(args: Array[String]): Unit = {
-    Ex13.test()
+    Ex14.test()
   }
 
 }
