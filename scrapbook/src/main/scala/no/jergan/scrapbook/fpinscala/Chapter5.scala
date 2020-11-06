@@ -92,11 +92,20 @@ object Chapter5 {
     def tails: Stream[Stream[A]] = {
       unfold(this)(s => {
         s.uncons match {
-          case Some((hd, tl)) => Some(s, tl)
+          case Some((_, tl)) => Some(s, tl)
           case None => None
         }
       }).append(Stream(empty)) // TODO: Could we somehow avoid this append?
     }
+
+    def scanRight[B](z: => B)(f: (A, => B) => B): Stream[B] =
+
+    foldRight((empty[B], z))((a, b) => {
+      val (s, z) = b
+      val v: B = f(a, z)
+      val newStream: Stream[B] = cons(v, s)
+      (newStream, v)
+    })._1.append(Stream[B](z)) // TODO: Could we somehow avoid this append?
   }
 
   object Stream {
@@ -300,8 +309,17 @@ object Chapter5 {
       println(Stream(1, 2, 3).tails.toList.map(_.toList))
     }
   }
+
+  object Ex15 {
+
+    def test() = {
+      // Can not be implemented using unfold, as unfold traverses the stream from head to tail
+      println(Stream(1, 2, 3).scanRight(0)(_ + _).toList)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex14.test()
+    Ex15.test()
   }
 
 }
