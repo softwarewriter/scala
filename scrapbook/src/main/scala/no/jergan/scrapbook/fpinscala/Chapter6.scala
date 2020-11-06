@@ -22,23 +22,81 @@ object Chapter6 {
   }
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
-    val (a, nextRng) = rng.nextInt
-    a match {
-      case (Int.MinValue) => nonNegativeInt(nextRng)
-      case _ => if (a >= 0) (a, nextRng) else (a.abs, nextRng)
-    }
+    val (i, nextRng) = rng.nextInt
+    (if (i < 0) -(i + 1) else i, nextRng)
+  }
+
+  def double(rng: RNG): (Double, RNG) = {
+    val (i, nextRng) = nonNegativeInt(rng)
+    (i / (Int.MaxValue.toDouble + 1), nextRng)
   }
 
   object Ex1 {
     def test(): Unit = {
-
-      val rng = SimpleRNG(1)
+      val rng = SimpleRNG(2)
       println(nonNegativeInt(rng))
     }
   }
 
+  object Ex2 {
+    def test(): Unit = {
+      val rng = SimpleRNG(3)
+      println(double(rng))
+    }
+  }
+
+  object Ex3 {
+    def intDouble(rng: RNG): ((Int, Double), RNG) = {
+      val (i, rng2) = rng.nextInt
+      val (d, rng3) = double(rng2)
+      ((i, d), rng3)
+    }
+
+    def doubleInt(rng: RNG): ((Double, Int), RNG) = {
+      val ((i, d), rng2) = intDouble(rng)
+      ((d, i), rng2)
+    }
+
+    def doubleDoubleDouble(rng: RNG): ((Double, Double, Double), RNG) = {
+      val (d1, rng2) = nonNegativeInt(rng)
+      val (d2, rnd3) = nonNegativeInt(rng2)
+      val (d3, rnd4) = nonNegativeInt(rnd3)
+      ((d1, d2, d3), rnd4)
+    }
+  }
+
+  object Ex4 {
+    def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+      if (count == 0) {
+        (List.empty, rng)
+      } else {
+        val (i, r2) = rng.nextInt
+        val (l, rn) = ints(count - 1)(r2)
+        (i :: l, rn)
+      }
+    }
+
+    def intsTailRecursive(count: Int)(rng: RNG): (List[Int], RNG) = {
+      def go(count: Int, res: List[Int], rng: RNG): (List[Int], RNG) = {
+        if (count == 0) {
+          (res, rng)
+        } else {
+          val (i, r2) = rng.nextInt
+          go(count - 1, i :: res, r2)
+        }
+      }
+      go(count, List.empty, rng)
+    }
+
+    def test(): Unit = {
+      val rng = SimpleRNG(1)
+      println(ints(3)(rng))
+      println(intsTailRecursive(3)(rng))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex1.test()
+    Ex4.test()
   }
 
 }
