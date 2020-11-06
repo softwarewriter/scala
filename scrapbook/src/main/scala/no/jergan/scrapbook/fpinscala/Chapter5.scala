@@ -4,6 +4,9 @@ import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
 import no.jergan.scrapbook.fpinscala.Chapter5.Ex12.zip
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold}
 
+/**
+ * Last chapter done according to old version of book.
+ */
 object Chapter5 {
 
   trait Stream[+A] {
@@ -21,6 +24,13 @@ object Chapter5 {
     def take(n: Int): Stream[A] = {
       uncons match {
         case Some((hd, tl)) => if (n == 0) empty else cons(hd, tl.take(n - 1))
+        case None => empty
+      }
+    }
+
+    def drop(n: Int): Stream[A] = {
+      uncons match {
+        case Some((hd, tl)) => if (n == 0) this else tl.drop(n - 1)
         case None => empty
       }
     }
@@ -99,12 +109,10 @@ object Chapter5 {
     }
 
     def scanRight[B](z: => B)(f: (A, => B) => B): Stream[B] =
-
     foldRight((empty[B], z))((a, b) => {
       val (s, z) = b
       val v: B = f(a, z)
-      val newStream: Stream[B] = cons(v, s)
-      (newStream, v)
+      (cons(v, s), v)
     })._1.append(Stream[B](z)) // TODO: Could we somehow avoid this append?
   }
 
@@ -140,6 +148,7 @@ object Chapter5 {
   object Ex2 {
     def test(): Unit = {
       println(Stream(1, 2, 3).take(2).toList)
+      println(Stream(1, 2, 3).drop(2).toList)
     }
   }
 
@@ -233,19 +242,19 @@ object Chapter5 {
   object Ex11 {
 
     def ones: Stream[Int] = {
-      unfold(1)(_ => Option(1, 1))
+      unfold(1)(_ => Some(1, 1))
     }
 
     def constant(n: Int): Stream[Int] = {
-      unfold(n)(_ => Option(n, n))
+      unfold(n)(_ => Some(n, n))
     }
 
     def from(n: Int): Stream[Int] = {
-      unfold(n)(n => Option(n, n + 1))
+      unfold(n)(n => Some(n, n + 1))
     }
 
     def fibs(): Stream[Int] = {
-      unfold((0, 1)) (a => Option(a._1, (a._1 + a._2, a._1)))
+      unfold((0, 1)) {case (a, b) => Some((a, (a, a + b)))}
     }
 
     def test() = {
@@ -319,7 +328,7 @@ object Chapter5 {
   }
 
   def main(args: Array[String]): Unit = {
-    Ex15.test()
+    Ex2.test()
   }
 
 }
