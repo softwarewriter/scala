@@ -12,6 +12,8 @@ object Chapter6 {
     def nextInt: (Int, RNG)
   }
 
+  type Rand[+A] = RNG => (A, RNG)
+
   case class SimpleRNG(seed: Long) extends RNG {
     def nextInt: (Int, RNG) = {
       val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
@@ -29,6 +31,13 @@ object Chapter6 {
   def double(rng: RNG): (Double, RNG) = {
     val (i, nextRng) = nonNegativeInt(rng)
     (i / (Int.MaxValue.toDouble + 1), nextRng)
+  }
+
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
+
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = rng => {
+    val (a, rng2) = s(rng)
+    (f(a), rng2)
   }
 
   object Ex1 {
@@ -95,8 +104,35 @@ object Chapter6 {
     }
   }
 
+  object Ex5 {
+
+    val int: Rand[Int] = _.nextInt
+
+    val i: Int => Int = _ + 2
+
+    def test(): Unit = {
+      println(i(4))
+    }
+  }
+
+
+  object Ex6 {
+    def doubleUsingMap(): Rand[Double] = {
+      map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
+    }
+  }
+
+  object Ex7 {
+    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
+      val (a, rng2) = ra(rng)
+      val (b, rng3) = rb(rng2)
+      (f(a, b), rng3)
+    }
+  }
+
+  //  : Rand[B] = rng => {
   def main(args: Array[String]): Unit = {
-    Ex4.test()
+//    Ex6.test()
   }
 
 }
