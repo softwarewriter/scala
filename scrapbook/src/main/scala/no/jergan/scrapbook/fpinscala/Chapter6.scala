@@ -152,14 +152,9 @@ object Chapter6 {
   }
 
   object Ex8 {
-    def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
-
-      def go(): Rand[B] = rng => {
-        val (a, rng2) = f(rng)
-        val v: (B, RNG) = g(a)(rng2)
-        v
-      }
-      go()
+    def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+      val (a, rng2) = f(rng)
+      g(a)(rng2)
     }
 
     def nonNegativeLessThan(n: Int): Rand[Int] = {
