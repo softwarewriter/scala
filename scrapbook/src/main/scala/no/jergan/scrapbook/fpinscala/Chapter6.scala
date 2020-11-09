@@ -2,6 +2,9 @@ package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
 
+import scala.::
+import scala.annotation.tailrec
+
 /**
  * First chapter done according to new version of book.
  */
@@ -39,6 +42,8 @@ object Chapter6 {
     val (a, rng2) = s(rng)
     (f(a), rng2)
   }
+
+  val int: Rand[Int] = _.nextInt
 
   object Ex1 {
     def test(): Unit = {
@@ -105,24 +110,13 @@ object Chapter6 {
   }
 
   object Ex5 {
-
-    val int: Rand[Int] = _.nextInt
-
-    val i: Int => Int = _ + 2
-
-    def test(): Unit = {
-      println(i(4))
-    }
-  }
-
-
-  object Ex6 {
     def doubleUsingMap(): Rand[Double] = {
       map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
     }
   }
 
-  object Ex7 {
+
+  object Ex6 {
     def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
       val (a, rng2) = ra(rng)
       val (b, rng3) = rb(rng2)
@@ -130,9 +124,34 @@ object Chapter6 {
     }
   }
 
-  //  : Rand[B] = rng => {
+  object Ex7 {
+    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+
+//      @tailrec: TODO: Can this be make tail recursive?
+      def go(as: List[A], fs: List[Rand[A]]): Rand[List[A]] = rng => {
+        fs match {
+          case Nil => (as, rng)
+          case ::(head, next) => {
+            val (a, rng2) = head(rng)
+            go(as.appended(a), next)(rng2)
+          }
+        }
+      }
+      go(List.empty, fs)
+    }
+
+    def test(): Unit = {
+      def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+        sequence(List.fill(count)(int))(rng)
+      }
+
+      val rng = SimpleRNG(1)
+      println(ints(3)(rng))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-//    Ex6.test()
+    Ex7.test()
   }
 
 }
