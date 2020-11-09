@@ -55,6 +55,20 @@ object Chapter6 {
 
   case class State[S, +A](run: S => (A, S)) {
 
+    def map[B](f: A => B): State[S, B] = {
+
+      def go(s: S): (B, S) = {
+        val (a, s2): (A, S) = run(s)
+        (f(a), s2)
+      }
+      State(s => go(s))
+    }
+
+//    def map2
+
+    // def flatMap
+
+    // def sequence
 
 
   }
