@@ -56,21 +56,26 @@ object Chapter6 {
   case class State[S, +A](run: S => (A, S)) {
 
     def map[B](f: A => B): State[S, B] = {
-
-      def go(s: S): (B, S) = {
-        val (a, s2): (A, S) = run(s)
+      State(s => {
+        val (a, s2) = run(s)
         (f(a), s2)
-      }
-      State(s => go(s))
+      })
     }
 
-//    def map2
+    def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = {
+      State(s => {
+        val (a, s2) = run(s)
+        val (b, s3) = sb.run(s2)
+        (f(a, b), s3)
+      })
+    }
 
-    // def flatMap
-
-    // def sequence
-
-
+    def flatMap[B](f: A => State[S, B]): State[S, B] = {
+      State(s => {
+        val (a, s2) = run(s)
+        f(a).run(s2)
+      })
+    }
   }
 
   object State {
@@ -79,6 +84,18 @@ object Chapter6 {
       State[S, A](s => (a, s))
     }
 
+    def sequence[S, A](ss: List[State[S, A]]): State[S, List[A]] = {
+      def go(as: List[A], ss: List[State[S, A]], s: S): (List[A], S) = {
+        ss match {
+          case Nil => (as, s)
+          case ::(head, next) => {
+            val (a, s2) = head.run(s)
+            go(as.appended(a), next, s2)
+          }
+        }
+      }
+      State[S, List[A]](s => go(List.empty, ss, s))
+    }
   }
 
   object Ex1 {
