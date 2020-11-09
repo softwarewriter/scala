@@ -155,7 +155,6 @@ object Chapter6 {
     def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
 
       def go(): Rand[B] = rng => {
-
         val (a, rng2) = f(rng)
         val v: (B, RNG) = g(a)(rng2)
         v
@@ -164,12 +163,12 @@ object Chapter6 {
     }
 
     def nonNegativeLessThan(n: Int): Rand[Int] = {
-      flatMap(nonNegativeInt) { a => if (a < n) unit(a) else nonNegativeInt }
+      flatMap(nonNegativeInt) { a => if (a < n) unit(a) else nonNegativeLessThan(n) }
     }
 
     def test() {
       val rng = SimpleRNG(1)
-      println(nonNegativeLessThan(4)(rng))
+      println(nonNegativeLessThan(Int.MaxValue / 2)(rng))
     }
 
   }
