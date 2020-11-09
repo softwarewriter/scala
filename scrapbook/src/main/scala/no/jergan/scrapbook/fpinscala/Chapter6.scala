@@ -44,6 +44,11 @@ object Chapter6 {
     (f(a), rng2)
   }
 
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+    val (a, rng2) = f(rng)
+    g(a)(rng2)
+  }
+
   val int: Rand[Int] = _.nextInt
 
   object Ex1 {
@@ -152,10 +157,6 @@ object Chapter6 {
   }
 
   object Ex8 {
-    def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
-      val (a, rng2) = f(rng)
-      g(a)(rng2)
-    }
 
     def nonNegativeLessThan(n: Int): Rand[Int] = {
       flatMap(nonNegativeInt) { a => if (a < n) unit(a) else nonNegativeLessThan(n) }
@@ -166,6 +167,16 @@ object Chapter6 {
       println(nonNegativeLessThan(Int.MaxValue / 2)(rng))
     }
 
+  }
+
+  object Ex9 {
+    def mapUsingFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+      flatMap(s)(a => unit(f(a)))
+    }
+
+    def map2UsingFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+      flatMap(ra)(a => flatMap(rb)(b => unit(f(a, b))))
+    }
   }
 
   def main(args: Array[String]): Unit = {
