@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
+import no.jergan.scrapbook.fpinscala.Chapter6.unit
 
 import scala.::
 import scala.annotation.tailrec
@@ -150,8 +151,31 @@ object Chapter6 {
     }
   }
 
+  object Ex8 {
+    def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+
+      def go(): Rand[B] = rng => {
+
+        val (a, rng2) = f(rng)
+        val v: (B, RNG) = g(a)(rng2)
+        v
+      }
+      go()
+    }
+
+    def nonNegativeLessThan(n: Int): Rand[Int] = {
+      flatMap(nonNegativeInt) { a => if (a < n) unit(a) else nonNegativeInt }
+    }
+
+    def test() {
+      val rng = SimpleRNG(1)
+      println(nonNegativeLessThan(4)(rng))
+    }
+
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex7.test()
+    Ex8.test()
   }
 
 }
