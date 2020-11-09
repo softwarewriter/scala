@@ -51,6 +51,22 @@ object Chapter6 {
 
   val int: Rand[Int] = _.nextInt
 
+//  type State[S, +A] = S => (A, S)
+
+  case class State[S, +A](run: S => (A, S)) {
+
+
+
+  }
+
+  object State {
+
+    def unit[S, A](a: A) = {
+      State[S, A](s => (a, s))
+    }
+
+  }
+
   object Ex1 {
     def test(): Unit = {
       val rng = SimpleRNG(2)
@@ -159,12 +175,18 @@ object Chapter6 {
   object Ex8 {
 
     def nonNegativeLessThan(n: Int): Rand[Int] = {
-      flatMap(nonNegativeInt) { a => if (a < n) unit(a) else nonNegativeLessThan(n) }
+      flatMap(nonNegativeInt) { i => {
+        val mod = i % n
+        if (i + (n - 1) - mod >= 0) {
+          unit(mod)
+        } else nonNegativeLessThan(n)
+      }
+      }
     }
 
     def test() {
       val rng = SimpleRNG(1)
-      println(nonNegativeLessThan(Int.MaxValue / 2)(rng))
+      println(nonNegativeLessThan(6)(rng))
     }
 
   }
@@ -177,6 +199,11 @@ object Chapter6 {
     def map2UsingFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
       flatMap(ra)(a => flatMap(rb)(b => unit(f(a, b))))
     }
+  }
+
+  object Ex10 {
+
+
   }
 
   def main(args: Array[String]): Unit = {
