@@ -256,17 +256,14 @@ object Chapter6 {
     }
 
     def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
-      State[Machine, (Int, Int)](m => ((0, 1), m))
-
-      /*
-      inputs match {
-        case Nil => (m, (m.candies, m.coins))
-        case ::(head, next) => (m, (m.candies, m.coins))
-      }
-
-       */
+      State[Machine, (Int, Int)](m => {
+        (inputs, m.candies, m.coins) match {
+          case (Nil, _, _) => ((m.candies, m.coins), m)
+          case (_, 0, _) => ((m.candies, m.coins), m)
+          case (::(Coin, next), candies, coins) => simulateMachine(next).run(Machine(false, candies, coins + 1))
+        }
+      })
     }
-
 
     def test() = {
       val m = Machine(false, 0, 0)
@@ -280,7 +277,7 @@ object Chapter6 {
   }
 
   def main(args: Array[String]): Unit = {
-    Ex8.test()
+    Ex11.test()
   }
 
 }
