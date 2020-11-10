@@ -257,18 +257,22 @@ object Chapter6 {
 
     def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
       State[Machine, (Int, Int)](m => {
-        (inputs, m.candies, m.coins) match {
-          case (Nil, _, _) => ((m.candies, m.coins), m)
-          case (_, 0, _) => ((m.candies, m.coins), m)
-          case (::(Coin, next), candies, coins) => simulateMachine(next).run(Machine(false, candies, coins + 1))
+        val current = ((m.candies, m.coins), m)
+        (inputs, m.locked, m.candies, m.coins) match {
+          case (Nil, _, _, _) => current
+          case (_, _, 0, _) => current
+          case (::(Coin, next), false, _, _) => simulateMachine(next).run(m)
+          case (::(Turn, next), true, _, _) => simulateMachine(next).run(m)
+          case (::(Coin, next), true, candies, coins) => simulateMachine(next).run(Machine(false, candies, coins + 1))
+          case (::(Turn, next), false, candies, coins) => simulateMachine(next).run(Machine(true, candies - 1, coins))
         }
       })
     }
 
     def test() = {
-      val m = Machine(false, 0, 0)
+      val m = Machine(true, 3, 0)
 
-      val sim: State[Machine, (Int, Int)] = simulateMachine(List.empty)
+      val sim: State[Machine, (Int, Int)] = simulateMachine(List(Coin, Turn, Coin, Turn))
       val ((candies, coins), finalM) = sim.run(m)
       println(s"candies: $candies, coins: $coins")
     }
