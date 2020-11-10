@@ -276,8 +276,6 @@ object Chapter6 {
       val ((candies, coins), finalM) = sim.run(m)
       println(s"candies: $candies, coins: $coins")
     }
-
-    // Implemented above
   }
 
   def main(args: Array[String]): Unit = {
