@@ -62,12 +62,22 @@ object Chapter6 {
       })
     }
 
+    def mapUsingFlatMap[B](f: A => B): State[S, B] = {
+        this.flatMap(a => State.unit(f(a)))
+    }
+
     def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = {
       State(s => {
         val (a, s2) = run(s)
         val (b, s3) = sb.run(s2)
         (f(a, b), s3)
       })
+    }
+
+    def map2UsingFlatMap[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = {
+      this
+        .flatMap(a => sb
+          .flatMap(b => State.unit(f(a, b))))
     }
 
     def flatMap[B](f: A => State[S, B]): State[S, B] = {
@@ -94,7 +104,7 @@ object Chapter6 {
           }
         }
       }
-      State[S, List[A]](s => go(List.empty, ss, s))
+      State(s => go(List.empty, ss, s))
     }
   }
 
