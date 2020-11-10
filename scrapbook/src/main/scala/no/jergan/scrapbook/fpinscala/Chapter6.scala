@@ -51,8 +51,6 @@ object Chapter6 {
 
   val int: Rand[Int] = _.nextInt
 
-//  type State[S, +A] = S => (A, S)
-
   case class State[S, +A](run: S => (A, S)) {
 
     def map[B](f: A => B): State[S, B] = {
@@ -243,8 +241,42 @@ object Chapter6 {
   }
 
   object Ex10 {
+    // Implemented above
+  }
+
+  object Ex11 {
+
+    sealed trait Input
+    case object Coin extends Input
+    case object Turn extends Input
+
+    case class Machine(locked: Boolean, candies: Int, coins: Int) {
 
 
+    }
+
+    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+      State[Machine, (Int, Int)](m => ((0, 1), m))
+
+      /*
+      inputs match {
+        case Nil => (m, (m.candies, m.coins))
+        case ::(head, next) => (m, (m.candies, m.coins))
+      }
+
+       */
+    }
+
+
+    def test() = {
+      val m = Machine(false, 0, 0)
+
+      val sim: State[Machine, (Int, Int)] = simulateMachine(List.empty)
+      val ((candies, coins), finalM) = sim.run(m)
+      println(s"candies: $candies, coins: $coins")
+    }
+
+    // Implemented above
   }
 
   def main(args: Array[String]): Unit = {
