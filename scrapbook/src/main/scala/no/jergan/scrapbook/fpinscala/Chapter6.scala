@@ -270,11 +270,32 @@ object Chapter6 {
     }
 
     def test() = {
-      val m = Machine(true, 3, 0)
+      val m = Machine(true, 3, 2)
 
       val sim: State[Machine, (Int, Int)] = simulateMachine(List(Coin, Turn, Coin, Turn))
       val ((candies, coins), finalM) = sim.run(m)
-      println(s"candies: $candies, coins: $coins")
+//      println(s"candies: $candies, coins: $coins")
+
+      val v = State.unit[String, Int](42)
+        .flatMap(i => State[String, Int](s => (i + 1, s + "-x")))
+        .flatMap(i => State[String, Int](s => (i + 2, s + "-y")))
+      println(v.run("s0"))
+
+      val v1 = State.unit[String, Int](42)
+      val v2 = v1.flatMap(i =>
+        v1.flatMap(ii =>
+          State[String, Int](s => (i + ii, s + "-x"))))
+      println(v2.run("s0"))
+
+      val v0 = State.unit[String, Int](42)
+      val forRes = for {
+        v1 <- v0
+        v2 <- State[String, Int](s => (v1 + 1, s + "-x"))
+        v3 <- State[String, Int](s => (v1 + v2, s + "-y"))
+      } yield v3 + 2
+
+      println(forRes.run("for"))
+
     }
   }
 
