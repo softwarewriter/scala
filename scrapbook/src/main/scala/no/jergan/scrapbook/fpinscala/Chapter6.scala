@@ -61,7 +61,7 @@ object Chapter6 {
     }
 
     def mapUsingFlatMap[B](f: A => B): State[S, B] = {
-        this.flatMap(a => State.unit(f(a)))
+      flatMap(a => State.unit(f(a)))
     }
 
     def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = {
@@ -72,10 +72,9 @@ object Chapter6 {
       })
     }
 
-    def map2UsingFlatMap[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = {
-      this
-        .flatMap(a => sb
-          .flatMap(b => State.unit(f(a, b))))
+    def map2UsingFlatMapAndMap[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] = {
+      flatMap(a => sb
+          .map(b => f(a, b)))
     }
 
     def flatMap[B](f: A => State[S, B]): State[S, B] = {
@@ -92,13 +91,13 @@ object Chapter6 {
       State[S, A](s => (a, s))
     }
 
+    // TODO: Implement as foldRight as well.
+
     def sequence[S, A](ss: List[State[S, A]]): State[S, List[A]] = {
       def go(as: List[A], ss: List[State[S, A]], s: S): (List[A], S) = {
         ss match {
           case Nil => (as, s)
-          case ::(head, next) => {
-            val (a, s2) = head.run(s)
-            go(as.appended(a), next, s2)
+          case head :: next => head.run(s) match { case (a, s2) => go(as.appended(a), next, s2)
           }
         }
       }
@@ -152,6 +151,8 @@ object Chapter6 {
     }
 
     def intsTailRecursive(count: Int)(rng: RNG): (List[Int], RNG) = {
+
+      @tailrec
       def go(count: Int, res: List[Int], rng: RNG): (List[Int], RNG) = {
         if (count == 0) {
           (res, rng)
@@ -237,6 +238,10 @@ object Chapter6 {
 
     def map2UsingFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
       flatMap(ra)(a => flatMap(rb)(b => unit(f(a, b))))
+    }
+
+    def map2UsingFlatMapAndMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+      flatMap(ra)(a => map(rb)(b => f(a, b)))
     }
   }
 
