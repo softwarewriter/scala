@@ -39,11 +39,33 @@ object Chapter7 {
       def cancel(evenIfRunning: Boolean): Boolean = false
     }
 
+
     def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
       es => {
         val af = a(es)
         val bf = b(es)
         UnitFuture(f(af.get, bf.get))
+      }
+    }
+
+    def map2My[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
+      case class MyFuture(fa: Future[A], fb: Future[B]) extends Future[C] {
+        def isDone = true
+        def get: C = f(fa.get, fb.get)
+        def get(timeout: Long, units: TimeUnit): C = {
+          val startA = System.currentTimeMillis()
+          val a: A = fa.get(timeout, units)
+          val stopA = System.currentTimeMillis()
+          val b: B = fb.get(timeout - (stopA - startA), units)
+          f(a, b)
+        }
+        def isCancelled = false
+        def cancel(evenIfRunning: Boolean): Boolean = false
+      }
+      es => {
+        val af = a(es)
+        val bf = b(es)
+        MyFuture(af, bf)
       }
     }
 
