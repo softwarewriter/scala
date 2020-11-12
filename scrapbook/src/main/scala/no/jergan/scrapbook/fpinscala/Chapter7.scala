@@ -8,22 +8,28 @@ import scala.concurrent.duration.TimeUnit
  */
 object Chapter7 {
 
-  case class Par[A](f: () => A)
+  type Par[A] = ExecutorService => Future[A]
 
   object Par {
 
-    def unit[A](a: A): Par[A] = ???
+    def unit[A](a: A): Par[A] = (es: ExecutorService) => UnitFuture(a)
 
-    def lazyUnit[A](a: => A): Par[A] = {
-      fork(unit(a))
+    private case class UnitFuture[A](get: A) extends Future[A] {
+      def isDone = true
+      def get(timeout: Long, units: TimeUnit) = get
+      def isCancelled = false
+      def cancel(evenIfRunning: Boolean): Boolean = false
     }
 
-    def run[A](pa: Par[A]): A = ???
+    def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = (es: ExecutorService) => {
+      val af = a(es)
+      val bf = b(es)
+      UnitFuture(f(af.get, bf.get))
+    }
 
-    def map2[A](pl: Par[A], pr: Par[A])(f: (A, A) => A): Par[A] = ???
-
-    def fork[A](pa: => Par[A]): Par[A] = ???
-
+    def fork[A](a: => Par[A]): Par[A] = es => es.submit(new Callable[A] {
+      def call = a(es).get
+    })
   }
 
   def sum(ints: List[Int]): Par[Int] = {
@@ -40,28 +46,27 @@ object Chapter7 {
   }
 
   trait Callable[A] {
-    def call: A }
+    def call: A
+  }
 
   trait Future[A] {
     def get: A
+
     def get(timeout: Long, unit: TimeUnit): A
+
     def cancel(evenIfRunning: Boolean): Boolean
+
     def isDone: Boolean
+
     def isCancelled: Boolean
   }
 
   object Ex1 {
 
     def test(): Unit = {
+      println("pelle")
 
-      type Par[A] = ExecutorService => Future[A]
-
-      def run[A](s: ExecutorService)(a: Par[A]): Future[A] = {
-        a(s)
-      }
-
-
-
+    }
   }
 
   def main(args: Array[String]): Unit = {
