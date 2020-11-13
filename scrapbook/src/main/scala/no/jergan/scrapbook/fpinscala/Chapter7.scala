@@ -1,5 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
+import java.util.concurrent.TimeUnit
+
 import scala.annotation.tailrec
 import scala.concurrent.duration.TimeUnit
 
@@ -32,13 +34,16 @@ object Chapter7 {
       (_: ExecutorService) => UnitFuture(a)
     }
 
+    def lazyUnit[A](a: => A): Par[A] = {
+      fork(unit(a))
+    }
+
     private case class UnitFuture[A](get: A) extends Future[A] {
       def isDone = true
       def get(timeout: Long, units: TimeUnit) = get
       def isCancelled = false
       def cancel(evenIfRunning: Boolean): Boolean = false
     }
-
 
     def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
       es => {
@@ -49,23 +54,46 @@ object Chapter7 {
     }
 
     def map2My[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
-      case class MyFuture(fa: Future[A], fb: Future[B]) extends Future[C] {
-        def isDone = true
-        def get: C = f(fa.get, fb.get)
-        def get(timeout: Long, units: TimeUnit): C = {
-          val startA = System.currentTimeMillis()
-          val a: A = fa.get(timeout, units)
-          val stopA = System.currentTimeMillis()
-          val b: B = fb.get(timeout - (stopA - startA), units)
-          f(a, b)
-        }
-        def isCancelled = false
-        def cancel(evenIfRunning: Boolean): Boolean = false
-      }
       es => {
         val af = a(es)
         val bf = b(es)
-        MyFuture(af, bf)
+        CombineFuture(af, bf, f)
+      }
+    }
+
+    def map[A,B](pa: Par[A])(f: A => B): Par[B] = {
+      map2(pa, unit(()))((a,_) => f(a))
+    }
+
+    def sortPar(parList: Par[List[Int]]): Par[List[Int]] = {
+      map(parList)(_.sorted)
+    }
+
+    def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
+      sequence(ps.map(asyncF(f)))
+    }
+
+    def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
+//      val v = unit(List.empty[A])
+//      ps.foldRight(Par[List.empty])
+
+      ps.foldRight(unit(List.empty[A]))((a, b) => map2(a, b)((c, d) => c :: d))
+    }
+
+    case class CombineFuture[A, B, C](fa: Future[A], fb: Future[B], f: (A, B) => C) extends Future[C] {
+      def isDone = true
+      def get: C = calculate(Long.MaxValue)
+      def get(timeout: Long, units: TimeUnit): C = calculate(timeout)
+
+      def isCancelled = false
+      def cancel(evenIfRunning: Boolean): Boolean = false
+
+      def calculate(timeout: Long): C = {
+        val startA = System.currentTimeMillis()
+        val a: A = fa.get(timeout, TimeUnit.MILLISECONDS)
+        val stopA = System.currentTimeMillis()
+        val b: B = fb.get(timeout - (stopA - startA), TimeUnit.MILLISECONDS)
+        f(a, b)
       }
     }
 
@@ -73,6 +101,10 @@ object Chapter7 {
       es => es.submit(new Callable[A] {
         def call = a(es).get
       })
+    }
+
+    def asyncF[A, B](f: A => B): A => Par[B] = {
+      a => lazyUnit(f(a))
     }
   }
 
@@ -87,10 +119,31 @@ object Chapter7 {
 
   object Ex1 {
 
+    def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
+
     def test(): Unit = {
       println("pelle")
 
     }
+  }
+
+  object Ex2 {
+
+    type Par[A] = () => A
+
+  }
+
+  object Ex3 {
+    // Implemented CombineFuture
+  }
+
+  object Ex4 {
+    // Implemented asyncF
+  }
+
+  object Ex5 {
+    // Implemented sequence
+    val v: Par[Int] = sum(List(1, 2, 3, 4))
   }
 
   def main(args: Array[String]): Unit = {
