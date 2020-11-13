@@ -131,7 +131,7 @@ object Chapter7 {
     }
   }
 
-  def sum(ints: List[Int]): Par[Int] = {
+  def sum(ints: IndexedSeq[Int]): Par[Int] = {
     if (ints.size <= 1)
       Par.unit(ints.headOption.getOrElse(0))
     else {
@@ -187,10 +187,10 @@ object Chapter7 {
       }
     }
 
-    val sum1: Par[Int] = sum(List(1, 2, 3, 4))
-    val sum2: Par[Int] = fold[Int, Int](List(1, 2, 3, 4), 0)(a => a)(_ + _)
-    val max: Par[Int] = fold(List(1, 2, 3, 4), Int.MinValue)(a => a)(Math.max)
-    val min: Par[Int] = fold(List(1, 2, 3, 4), Int.MaxValue)(a => a)(Math.min)
+    val sum1: Par[Int] = sum(List(1, 2, 3, 4).toIndexedSeq)
+    val sum2: Par[Int] = fold[Int, Int](List(1, 2, 3, 4), 0)(identity)(_ + _)
+    val max: Par[Int] = fold(List(1, 2, 3, 4), Int.MinValue)(identity)(Math.max)
+    val min: Par[Int] = fold(List(1, 2, 3, 4), Int.MaxValue)(identity)(Math.min)
 
     def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
       val v1 = fork(map2(a, b)((a, b) => (a, b)))
