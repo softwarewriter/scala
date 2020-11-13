@@ -72,6 +72,21 @@ object Chapter7 {
       ps.foldRight(unit(List.empty[A]))((a, b) => map2(a, b)(_ :: _))
     }
 
+    def sequenceBalanced[A](ps: List[Par[A]]): Par[List[A]] = {
+      fork {
+        if (ps.isEmpty) {
+          unit(List.empty)
+        }
+        else if (ps.length == 1) {
+          map(ps.head)(a => List(a))
+        }
+        else {
+          val (l, r) = ps.splitAt(ps.length / 2)
+          map2(sequenceBalanced(l), sequenceBalanced(r))(_ ++ _)
+        }
+      }
+    }
+
     def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
       as.map(asyncF(a => Option.when(f(a))(a)))
         .foldRight(unit(List.empty[A]))((a, b) => map2(a, b)((a, b) => a match {
@@ -158,21 +173,24 @@ object Chapter7 {
   }
 
   object TrainingP110 {
-    def fold(ints: List[Int], z: Int)(f: (Int, Int) => Int): Par[Int] = {
-      if (ints.size <= 1)
-        Par.unit(ints.headOption.getOrElse(z))
-      else {
-        val (l, r) = ints.splitAt(ints.length / 2)
-        Par.map2(Par.fork(fold(l, z)(f)), Par.fork(fold(r, z)(f)))(f(_, _))
+    import Chapter7.Par.{map2, fork, unit}
+
+    def fold[A, B](as: List[A], z: B)(f: A => B)(combine: (B, B) => B): Par[B] = {
+      if (as.isEmpty) {
+        unit(z)
+      }
+      else if (as.size <= 1) {
+        unit(f(as.head))
+      } else {
+        val (l, r) = as.splitAt(as.length / 2)
+        map2(fork(fold(l, z)(f)(combine)), fork(fold(r, z)(f)(combine)))(combine(_, _))
       }
     }
 
     val sum1: Par[Int] = sum(List(1, 2, 3, 4))
-    val sum2: Par[Int] = fold(List(1, 2, 3, 4), 0)(_ + _)
-    val max: Par[Int] = fold(List(1, 2, 3, 4), Int.MinValue)(Math.max)
-    val min: Par[Int] = fold(List(1, 2, 3, 4), Int.MaxValue)(Math.min)
-
-    import Chapter7.Par.{map2, fork}
+    val sum2: Par[Int] = fold[Int, Int](List(1, 2, 3, 4), 0)(a => a)(_ + _)
+    val max: Par[Int] = fold(List(1, 2, 3, 4), Int.MinValue)(a => a)(Math.max)
+    val min: Par[Int] = fold(List(1, 2, 3, 4), Int.MaxValue)(a => a)(Math.min)
 
     def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
       val v1 = fork(map2(a, b)((a, b) => (a, b)))
@@ -189,9 +207,12 @@ object Chapter7 {
       val v1: Par[(A, B)] = fork(Par.map2(a, b)((_, _)))
       val v2: Par[(C, D)] = fork(Par.map2(c, d)((_, _)))
       val v3: Par[(A, B, C, D)] = fork(Par.map2(v1, v2)((ab, cd) => (ab._1, ab._2, cd._1, cd._2)))
-      Par.map2(v3, e)((abcd, e) => f(abcd._1, abcd._2, abcd._3, abcd._4, e))
+      map2(v3, e)((abcd, e) => f(abcd._1, abcd._2, abcd._3, abcd._4, e))
     }
 
+    def countWords(paragraphs: List[String]): Par[Int] = {
+      fold(paragraphs, 0)(_.split(" ").length)(_ + _)
+    }
   }
 
   def main(args: Array[String]): Unit = {
