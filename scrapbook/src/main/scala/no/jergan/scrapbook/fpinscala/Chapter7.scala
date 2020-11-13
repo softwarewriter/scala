@@ -169,9 +169,28 @@ object Chapter7 {
 
     val sum1: Par[Int] = sum(List(1, 2, 3, 4))
     val sum2: Par[Int] = fold(List(1, 2, 3, 4), 0)(_ + _)
-
     val max: Par[Int] = fold(List(1, 2, 3, 4), Int.MinValue)(Math.max)
     val min: Par[Int] = fold(List(1, 2, 3, 4), Int.MaxValue)(Math.min)
+
+    import Chapter7.Par.{map2, fork}
+
+    def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
+      val v1 = fork(map2(a, b)((a, b) => (a, b)))
+      map2(v1, c)((ab, c) => f(ab._1, ab._2, c))
+    }
+
+    def map4[A, B, C, D, E](a: Par[A], b: Par[B], c: Par[C], d: Par[D])(f: (A, B, C, D) => E): Par[E] = {
+      val v1: Par[(A, B)] = fork(map2(a, b)((_, _)))
+      val v2: Par[(C, D)] = fork(map2(c, d)((_, _)))
+      map2(v1, v2)((ab, cd) => f(ab._1, ab._2, cd._1, cd._2))
+    }
+
+    def map5[A, B, C, D, E, F](a: Par[A], b: Par[B], c: Par[C], d: Par[D], e: Par[E])(f: (A, B, C, D, E) => F): Par[F] = {
+      val v1: Par[(A, B)] = fork(Par.map2(a, b)((_, _)))
+      val v2: Par[(C, D)] = fork(Par.map2(c, d)((_, _)))
+      val v3: Par[(A, B, C, D)] = fork(Par.map2(v1, v2)((ab, cd) => (ab._1, ab._2, cd._1, cd._2)))
+      Par.map2(v3, e)((abcd, e) => f(abcd._1, abcd._2, abcd._3, abcd._4, e))
+    }
 
   }
 
