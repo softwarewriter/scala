@@ -41,9 +41,11 @@ object Chapter7NonBlocking {
         }
     }
 
-    def fork[A](a: => Par[A]): Par[A] = es => new Future[A] {
-      def apply(cb: A => Unit): Unit =
-        eval(es)(a(es)(cb))
+    def fork[A](a: => Par[A]): Par[A] = {
+      es => new Future[A] {
+        def apply(cb: A => Unit): Unit =
+          eval(es)(a(es)(cb))
+      }
     }
 
     def eval(es: ExecutorService)(r: => Unit): Unit =
