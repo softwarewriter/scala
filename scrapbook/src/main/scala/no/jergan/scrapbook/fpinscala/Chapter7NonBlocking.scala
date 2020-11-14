@@ -2,14 +2,12 @@ package no.jergan.scrapbook.fpinscala
 
 import java.util.concurrent.{Executors, TimeUnit}
 
-import scala.::
-import scala.annotation.tailrec
 import scala.concurrent.duration.TimeUnit
 
 /**
  * Second chapter done according to new version of book.
  */
-object Chapter7 {
+object Chapter7NonBlocking {
 
   class ExecutorService {
     def submit[A](a: Callable[A]): Future[A] = ???
@@ -136,134 +134,24 @@ object Chapter7 {
     }
   }
 
-  def sum(ints: IndexedSeq[Int]): Par[Int] = {
-    if (ints.size <= 1)
-      Par.unit(ints.headOption.getOrElse(0))
-    else {
-      val (l, r) = ints.splitAt(ints.length / 2)
-      Par.map2(Par.fork(sum(l)), Par.fork(sum(r)))(_ + _)
-    }
-  }
-
-  object Ex1 {
-
-    def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = ???
+  object TestingActors {
 
     def test(): Unit = {
-      println("pelle")
-
-    }
-  }
-
-  object Ex2 {
-
-    type Par[A] = () => A
-
-  }
-
-  object Ex3 {
-    // Implemented CombineFuture
-  }
-
-  object Ex4 {
-    // Implemented asyncF
-  }
-
-  object Ex5 {
-    // Implemented sequence
-  }
-
-  object Ex6 {
-    // Implemented parFilter
-  }
-
-  object TrainingP110 {
-    import Chapter7.Par.{map2, fork, unit}
-
-    def fold[A, B](as: List[A], z: B)(f: A => B)(combine: (B, B) => B): Par[B] = {
-      if (as.isEmpty) {
-        unit(z)
+      val es = Executors.newFixedThreadPool(4)
+      val echoer = Actor[String](es)(msg => /*throw new NullPointerException("pelle")*/println(s"Got message: $msg"), throwable => {
+        println(s"Got throwable: $throwable")
+        throw (throwable)
       }
-      else if (as.size <= 1) {
-        unit(f(as.head))
-      } else {
-        val (l, r) = as.splitAt(as.length / 2)
-        map2(fork(fold(l, z)(f)(combine)), fork(fold(r, z)(f)(combine)))(combine(_, _))
-      }
+      )
+
+      echoer ! "hei"
+      echoer ! "hei2"
+
     }
-
-    val sum1: Par[Int] = sum(List(1, 2, 3, 4).toIndexedSeq)
-    val sum2: Par[Int] = fold[Int, Int](List(1, 2, 3, 4), 0)(identity)(_ + _)
-    val max: Par[Int] = fold(List(1, 2, 3, 4), Int.MinValue)(identity)(Math.max)
-    val min: Par[Int] = fold(List(1, 2, 3, 4), Int.MaxValue)(identity)(Math.min)
-
-    def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
-      val v1 = fork(map2(a, b)((a, b) => (a, b)))
-      map2(v1, c)((ab, c) => f(ab._1, ab._2, c))
-    }
-
-    def map4[A, B, C, D, E](a: Par[A], b: Par[B], c: Par[C], d: Par[D])(f: (A, B, C, D) => E): Par[E] = {
-      val v1: Par[(A, B)] = fork(map2(a, b)((_, _)))
-      val v2: Par[(C, D)] = fork(map2(c, d)((_, _)))
-      map2(v1, v2)((ab, cd) => f(ab._1, ab._2, cd._1, cd._2))
-    }
-
-    def map5[A, B, C, D, E, F](a: Par[A], b: Par[B], c: Par[C], d: Par[D], e: Par[E])(f: (A, B, C, D, E) => F): Par[F] = {
-      val v1: Par[(A, B)] = fork(Par.map2(a, b)((_, _)))
-      val v2: Par[(C, D)] = fork(Par.map2(c, d)((_, _)))
-      val v3: Par[(A, B, C, D)] = fork(Par.map2(v1, v2)((ab, cd) => (ab._1, ab._2, cd._1, cd._2)))
-      map2(v3, e)((abcd, e) => f(abcd._1, abcd._2, abcd._3, abcd._4, e))
-    }
-
-    def countWords(paragraphs: List[String]): Par[Int] = {
-      fold(paragraphs, 0)(_.split(" ").length)(_ + _)
-    }
-  }
-
-  object Ex7 {
-
-    /*
-   Vis at
-   map(map(y)(g))(f) == map(y)(f compose g)
-
-   Definisjoner:
-   - map(unit(x))(f) == unit(f(x)) ()
-   - y = unit(x) (definition)
-
-      venstre
-    map(map(y)(g))(f) ->
-    map(map(unit(x))(g))(f) ->
-    map(unit(g(x))(f) ->
-    unit(f(g(x)) ->
-    unit((f compose g)(x))
-
-      høyre
-    map(y)(f compose g) ->
-    map(unit(x))(f compose g) ->
-    unit((f compose g)(x))
-
-     */
-
-  }
-
-  object Ex8 {
-    // newFixedThreadPool(int nThreads)
-  }
-
-  object Ex9 {
-    val n = 100
-    def forker[A](as: List[A]): Par[A] = {
-      if (as.length == 1) {
-        Par.unit(as.head)
-      }
-      else {
-        Par.fork(forker(as.tail))
-      }
-    }
-    forker(List.fill(42)(n + 2))
   }
 
   def main(args: Array[String]): Unit = {
+    TestingActors.test()
   }
 
 }
