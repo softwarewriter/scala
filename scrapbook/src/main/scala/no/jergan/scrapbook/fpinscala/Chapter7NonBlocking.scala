@@ -6,6 +6,8 @@ import scala.concurrent.duration.TimeUnit
 
 /**
  * Second chapter done according to new version of book.
+ *
+ * Exercise 10 starts from here.
  */
 object Chapter7NonBlocking {
 
@@ -137,16 +139,20 @@ object Chapter7NonBlocking {
   object TestingActors {
 
     def test(): Unit = {
+      println(Thread.currentThread().getName)
       val es = Executors.newFixedThreadPool(4)
-      val echoer = Actor[String](es)(msg => /*throw new NullPointerException("pelle")*/println(s"Got message: $msg"), throwable => {
+      val echoer = Actor[String](es)(msg => {
+        println("In actor: " + Thread.currentThread().getName)
+        println(s"Got message: $msg")
+      }, throwable => {
         println(s"Got throwable: $throwable")
         throw (throwable)
       }
       )
-
       echoer ! "hei"
       echoer ! "hei2"
 
+      es.shutdown()
     }
   }
 
