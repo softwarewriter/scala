@@ -109,9 +109,14 @@ object Chapter7 {
       })
     }
 
+    def delay[A](fa: => Par[A]): Par[A] = {
+      es => fa(es)
+    }
+
     def asyncF[A, B](f: A => B): A => Par[B] = {
       a => lazyUnit(f(a))
     }
+
   }
 
   case class CombineFuture[A, B, C](fa: Future[A], fb: Future[B], f: (A, B) => C) extends Future[C] {
@@ -213,6 +218,49 @@ object Chapter7 {
     def countWords(paragraphs: List[String]): Par[Int] = {
       fold(paragraphs, 0)(_.split(" ").length)(_ + _)
     }
+  }
+
+  object Ex7 {
+
+    /*
+   Vis at
+   map(map(y)(g))(f) == map(y)(f compose g)
+
+   Definisjoner:
+   - map(unit(x))(f) == unit(f(x)) ()
+   - y = unit(x) (definition)
+
+      venstre
+    map(map(y)(g))(f) ->
+    map(map(unit(x))(g))(f) ->
+    map(unit(g(x))(f) ->
+    unit(f(g(x)) ->
+    unit((f compose g)(x))
+
+      høyre
+    map(y)(f compose g) ->
+    map(unit(x))(f compose g) ->
+    unit((f compose g)(x))
+
+     */
+
+  }
+
+  object Ex8 {
+    // newFixedThreadPool(int nThreads)
+  }
+
+  object Ex9 {
+    val n = 100
+    def forker[A](as: List[A]): Par[A] = {
+      if (as.length == 1) {
+        Par.unit(as.head)
+      }
+      else {
+        Par.fork(forker(as.tail))
+      }
+    }
+    forker(List.fill(42)(n + 2))
   }
 
   def main(args: Array[String]): Unit = {
