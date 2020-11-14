@@ -1,6 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{Executors, TimeUnit}
 
 import scala.::
 import scala.annotation.tailrec
@@ -263,8 +263,24 @@ object Chapter7 {
     forker(List.fill(42)(n + 2))
   }
 
+  object TestingActors {
+
+    def test(): Unit = {
+      val es = Executors.newFixedThreadPool(4)
+      val echoer = Actor[String](es)(msg => /*throw new NullPointerException("pelle")*/println(s"Got message: $msg"), throwable => {
+        println(s"Got throwable: $throwable")
+        throw (throwable)
+      }
+      )
+
+      echoer ! "hei"
+      echoer ! "hei2"
+
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex1.test()
+    TestingActors.test()
   }
 
 }
