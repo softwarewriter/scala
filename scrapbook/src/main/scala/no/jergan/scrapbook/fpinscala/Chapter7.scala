@@ -63,8 +63,6 @@ object Chapter7 {
     }
 
     def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
-      val v: Seq[Par[Any]] = ps.map(asyncF(f))
-
       fork(sequence(ps.map(asyncF(f))))
     }
 

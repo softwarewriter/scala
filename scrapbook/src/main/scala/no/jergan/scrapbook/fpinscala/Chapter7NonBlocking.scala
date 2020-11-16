@@ -3,6 +3,9 @@ package no.jergan.scrapbook.fpinscala
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{Callable, CountDownLatch, ExecutorService, Executors}
 
+import no.jergan.scrapbook.fpinscala.Chapter7.Par
+import no.jergan.scrapbook.fpinscala.Chapter7.Par.{fork, lazyUnit, map, map2, unit}
+
 /**
  * Second chapter done according to new version of book.
  *
@@ -45,6 +48,10 @@ object Chapter7NonBlocking {
         }
     }
 
+    def lazyUnit[A](a: => A): Par[A] = {
+      fork(unit(a))
+    }
+
     def fork[A](a: => Par[A]): Par[A] = {
       es =>
         new Future[A] {
@@ -58,7 +65,30 @@ object Chapter7NonBlocking {
         def call = r
       })
 
-    def map2[A, B, C](p: Par[A], p2: Par[B])(f: (A, B) => C): Par[C] =
+    def asyncF[A, B](f: A => B): A => Par[B] = {
+      a => lazyUnit(f(a))
+    }
+
+    def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
+      fork {
+        if (ps.isEmpty) {
+          unit(List.empty)
+        }
+        else if (ps.length == 1) {
+          map(ps.head)(a => List(a))
+        }
+        else {
+          val (l, r) = ps.splitAt(ps.length / 2)
+          map2(sequence(l), sequence(r))(_ ++ _)
+        }
+      }
+    }
+
+    def map[A,B](pa: Par[A])(f: A => B): Par[B] = {
+      map2(pa, unit(()))((a,_) => f(a))
+    }
+
+    def map2[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
       es => new Future[C] {
         def apply(cb: C => Unit): Unit = {
           var ar: Option[A] = None
@@ -76,16 +106,23 @@ object Chapter7NonBlocking {
             }
           }
 
-          p(es)(a => combiner ! Left(a))
-          p2(es)(b => combiner ! Right(b))
+          pa(es)(a => combiner ! Left(a))
+          pb(es)(b => combiner ! Right(b))
         }
       }
 
+    def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
+      val v: Seq[Par[Any]] = ps.map(asyncF(f))
+
+      fork(sequence(ps.map(asyncF(f))))
+    }
   }
 
   object TestingActors {
 
     def test(): Unit = {
+      import Par._
+
       println(Thread.currentThread().getName)
       val es = Executors.newFixedThreadPool(4)
       val echoer = Actor[String](es)(msg => {
@@ -98,6 +135,10 @@ object Chapter7NonBlocking {
       )
       echoer ! "hei"
       echoer ! "hei2"
+
+      val p = parMap(List.range(1, 1000))(math.sqrt(_))
+      val x = run(Executors.newFixedThreadPool(2))(p)
+      println(x)
 
       es.shutdown()
     }
