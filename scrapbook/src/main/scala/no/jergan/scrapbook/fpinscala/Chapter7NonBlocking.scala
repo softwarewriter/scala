@@ -3,9 +3,6 @@ package no.jergan.scrapbook.fpinscala
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{Callable, CountDownLatch, ExecutorService, Executors}
 
-import no.jergan.scrapbook.fpinscala.Chapter7.Par
-import no.jergan.scrapbook.fpinscala.Chapter7.Par.{fork, lazyUnit, map, map2, unit}
-
 /**
  * Second chapter done according to new version of book.
  *
@@ -36,7 +33,7 @@ object Chapter7NonBlocking {
 
   object Par {
     def unit[A](a: A): Par[A] = {
-      es =>
+      _ =>
         new Future[A] {
           def apply(cb: A => Unit): Unit = cb(a)
         }
@@ -128,7 +125,8 @@ object Chapter7NonBlocking {
       echoer ! "hei"
       echoer ! "hei2"
 
-      val p = parMap(List.range(1, 1000))(math.sqrt(_))
+//      val p = parMap(List.range(1, 1000))(math.sqrt(_))
+      val p = parMap(List.range(1, 1000))(i => if (i == 100) throw new NullPointerException("pelle") else math.sqrt(i))
       val x = run(es)(p)
       println(x)
 
