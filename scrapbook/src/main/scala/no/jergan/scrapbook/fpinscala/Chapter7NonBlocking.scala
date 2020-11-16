@@ -25,12 +25,6 @@ object Chapter7NonBlocking {
   }
 
   type Par[A] = ExecutorService => Future[A]
-/*
-  trait Callable[A] {
-    def call: A
-  }
-
- */
 
   def run[A](es: ExecutorService)(p: Par[A]): A = {
     val ref = new AtomicReference[A]
@@ -112,8 +106,6 @@ object Chapter7NonBlocking {
       }
 
     def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
-      val v: Seq[Par[Any]] = ps.map(asyncF(f))
-
       fork(sequence(ps.map(asyncF(f))))
     }
   }
@@ -137,7 +129,7 @@ object Chapter7NonBlocking {
       echoer ! "hei2"
 
       val p = parMap(List.range(1, 1000))(math.sqrt(_))
-      val x = run(Executors.newFixedThreadPool(2))(p)
+      val x = run(es)(p)
       println(x)
 
       es.shutdown()
