@@ -223,7 +223,7 @@ object Chapter7 {
   object Ex7 {
 
     /*
-   Vis at
+ Vis at
    map(map(y)(g))(f) == map(y)(f compose g)
 
    Definisjoner:
