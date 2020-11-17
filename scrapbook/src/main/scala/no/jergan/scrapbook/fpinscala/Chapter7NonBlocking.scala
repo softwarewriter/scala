@@ -14,10 +14,12 @@ object Chapter7NonBlocking {
     private[fpinscala] def apply(k: A => Unit): Unit
   }
 
-  type Par[A] = ExecutorService => Future[Either[Exception, A]]
-
-  def run[A](es: ExecutorService)(p: Par[A]): Either[Exception, A] = {
-    val ref = new AtomicReference[Either[Exception, A]]
+  type AOrX[A] = Either[Exception, A]
+  
+  type Par[A] = ExecutorService => Future[AOrX[A]]
+  
+  def run[A](es: ExecutorService)(p: Par[A]): AOrX[A] = {
+    val ref = new AtomicReference[AOrX[A]]
     val latch = new CountDownLatch(1)
     p(es) { a => ref.set(a); latch.countDown }
     latch.await
@@ -27,8 +29,8 @@ object Chapter7NonBlocking {
   object Par {
     def unit[A](a: A): Par[A] = {
       _ =>
-        new Future[Either[Exception, A]] {
-          def apply(callback: Either[Exception, A] => Unit): Unit = callback(Right(a))
+        new Future[AOrX[A]] {
+          def apply(callback: AOrX[A] => Unit): Unit = callback(Right(a))
         }
     }
 
@@ -38,15 +40,15 @@ object Chapter7NonBlocking {
 
     def fork[A](a: => Par[A]): Par[A] = {
       es =>
-        new Future[Either[Exception, A]] {
-          def apply(cb: Either[Exception, A] => Unit): Unit = {
-            try {
-              val v: Future[Either[Exception, A]] = a(es)
-              eval(es)(v(cb))
-              //            eval(es)(a(es)(cb))
-            }
-            catch {
-              case e: Exception => {println("fant deg"); println(e); cb(Left(e))}
+        new Future[AOrX[A]] {
+          def apply(cb: AOrX[A] => Unit): Unit = {
+            eval(es){
+              try {
+                a(es)(cb)
+              }
+              catch {
+                case e: Exception => cb(Left(e))
+              }
             }
           }
         }
@@ -83,10 +85,10 @@ object Chapter7NonBlocking {
     def map2[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
       es => new Future[Either[Exception, C]] {
         def apply(cb: Either[Exception, C] => Unit): Unit = {
-          var ar: Option[Either[Exception, A]] = None
+          var ar: Option[AOrX[A]] = None
           var br: Option[Either[Exception, B]] = None
 
-          val combiner = Actor[Either[Either[Exception, A], Either[Exception, B]]](es) {
+          val combiner = Actor[Either[AOrX[A], Either[Exception, B]]](es) {
             case Left(a) => br match {
               case None => ar = Some(a)
               case Some(b) => eval(es)(cb(combine(a, b, f)))
@@ -97,51 +99,29 @@ object Chapter7NonBlocking {
               case Some(a) => eval(es)(cb(combine(a, b, f)))
             }
           }
-
           pa(es)(a => combiner ! Left(a))
           pb(es)(b => combiner ! Right(b))
         }
       }
 
-    def combine[A, B, C](ea: Either[Exception, A], eb: Either[Exception, B], f: (A, B) => C): Either[Exception, C] = {
+    def combine[A, B, C](ea: AOrX[A], eb: Either[Exception, B], f: (A, B) => C): Either[Exception, C] = {
       (ea, eb) match {
         case (Right(a), Right(b)) => {
           try {
             Right(f(a, b))
           }
           catch {
-            case e: Exception => {println(e); Left(e)}
+            case e: Exception => Left(e)
           }
         }
-        case _ => {println("pelle"); Left(new Exception("Pelle was here, at least one computation failed."))}
+        case (Left(xa), _) => Left(xa) // TODO: Will ignore possible exception from b
+        case (_, Left(xb)) => Left(xb)
       }
     }
 
     def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
       fork(sequence(ps.map(asyncF(f))))
     }
-  }
-
-  def testLazyException() = {
-
-    def f(ex: Boolean): String = {
-      if (ex) {
-        throw new NullPointerException("pelle")
-      }
-      "ole" + "dole"
-    }
-
-    def executor(s: => String): Unit = {
-      println("ex1")
-      println(s)
-      println("ex2")
-    }
-
-    println("before execute")
-    executor(f(true))
-
-    // Exception is thrown when s is evaluated (at println(s) )
-
   }
 
   object TestingActors {
@@ -166,17 +146,15 @@ object Chapter7NonBlocking {
      val p = parMap(List.range(1, 100))(i => if (i == 10) throw new NullPointerException("pelle") else math.sqrt(i))
       val x = run(es)(p)
       x match {
-        case Left(exception) => exception.printStackTrace()
+        case Left(exception) => throw exception
         case Right(a) => println(a)
       }
-      println(x)
 
       es.shutdown()
     }
   }
 
   def main(args: Array[String]): Unit = {
-//    testLazyException()
     TestingActors.test()
   }
 
