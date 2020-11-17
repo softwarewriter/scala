@@ -130,6 +130,18 @@ object Chapter7 {
       choiceN(map(cond)(if (_) 0 else 1))(List(t, f))
     }
 
+    def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = {
+      choice[K, V](key)(key => choices.getOrElse(key, null))
+    }
+
+    def choice[K, A](key: Par[K])(value: K => Par[A]): Par[A] = {
+      es => {
+        val k: K = run(es)(key).get
+        val v: Par[A] = value(k)
+        v(es)
+      }
+    }
+
   }
 
   case class CombineFuture[A, B, C](fa: Future[A], fb: Future[B], f: (A, B) => C) extends Future[C] {
