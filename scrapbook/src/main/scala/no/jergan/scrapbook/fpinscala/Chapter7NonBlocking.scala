@@ -154,6 +154,16 @@ object Chapter7NonBlocking {
     }
   }
 
+  object Ex10 {
+    // 1) Extended code with new type
+    // type AOrX[A] = Either[Exception, A]
+    // and let Par[A] be a future of this:
+    // type Par[A] = ExecutorService => Future[AOrX[A]]
+    //
+    // Caught exception every place f is evaluated and made sure an exception is propagated back trough all the actors.
+
+  }
+
   def main(args: Array[String]): Unit = {
     TestingActors.test()
   }
