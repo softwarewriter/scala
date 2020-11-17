@@ -122,24 +122,21 @@ object Chapter7 {
 
 
     def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
-      es =>
-        choices(run(es)(n).get)(es)
+      chooser(n)(i => choices(i))
     }
 
     def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
-      choiceN(map(cond)(if (_) 0 else 1))(List(t, f))
+      chooser(cond)(if (_) t else f)
     }
 
     def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = {
-      choice[K, V](key)(key => choices.getOrElse(key, null))
+      chooser[K, V](key)(key => choices.getOrElse(key, null))
     }
 
-    def choice[K, A](key: Par[K])(value: K => Par[A]): Par[A] = {
-      es => {
-        val k: K = run(es)(key).get
-        val v: Par[A] = value(k)
-        v(es)
-      }
+    // Denne signaturen (og implementasjonen) fant jeg selv!
+    def chooser[S, A](selection: Par[S])(choices: S => Par[A]): Par[A] = {
+      es =>
+        choices(run(es)(selection).get)(es)
     }
 
   }
