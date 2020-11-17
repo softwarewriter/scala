@@ -5,9 +5,12 @@ import java.util.concurrent.{Executors, TimeUnit}
 import scala.::
 import scala.annotation.tailrec
 import scala.concurrent.duration.TimeUnit
+import no.jergan.scrapbook.fpinscala.Chapter7.Par._
 
 /**
  * Second chapter done according to new version of book.
+ *
+ * Exercise 10 is done in Chapter7NonBlocking.
  */
 object Chapter7 {
 
@@ -27,9 +30,11 @@ object Chapter7 {
     def isCancelled: Boolean
   }
 
-  type Par[A] = ExecutorService => Future[A]
-
   object Par {
+
+    type Par[A] = ExecutorService => Future[A]
+
+    def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
 
     def unit[A](a: A): Par[A] = {
       (_: ExecutorService) => UnitFuture(a)
@@ -54,7 +59,7 @@ object Chapter7 {
       }
     }
 
-    def map[A,B](pa: Par[A])(f: A => B): Par[B] = {
+    def map[A, B](pa: Par[A])(f: A => B): Par[B] = {
       map2(pa, unit(()))((a,_) => f(a))
     }
 
@@ -113,6 +118,16 @@ object Chapter7 {
 
     def asyncF[A, B](f: A => B): A => Par[B] = {
       a => lazyUnit(f(a))
+    }
+
+
+    def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+      es =>
+        choices(run(es)(n).get)(es)
+    }
+
+    def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
+      choiceN(map(cond)(if (_) 0 else 1))(List(t, f))
     }
 
   }
@@ -259,6 +274,15 @@ object Chapter7 {
       }
     }
     forker(List.fill(42)(n + 2))
+  }
+
+  object Ex11 {
+
+
+    val v: Par[Int] = Par.unit(4)
+
+
+
   }
 
   def main(args: Array[String]): Unit = {

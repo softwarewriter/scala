@@ -161,6 +161,8 @@ object Chapter7NonBlocking {
     // type Par[A] = ExecutorService => Future[AOrX[A]]
     //
     // Caught exception every place f is evaluated and made sure an exception is propagated back trough all the actors.
+    //
+    // Solution says: We give a fully fleshed-out solution in the Task data type in the code for Chapter 13.
 
   }
 
