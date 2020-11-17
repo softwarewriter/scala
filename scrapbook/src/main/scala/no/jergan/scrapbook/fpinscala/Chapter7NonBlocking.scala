@@ -104,7 +104,7 @@ object Chapter7NonBlocking {
         }
       }
 
-    def combine[A, B, C](ea: AOrX[A], eb: Either[Exception, B], f: (A, B) => C): Either[Exception, C] = {
+    def combine[A, B, C](ea: AOrX[A], eb: AOrX[B], f: (A, B) => C): AOrX[C] = {
       (ea, eb) match {
         case (Right(a), Right(b)) => {
           try {
@@ -114,7 +114,7 @@ object Chapter7NonBlocking {
             case e: Exception => Left(e)
           }
         }
-        case (Left(xa), _) => Left(xa) // TODO: Will ignore possible exception from b
+        case (Left(xa), _) => Left(xa) // TODO: Ignores potential exception from b
         case (_, Left(xb)) => Left(xb)
       }
     }
