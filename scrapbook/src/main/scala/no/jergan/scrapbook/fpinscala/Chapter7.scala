@@ -122,23 +122,35 @@ object Chapter7 {
 
 
     def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
-      chooser(n)(i => choices(i))
+      flatMap(n)(i => choices(i))
     }
 
     def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = {
-      chooser(cond)(if (_) t else f)
+      flatMap(cond)(if (_) t else f)
     }
 
     def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = {
-      chooser[K, V](key)(key => choices.getOrElse(key, null))
+      flatMap[K, V](key)(key => choices.getOrElse(key, null))
     }
 
     // Denne signaturen (og implementasjonen) fant jeg selv!
-    def chooser[S, A](selection: Par[S])(choices: S => Par[A]): Par[A] = {
+    def flatMap[A, B](pa: Par[A])(f: A => Par[B]): Par[B] = {
       es =>
-        choices(run(es)(selection).get)(es)
+        f(run(es)(pa).get)(es)
     }
 
+    def join[A](a: Par[Par[A]]): Par[A] = {
+      es =>
+        run(es)(a).get(es)
+    }
+
+    def flatMapUsingJoin[A, B](pa: Par[A])(f: A => Par[B]): Par[B] = {
+      join(map(pa)(f))
+    }
+
+    def joinUsingFlatMap[A](a: Par[Par[A]]): Par[A] = {
+      flatMap(a)(identity)
+    }
   }
 
   case class CombineFuture[A, B, C](fa: Future[A], fb: Future[B], f: (A, B) => C) extends Future[C] {
@@ -286,12 +298,20 @@ object Chapter7 {
   }
 
   object Ex11 {
+    // Implemented choiceN and choice.
+  }
 
+  object Ex12 {
+    // Stopped, found signature and implemented flatMap.
+    // Implemented choiceMap using flatMap. TODO: How to handle null case?
+  }
 
-    val v: Par[Int] = Par.unit(4)
+  object Ex13 {
+    // Implemented choice og choiceN using chooser.
+  }
 
-
-
+  object Ex14 {
+    // Implemented join.
   }
 
   def main(args: Array[String]): Unit = {
