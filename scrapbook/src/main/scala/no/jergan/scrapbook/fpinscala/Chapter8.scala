@@ -26,7 +26,13 @@ object Chapter8 {
     type SuccessCount = Int
   }
 
-  case class Gen[A](sample: State[RNG, A])
+  case class Gen[A](sample: State[RNG, A]) {
+    def map[B](f: A => B): Gen[B] = {
+      Gen(sample.map(f))
+    }
+  }
+
+//   case class State[S, +A](run: S => (A, S)) {
 
   object Gen {
 
@@ -34,6 +40,15 @@ object Chapter8 {
       Gen(State(map(nonNegativeInt)(n => start + n % (stopExclusive - start))))
     }
 
+    def unit[A](a: => A): Gen[A] = {
+      Gen(State(rng => (a, rng)))
+    }
+
+    def boolean: Gen[Boolean] = {
+      choose(0, 2).map(_ == 0)
+    }
+
+    def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = ???
   }
 
   /*
@@ -60,8 +75,12 @@ object Chapter8 {
     // implemented &&
   }
 
-  def Ex3(): Unit = {
+  def Ex4(): Unit = {
     // implemented choose
+  }
+
+  def Ex5(): Unit = {
+    // implemented unit, boolean and listofn
   }
 
   def main(args: Array[String]): Unit = {

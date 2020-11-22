@@ -312,6 +312,8 @@ object Chapter7 {
 
   object Ex14 {
     // Implemented join.
+    // Implemeted join using flatMap
+    // Implemeted flatMap using join
   }
 
   def main(args: Array[String]): Unit = {
