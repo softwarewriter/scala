@@ -1,7 +1,8 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, State, nonNegativeInt, map}
+import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, SimpleRNG, State, map, nonNegativeInt}
 import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, SuccessCount}
+import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
 
 
 object Chapter8 {
@@ -30,9 +31,19 @@ object Chapter8 {
     def map[B](f: A => B): Gen[B] = {
       Gen(sample.map(f))
     }
-  }
 
-//   case class State[S, +A](run: S => (A, S)) {
+    def flatMap[B](f: A => Gen[B]): Gen[B] = {
+      Gen(sample.flatMap(a => f(a).sample))
+    }
+
+    def listOfN(size: Int): Gen[List[A]] = {
+      Gen.listOfN(size, this)
+    }
+
+    def listOfN(size: Gen[Int]): Gen[List[A]] = {
+      size.flatMap(n => listOfN(n))
+    }
+  }
 
   object Gen {
 
@@ -41,14 +52,26 @@ object Chapter8 {
     }
 
     def unit[A](a: => A): Gen[A] = {
-      Gen(State(rng => (a, rng)))
+      Gen(State.unit(a))
     }
 
     def boolean: Gen[Boolean] = {
       choose(0, 2).map(_ == 0)
     }
 
-    def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = ???
+    def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
+      Gen(State.sequence(List.fill(n)(g.sample)))
+    }
+
+    def genOption[A](ga: Gen[A]): Gen[Option[A]] = {
+      ga.map(a => Some(a))
+    }
+
+    def genPair[A](ga: Gen[A]): Gen[(A, A)] = {
+      listOfN(2, ga)
+        .map(l => (l(0), l(1)))
+    }
+
   }
 
   /*
@@ -63,29 +86,51 @@ object Chapter8 {
 
    */
 
-  def Ex1(): Unit = {
+  object Ex1 {
     // Find some properties
   }
 
-  def Ex2(): Unit = {
+  object Ex2 {
     // Find some properties
   }
 
-  def Ex3(): Unit = {
+  object Ex3 {
     // implemented &&
   }
 
-  def Ex4(): Unit = {
+  object Ex4 {
     // implemented choose
   }
 
-  def Ex5(): Unit = {
+  object Ex5 {
     // implemented unit, boolean and listofn
+
+    def test() = {
+      val rng = new SimpleRNG(0)
+      val g: Gen[Int] = choose(0, 2)
+      val gList: Gen[List[Int]] = listOfN(4, g)
+
+      println(gList.sample.run(rng)._1)
+    }
+  }
+
+  object Ex6 {
+    // implemented flatMap and new listOfN
+
+
+    def test(): Unit = {
+      val rng = new SimpleRNG(2)
+      val gb = boolean
+      val gi: Gen[Int] = choose(2, 4)
+
+      val gList = gb.listOfN(gi)
+      println(gList.sample.run(rng)._1)
+
+    }
   }
 
   def main(args: Array[String]): Unit = {
-    println("pelle")
-
+    Ex6.test()
 
 
   }
