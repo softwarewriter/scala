@@ -4,6 +4,7 @@ import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
 import no.jergan.scrapbook.fpinscala.Chapter5.Ex12.zip
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold}
 
+
 /**
  * Last chapter done according to old version of book.
  */
@@ -114,6 +115,17 @@ object Chapter5 {
       val v: B = f(a, z)
       (cons(v, s), v)
     })._1.append(Stream[B](z)) // TODO: Could we somehow avoid this append?
+
+    //TODO: Do this while redoing chapter 5 according to the new version
+    def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = ???
+
+    def find(p: A => Boolean): Option[A] = {
+      uncons match {
+        case Some((h, t)) => if (p(h)) Some(h) else t.find(p)
+        case None => None
+      }
+    }
+
   }
 
   object Stream {
@@ -137,6 +149,9 @@ object Chapter5 {
         case None => empty[A]
       }
     }
+
+    def from(n: Int): Stream[Int] =
+      cons(n, from(n + 1))
   }
 
   object Ex1 {

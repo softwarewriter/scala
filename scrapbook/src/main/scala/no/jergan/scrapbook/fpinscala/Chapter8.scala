@@ -1,42 +1,52 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, SimpleRNG, State, map, nonNegativeInt}
-import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, SuccessCount}
-import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
 
+import no.jergan.scrapbook.fpinscala.Chapter5.{Stream}
+import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, SimpleRNG, State, map, nonNegativeInt}
+import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, SuccessCount, TestCases}
+import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
 
 object Chapter8 {
 
-  trait Prop {
-    def check: Either[(FailedCase, SuccessCount), SuccessCount]
+  case class Prop(run: (TestCases, RNG) => Result)
 
-    def &&(p: Prop): Prop = {
-      new Prop {
-        def check = {
-          (this.check, p.check) match {
-            case (Right(sc1), Right(sc2)) => Right(sc1 + sc2)
-
-          }
-        }
-      }
-    }
+  sealed trait Result {
+    def isFalsified: Boolean
   }
 
-  /*
-  case class And(p1: Prop, p2: Prop) extends Prop {
-    def check: Either[(FailedCase, SuccessCount), SuccessCount] =
-      (p1, p2) match {
-        case (Right(sc1), Right(sc2)) => Right(sc1 + sc2)
-      }
-
-    def check: Boolean = p1.check && p2.check
+  case object Passed extends Result {
+    def isFalsified = false
   }
 
-   */
+  case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
+    def isFalsified = true
+  }
 
   object Prop {
+    type TestCases = Int
     type FailedCase = String
     type SuccessCount = Int
+
+    def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+      (n, rng) =>
+        randomStream(as)(rng).zipWith(Stream.from(0))((a, b) => (a, b)).take(n).map {
+          case (a, i) => try {
+            if (f(a)) Passed else Falsified(a.toString, i)
+          } catch {
+            case e: Exception => Falsified(buildMsg(a, e), i)
+          }
+        }.find(_.isFalsified).getOrElse(Passed)
+    }
+
+    def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
+      Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
+    }
+
+    def buildMsg[A](s: A, e: Exception): String = {
+      s"test case: $s\n" +
+        s"generated an exception: ${e.getMessage}\n" + s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
+    }
+
   }
 
   case class Gen[A](sample: State[RNG, A]) {
