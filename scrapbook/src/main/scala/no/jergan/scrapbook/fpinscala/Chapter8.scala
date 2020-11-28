@@ -8,7 +8,36 @@ import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
 
 object Chapter8 {
 
-  case class Prop(run: (TestCases, RNG) => Result)
+  case class Prop(run: (TestCases, RNG) => Result) {
+
+    def &&(p: Prop): Prop = {
+      Prop { (n, rng) =>
+        run(n, rng) match {
+          case Passed => p.run(n, rng)
+          case x => x
+        }
+      }
+    }
+
+    def ||(p: Prop): Prop = {
+      Prop { (n, rng) =>
+        run(n, rng) match {
+          case Passed => Passed
+          case Falsified(f, _) => p.tag(f).run(n, rng)
+        }
+      }
+    }
+
+    def tag(message: String): Prop = {
+      Prop { (n, rng) =>
+        run(n, rng) match {
+          case Passed => Passed
+          case Falsified(f, s) => Falsified(f + "\n + message", s)
+        }
+      }
+    }
+
+  }
 
   sealed trait Result {
     def isFalsified: Boolean
@@ -65,6 +94,11 @@ object Chapter8 {
     def listOfN(size: Gen[Int]): Gen[List[A]] = {
       size.flatMap(n => listOfN(n))
     }
+
+    def unsized: SGen[A] = {
+      SGen(_ => this)
+    }
+
   }
 
   object Gen {
@@ -107,6 +141,29 @@ object Chapter8 {
     }
 
   }
+
+  // Todo: SGen[A] was SGen[+A]
+  case class SGen[A](forSize: Int => Gen[A]) {
+
+    def map[B](f: A => B): SGen[B] = {
+      SGen(n => forSize(n).map(f))
+    }
+
+    def flatMap[B](f: A => Gen[B]): SGen[B] = {
+      SGen(n => forSize(n).flatMap(f))
+    }
+
+    def listOfN(size: Int): SGen[List[A]] = {
+      SGen(n => forSize(n).listOfN(size))
+    }
+
+    def listOfN(size: Gen[Int]): SGen[List[A]] = {
+      SGen(n => forSize(n).listOfN(size))
+    }
+
+  }
+
+
 
   object Ex1 {
     // Find some properties
@@ -156,6 +213,18 @@ object Chapter8 {
 
   object Ex8 {
     // Implemented weighted
+  }
+
+  object Ex9 {
+    // Implemented && and ||
+  }
+
+  object Ex10 {
+    // Implemented unsized
+  }
+
+  object Ex11 {
+    // Implemented functions on SGen
   }
 
   def main(args: Array[String]): Unit = {

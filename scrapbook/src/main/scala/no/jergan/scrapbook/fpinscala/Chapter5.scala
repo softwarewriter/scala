@@ -4,6 +4,8 @@ import no.jergan.scrapbook.fpinscala.Chapter5.Ex11.ones
 import no.jergan.scrapbook.fpinscala.Chapter5.Ex12.zip
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream.{cons, empty, unfold}
 
+import scala.annotation.tailrec
+
 
 /**
  * Last chapter done according to old version of book.
@@ -119,7 +121,8 @@ object Chapter5 {
     //TODO: Do this while redoing chapter 5 according to the new version
     def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = ???
 
-    def find(p: A => Boolean): Option[A] = {
+    @tailrec
+    final def find(p: A => Boolean): Option[A] = {
       uncons match {
         case Some((h, t)) => if (p(h)) Some(h) else t.find(p)
         case None => None
