@@ -163,6 +163,13 @@ object Chapter8 {
 
   }
 
+  object SGen {
+    def listOf[A](g: Gen[A]): SGen[List[A]] = {
+      SGen(n => g.listOfN(n))
+    }
+
+  }
+
 
 
   object Ex1 {
@@ -225,6 +232,10 @@ object Chapter8 {
 
   object Ex11 {
     // Implemented functions on SGen
+  }
+
+  object Ex12 {
+    // Implemented listOf
   }
 
   def main(args: Array[String]): Unit = {
