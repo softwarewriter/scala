@@ -1,36 +1,36 @@
 package no.jergan.scrapbook.fpinscala
 
 
-import no.jergan.scrapbook.fpinscala.Chapter5.{Stream}
+import no.jergan.scrapbook.fpinscala.Chapter5.Stream
 import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, SimpleRNG, State, map, nonNegativeInt}
-import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, SuccessCount, TestCases}
+import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, Falsified, MaxSize, Passed, Result, SuccessCount, TestCases}
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
 
 object Chapter8 {
 
-  case class Prop(run: (TestCases, RNG) => Result) {
+  case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
 
     def &&(p: Prop): Prop = {
-      Prop { (n, rng) =>
-        run(n, rng) match {
-          case Passed => p.run(n, rng)
+      Prop { (max, n, rng) =>
+        run(max, n, rng) match {
+          case Passed => p.run(max, n, rng)
           case x => x
         }
       }
     }
 
     def ||(p: Prop): Prop = {
-      Prop { (n, rng) =>
-        run(n, rng) match {
+      Prop { (max, n, rng) =>
+        run(max, n, rng) match {
           case Passed => Passed
-          case Falsified(f, _) => p.tag(f).run(n, rng)
+          case Falsified(f, _) => p.tag(f).run(max, n, rng)
         }
       }
     }
 
     def tag(message: String): Prop = {
-      Prop { (n, rng) =>
-        run(n, rng) match {
+      Prop { (max, n, rng) =>
+        run(max, n, rng) match {
           case Passed => Passed
           case Falsified(f, s) => Falsified(f + "\n + message", s)
         }
@@ -39,33 +39,52 @@ object Chapter8 {
 
   }
 
-  sealed trait Result {
-    def isFalsified: Boolean
-  }
-
-  case object Passed extends Result {
-    def isFalsified = false
-  }
-
-  case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
-    def isFalsified = true
-  }
-
   object Prop {
+    type MaxSize = Int
     type TestCases = Int
     type FailedCase = String
     type SuccessCount = Int
 
-    def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-      (n, rng) =>
-        randomStream(as)(rng).zipWith(Stream.from(0))((a, b) => (a, b)).take(n).map {
-          case (a, i) => try {
-            if (f(a)) Passed else Falsified(a.toString, i)
-          } catch {
-            case e: Exception => Falsified(buildMsg(a, e), i)
-          }
-        }.find(_.isFalsified).getOrElse(Passed)
+    sealed trait Result {
+      def isFalsified: Boolean
     }
+
+    case object Passed extends Result {
+      def isFalsified = false
+    }
+
+    case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
+      def isFalsified = true
+    }
+
+    def forAll[A](g: SGen[A])(f: A => Boolean): Prop = {
+      forAll[A](g(_))(f)
+    }
+
+    def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = {
+      Prop {
+        (max, n, rng) =>
+          val casesPerSize = (n - 1) / max + 1
+          val props: Stream[Prop] =
+            Stream.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
+          val prop: Prop =
+            props.map(p => Prop { (max, n, rng) =>
+              p.run(max, casesPerSize, rng)
+            }).toList.reduce(_ && _)
+          prop.run(max, n, rng)
+      }
+    }
+
+  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+    (max, n, rng) =>
+      randomStream(as)(rng).zipWith(Stream.from(0))((a, b) => (a, b)).take(n).map {
+        case (a, i) => try {
+          if (f(a)) Passed else Falsified(a.toString, i)
+        } catch {
+          case e: Exception => Falsified(buildMsg(a, e), i)
+        }
+      }.find(_.isFalsified).getOrElse(Passed)
+  }
 
     def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
       Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
@@ -143,7 +162,7 @@ object Chapter8 {
   }
 
   // Todo: SGen[A] was SGen[+A]
-  case class SGen[A](forSize: Int => Gen[A]) {
+  case class SGen[+A](forSize: Int => Gen[A]) {
 
     def map[B](f: A => B): SGen[B] = {
       SGen(n => forSize(n).map(f))
