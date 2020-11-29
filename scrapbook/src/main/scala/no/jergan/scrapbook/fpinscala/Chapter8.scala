@@ -3,8 +3,9 @@ package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
 import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, SimpleRNG, State, map, nonNegativeInt}
-import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, Falsified, MaxSize, Passed, Result, SuccessCount, TestCases}
+import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, Falsified, MaxSize, Passed, Proved, Result, SuccessCount, TestCases, forAll, run}
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
+import no.jergan.scrapbook.fpinscala.Chapter8.SGen.{listOf, listOf1}
 
 object Chapter8 {
 
@@ -13,7 +14,7 @@ object Chapter8 {
     def &&(p: Prop): Prop = {
       Prop { (max, n, rng) =>
         run(max, n, rng) match {
-          case Passed => p.run(max, n, rng)
+          case Passed | Proved => p.run(max, n, rng)
           case x => x
         }
       }
@@ -23,6 +24,7 @@ object Chapter8 {
       Prop { (max, n, rng) =>
         run(max, n, rng) match {
           case Passed => Passed
+          case Proved => Proved
           case Falsified(f, _) => p.tag(f).run(max, n, rng)
         }
       }
@@ -57,8 +59,13 @@ object Chapter8 {
       def isFalsified = true
     }
 
+    case object Proved extends Result {
+      def isFalsified = false
+    }
+
     def forAll[A](g: SGen[A])(f: A => Boolean): Prop = {
-      forAll[A](g(_))(f)
+      // TODO: Was forAll(g(_))(f)
+      forAll(g.forSize)(f)
     }
 
     def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = {
@@ -93,6 +100,18 @@ object Chapter8 {
     def buildMsg[A](s: A, e: Exception): String = {
       s"test case: $s\n" +
         s"generated an exception: ${e.getMessage}\n" + s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
+    }
+
+    def run(p: Prop,
+            maxSize: Int = 100,
+            testCases: Int = 100,
+            rng: RNG = SimpleRNG(System.currentTimeMillis)): Unit = p.run(maxSize, testCases, rng) match {
+      case Falsified(msg, n) =>
+        println(s"! Falsified after $n passed tests:\n $msg")
+      case Passed =>
+        println(s"+ OK, passed $testCases tests.")
+      case Proved =>
+        println(s"+ OK, proved property.")
     }
 
   }
@@ -162,7 +181,7 @@ object Chapter8 {
   }
 
   // Todo: SGen[A] was SGen[+A]
-  case class SGen[+A](forSize: Int => Gen[A]) {
+  case class SGen[A](forSize: Int => Gen[A]) {
 
     def map[B](f: A => B): SGen[B] = {
       SGen(n => forSize(n).map(f))
@@ -185,6 +204,10 @@ object Chapter8 {
   object SGen {
     def listOf[A](g: Gen[A]): SGen[List[A]] = {
       SGen(n => g.listOfN(n))
+    }
+
+    def listOf1[A](g: Gen[A]): SGen[List[A]] = {
+      SGen(n => g.listOfN(n + 1))
     }
 
   }
@@ -257,10 +280,28 @@ object Chapter8 {
     // Implemented listOf
   }
 
+  object Ex13 {
+    val smallInt = Gen.choose(-10, 10)
+    val maxProp = forAll(listOf1(smallInt)) { ns =>
+      val max = ns.max
+      !ns.exists(_ > max)
+    }
+  }
+
+  object Ex14 {
+    val smallInt = Gen.choose(-10, 10)
+    val sortedProp = forAll(listOf1(smallInt)) { ns =>
+      ns.zipAll(ns.drop(1), Int.MinValue, Int.MaxValue)
+        .map(pair => pair._1 <= pair._2)
+        .reduce(_ && _)
+    }
+  }
+
+  object Ex15 {
+
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex6.test()
-
-
   }
 
 
