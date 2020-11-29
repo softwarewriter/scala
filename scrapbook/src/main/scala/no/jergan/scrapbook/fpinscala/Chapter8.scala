@@ -3,10 +3,14 @@ package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
 import no.jergan.scrapbook.fpinscala.Chapter6.{RNG, SimpleRNG, State, map, nonNegativeInt}
+import no.jergan.scrapbook.fpinscala.Chapter7.Par
 import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{FailedCase, Falsified, MaxSize, Passed, Proved, Result, SuccessCount, TestCases, forAll, run}
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen._
 import no.jergan.scrapbook.fpinscala.Chapter8.SGen.{listOf, listOf1}
 
+/**
+ * Have done all exercises to (and including 14), skipped 15, 16, 17, 19 and 20.
+ */
 object Chapter8 {
 
   case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
@@ -100,6 +104,9 @@ object Chapter8 {
     def buildMsg[A](s: A, e: Exception): String = {
       s"test case: $s\n" +
         s"generated an exception: ${e.getMessage}\n" + s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
+    }
+
+    def check(p: => Boolean): Prop = Prop { (_, _, _) => if (p) Passed else Falsified("()", 0)
     }
 
     def run(p: Prop,
@@ -207,7 +214,7 @@ object Chapter8 {
     }
 
     def listOf1[A](g: Gen[A]): SGen[List[A]] = {
-      SGen(n => g.listOfN(n + 1))
+      SGen(n => g.listOfN(n max 1))
     }
 
   }
@@ -299,6 +306,29 @@ object Chapter8 {
 
   object Ex15 {
 
+    def checkAll[A](as: List[A], p: A => Boolean): Prop = Prop {
+      (_, _, _) => if (as.map(a => p(a)).reduce(_ && _)) Passed else Falsified("()", 0)
+    }
+
+  }
+
+  object Ex16 {
+
+    // Skipped for now
+  }
+
+  object Ex17 {
+
+    // Skipped for now
+  }
+
+  object Ex18 {
+    // l.takeWhile + l.dropWhile = l.length
+  }
+
+  object Ex19 {
+    def genStringIntFn(g: Gen[Int]): Gen[String => Int] =
+      g.map {i => s => s.length + i}
   }
 
   def main(args: Array[String]): Unit = {
