@@ -30,11 +30,15 @@ object Chapter9 {
 
     def map[A, B](a: Parser[A])(f: A => B): Parser[B]
 
-    def map2[A, B, C](a: Parser[A], b: Parser[B])(f: (A, B) => C): Parser[C]
+    def map2[A, B, C](a: Parser[A], b: Parser[B])(f: (A, B) => C): Parser[C] = {
+      map(product(a, b))(t => f(t._1, t._2))
+    }
 
     def flatMap[A, B](a: Parser[A])(f: A => Parser[B]): Parser[B]
 
     def slice[A](p: Parser[A]): Parser[String]
+
+    def product[A, B](p: Parser[A], p2: Parser[B]): Parser[(A, B)]
 
     implicit def string(s: String): Parser[String]
     implicit def operators[A](p: Parser[A]) = ParserOps[A](p)
@@ -44,12 +48,14 @@ object Chapter9 {
 //    implicit def asAParser[A](a: A)(implicit f: A => Parser[A]): ParserOps[A] = ParserOps(f(a))
 
     case class ParserOps[A](p: Parser[A]) {
-      def |[B>:A](p2: Parser[B]): Parser[B] = Parsers.this.or(p, p2)
-      def or[B>:A](p2: => Parser[B]): Parser[B] = Parsers.this.or(p, p2)
+      def |[B >: A](p2: Parser[B]): Parser[B] = Parsers.this.or(p, p2)
+      def or[B >: A](p2: => Parser[B]): Parser[B] = Parsers.this.or(p, p2)
       def many: Parser[List[A]] = Parsers.this.many(p)
       def map[B](f: A => B): Parser[B] = Parsers.this.map(p)(f)
       def flatMap[B](f: A => Parser[B]): Parser[B] = Parsers.this.flatMap(p)(f)
       def slice: Parser[String] = Parsers.this.slice(p)
+      def **[B](p2: Parser[B]): Parser[(A, B)] = Parsers.this.product(p, p2)
+      def product[B](p2: => Parser[B]): Parser[(A, B)] = Parsers.this.product(p, p2)
 
       object Laws {
         def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
@@ -78,16 +84,8 @@ object Chapter9 {
   }
 
   object Ex1 {
-
-//    import Chapter9.Parsers
-
-//    val p: Parsers[String, List[_]] = ???
-
-//    import p._
-
-//    val v = "ole" | "dole"
+    // Implemented map2 using product and many1 using map2
   }
-
 
   def main(args: Array[String]): Unit = {
     println("pelle")
