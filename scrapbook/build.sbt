@@ -2,6 +2,11 @@ name := "scrapbook"
 
 scalaVersion := "2.13.3"
 
+
+scalacOptions := Seq(
+   "-language:higherKinds",
+)
+
 libraryDependencies ++= Seq(
    "org.typelevel"     %% "cats-effect"   % "2.2.0",
 
