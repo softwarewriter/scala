@@ -31,14 +31,16 @@ object Chapter9 {
     def map[A, B](a: Parser[A])(f: A => B): Parser[B]
 
     def map2[A, B, C](a: Parser[A], b: Parser[B])(f: (A, B) => C): Parser[C] = {
-      map(product(a, b))(t => f(t._1, t._2))
+      map(product(a, b))(f.tupled)
     }
 
     def flatMap[A, B](a: Parser[A])(f: A => Parser[B]): Parser[B]
 
     def slice[A](p: Parser[A]): Parser[String]
 
-    def product[A, B](p: Parser[A], p2: Parser[B]): Parser[(A, B)]
+    def product[A, B](a: Parser[A], b: Parser[B]): Parser[(A, B)] = {
+      map2(a, b)((c, d) => (c, d))
+    }
 
     implicit def string(s: String): Parser[String]
     implicit def operators[A](p: Parser[A]) = ParserOps[A](p)
