@@ -39,7 +39,7 @@ class VesselEndpoints[F[_]: ConcurrentEffect: Timer](val unsecurity: Application
       Endpoint(
          "Put by IMO",
          Method.PUT,
-         Root / "vessel" / "imo".as[String],
+         Root / "vessel" / "imo".as[IMO],
          Accepts.json[Vessel],
          Produces.Directive.json[Vessel])
    ).run{case (imo, vessel) =>
