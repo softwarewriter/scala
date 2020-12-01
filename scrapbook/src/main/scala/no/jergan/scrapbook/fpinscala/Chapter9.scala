@@ -14,18 +14,22 @@ object Chapter9 {
     }
 
     def succeed[A](a: A): Parser[A] = {
-      val v: Parser[String] = string("")
       string("").map(_ => a)
     }
 
     def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
 
-    def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]]
+    def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = {
+      if (n == 0) succeed(List())
+      else map2(p, listOfN(n - 1, p))(_ :: _)
+    }
 
-    def many[A](p: Parser[A]): Parser[List[A]]
+    def many[A](p: Parser[A]): Parser[List[A]] = {
+      map2(p, many(p))((a, b) => a :: b) or succeed(List())
+    }
 
     def many1[A](p: Parser[A]): Parser[List[A]] = {
-      map2(p, many(p))((a, b) => a :: b)
+      map2(p, many(p))(_ :: _)
     }
 
     def map[A, B](a: Parser[A])(f: A => B): Parser[B]
@@ -43,11 +47,8 @@ object Chapter9 {
     }
 
     implicit def string(s: String): Parser[String]
-    implicit def operators[A](p: Parser[A]) = ParserOps[A](p)
+    implicit def operators[A](p: Parser[A]): ParserOps[A] = ParserOps[A](p)
     implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
-
-//    implicit def a[A](a: A): Parser[A]
-//    implicit def asAParser[A](a: A)(implicit f: A => Parser[A]): ParserOps[A] = ParserOps(f(a))
 
     case class ParserOps[A](p: Parser[A]) {
       def |[B >: A](p2: Parser[B]): Parser[B] = Parsers.this.or(p, p2)
@@ -89,8 +90,27 @@ object Chapter9 {
     // Implemented map2 using product and many1 using map2
   }
 
+  object Ex2 {
+    // Assosiative
+  }
+
+  object Ex3 {
+    // Implemented many using map2, or and success.
+    // Cheated here, not good.
+  }
+
+  object Ex4 {
+    // Implemented listOfN using map2 and success
+
+  }
+
   def main(args: Array[String]): Unit = {
-    println("pelle")
+
+    def f(a: Boolean) = {
+      if (a) true
+      false
+    }
+    println("pelle: " + f(true))
 
   }
 

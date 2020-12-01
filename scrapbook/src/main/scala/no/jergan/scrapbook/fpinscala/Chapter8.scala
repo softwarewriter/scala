@@ -38,6 +38,7 @@ object Chapter8 {
       Prop { (max, n, rng) =>
         run(max, n, rng) match {
           case Passed => Passed
+          case Proved => Proved
           case Falsified(f, s) => Falsified(f + "\n + message", s)
         }
       }

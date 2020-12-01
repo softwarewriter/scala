@@ -26,7 +26,7 @@ sealed trait Validation[E, X] {
    }
 
    def |@| [Y](f: Validation[E, X => Y])(implicit s: SemiGroup[E]): Validation[E, Y] = (this, f) match {
-      case (Failure(e1), Failure(e2)) => Failure(s append(e1, e2))
+      case (Failure(e1), Failure(e2)) => Failure(s.append(e1, e2))
       case (Failure(e1), Success(_)) => Failure(e1)
       case (Success(_), Failure(e2)) => Failure(e2)
       case (Success(x), Success(k)) => Success(k(x))

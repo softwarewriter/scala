@@ -2,9 +2,9 @@ name := "scrapbook"
 
 scalaVersion := "2.13.3"
 
-
 scalacOptions := Seq(
    "-language:higherKinds",
+   "-language:implicitConversions"
 )
 
 libraryDependencies ++= Seq(
