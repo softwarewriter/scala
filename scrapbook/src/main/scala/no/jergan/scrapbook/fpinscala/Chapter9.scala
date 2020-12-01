@@ -11,9 +11,9 @@ object Chapter9 {
 
     def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
-    implicit def string(s: String): Parser[String]
-
     // primitives
+
+    implicit def string(s: String): Parser[String]
 
     def succeed[A](a: A): Parser[A] = {
       string("").map(_ => a)
@@ -21,19 +21,17 @@ object Chapter9 {
 
     def or[A](s1: Parser[A], s2: => Parser[A]): Parser[A]
 
-    def map[A, B](a: Parser[A])(f: A => B): Parser[B]
-
     def flatMap[A, B](a: Parser[A])(f: A => Parser[B]): Parser[B]
-
-    def product[A, B](a: Parser[A], b: Parser[B]): Parser[(A, B)] = {
-      a.flatMap(aa => b.map(bb => (aa, bb)))
-    }
 
     def slice[A](p: Parser[A]): Parser[String]
 
-    implicit def regex(r: Regex): Parser[String]
+    def regex(r: Regex): Parser[String]
 
     // combined
+
+    def map[A, B](a: Parser[A])(f: A => B): Parser[B] = {
+      a.flatMap(aa => succeed(f(aa)))
+    }
 
     def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = {
       if (n == 0) succeed(List())
@@ -46,6 +44,10 @@ object Chapter9 {
 
     def many1[A](p: Parser[A]): Parser[List[A]] = {
       map2(p, many(p))(_ :: _)
+    }
+
+    def product[A, B](a: Parser[A], b: Parser[B]): Parser[(A, B)] = {
+      a.flatMap(aa => b.map(bb => (aa, bb)))
     }
 
     def map2[A, B, C](a: Parser[A], b: Parser[B])(f: (A, B) => C): Parser[C] = {
@@ -136,6 +138,7 @@ object Chapter9 {
   }
 
   object Ex8 {
+    // Implemented map
   }
 
   def main(args: Array[String]): Unit = {
