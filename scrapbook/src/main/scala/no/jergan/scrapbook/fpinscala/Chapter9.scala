@@ -3,6 +3,7 @@ package no.jergan.scrapbook.fpinscala
 import no.jergan.scrapbook.fpinscala.Chapter8.Prop.forAll
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
 
+import scala.::
 import scala.util.matching.Regex
 
 object Chapter9 {
@@ -62,10 +63,104 @@ object Chapter9 {
       string(c.toString).map(_.charAt(0))
     }
 
-    def composed(): Parser[String] = {
-      regex("[0-9]".r)
-        .flatMap(s => listOfN(s.toInt, "a"))
-        .map(_.flatten.toString)
+    def composed(): Parser[Int] = {
+     /*
+      regex("[0-9+]".r)
+        .flatMap(s => listOfN(s.toInt, char('a'))
+        .map(ss => ss.toString()))
+      */
+      for {
+        digit <- regex("[0-9]+".r)
+        n = digit.toInt
+        // we really should catch exceptions thrown by toInt // and convert to parse failure
+        _ <- listOfN(n, char('a'))
+      } yield n
+    }
+
+    object J {
+
+      def root(): Parser[JSON.JObject] = {
+        jsonMap()
+      }
+
+      def json(): Parser[JSON] = {
+        jsonNull or jsonString or jsonNumber or jsonBool or json or jsonArray or jsonMap
+      }
+
+      def jsonNull(): Parser[JSON] = {
+        string("null").map(_ => JSON.JNull)
+      }
+
+      def jsonString(): Parser[JSON.JString] = {
+        char('"')
+          .flatMap(_ => regex("[A-Z].*".r)
+            .flatMap(s => char('"').map(_ => JSON.JString(s))))
+      }
+
+      def jsonNumber(): Parser[JSON.JNumber] = {
+        regex("[0-9].*".r)
+          .map(s => JSON.JNumber(Integer.parseInt(s)))
+      }
+
+      def jsonBool(): Parser[JSON.JBool] = {
+        or(regex("true".r), regex("false".r))
+          .map(s => JSON.JBool(s.toBoolean))
+      }
+
+      def jsonArray(): Parser[JSON.JArray] = {
+        for {
+          _ <- jsonWhite()
+          _ <- char('[')
+          elements <- many[JSON](jsonArrayElement())
+          last <- many[JSON](json())
+          _ <- jsonWhite()
+          _ <- char(']')
+        } yield {
+          JSON.JArray((elements ++ last).toIndexedSeq)
+        }
+      }
+
+      def jsonArrayElement(): Parser[JSON] = {
+        for {
+          _ <- jsonWhite()
+          o <- json()
+          _ <- jsonWhite()
+          _ <- char(',')
+          _ <- jsonWhite()
+        } yield o
+      }
+
+      def jsonMap(): Parser[JSON.JObject] = {
+        for {
+          _ <- jsonWhite()
+          _ <- char('{')
+          entries <- many[JSON.JMapEntry](jsonMapEntry())
+          _ <- char('}')
+          _ <- jsonWhite()
+        } yield JSON.JObject(entries.map(e => (e.name, e.value)).toMap)
+      }
+
+      def jsonMapEntry(): Parser[JSON.JMapEntry] = {
+        for {
+          _ <- jsonWhite()
+          name <- jsonQString()
+          _ <- jsonWhite()
+          _ <- char('=')
+          _ <- jsonWhite()
+          value <- json()
+          _ <- jsonWhite()
+        } yield JSON.JMapEntry(name, value)
+      }
+
+      def jsonWhite(): Parser[JSON] = {
+        regex("\\s*".r).map(_ => JSON.JNull)
+      }
+
+      def jsonQString(): Parser[String] = {
+        char('"')
+          .flatMap(_ => regex("[A-Z].*".r)
+            .flatMap(s => char('"').map(_ => s)))
+      }
     }
 
     implicit def operators[A](p: Parser[A]): ParserOps[A] = ParserOps[A](p)
@@ -90,21 +185,17 @@ object Chapter9 {
 
     }
 
-    object Hei {
+    trait JSON
 
-      val v = "pelle"
-      val v2: Parser[String] = "hei"
-
-      val p: Parser[Int] = ???
-      val p2: ParserOps[Int] = p
-      p2.|(p)
-
-
-      p | p
-
-      val v3 = asStringParser(42)(i => "hei")
+    object JSON {
+      case object JNull extends JSON
+      case class JNumber(get: Double) extends JSON
+      case class JString(get: String) extends JSON
+      case class JBool(get: Boolean) extends JSON
+      case class JArray(get: IndexedSeq[JSON]) extends JSON
+      case class JObject(get: Map[String, JSON]) extends JSON
+      case class JMapEntry(name: String, value: JSON) extends JSON
     }
-
   }
 
   object Ex1 {
