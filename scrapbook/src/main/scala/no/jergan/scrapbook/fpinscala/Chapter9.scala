@@ -243,12 +243,19 @@ object Chapter9 {
 
   trait Result[+A] {
 
-     def mapError(f: ParseError => ParseError): Result[A] = {
-       this match {
-         case Failure(pe) => Failure(f(pe))
-         case _ => this
-       }
-     }
+    def mapSuccess[B](f: Success[A] => Success[B]): Result[B] = {
+      this match {
+        case Success(a, charsConsumed) => f(Success(a, charsConsumed))
+        case Failure(pe) => Failure(pe)
+      }
+    }
+
+    def mapFailure(f: ParseError => ParseError): Result[A] = {
+      this match {
+        case Failure(pe) => Failure(f(pe))
+        case _ => this
+      }
+    }
   }
 
   case class Success[+A](a: A, charsConsumed: Int) extends Result[A]
@@ -296,10 +303,7 @@ object Chapter9 {
     }
 
     override def slice[A](p: MyParser[A]): MyParser[String] = (input: Location) => {
-      p.parse(input) match {
-        case Failure(pe) => Failure(pe)
-        case Success(_, charsConsumed) => Success(input.substring(charsConsumed), charsConsumed)
-      }
+      p.parse(input).mapSuccess(s => Success(input.substring(s.charsConsumed), s.charsConsumed))
     }
 
     override def regex(r: Regex): MyParser[String] = (input: Location) => {
@@ -310,7 +314,7 @@ object Chapter9 {
     }
 
     override def scope[A](message: String)(p: MyParser[A]): MyParser[A] = (input: Location) => {
-      p.parse(input).mapError(_.push(input, message))
+      p.parse(input).mapFailure(_.push(input, message))
     }
   }
 
