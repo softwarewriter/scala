@@ -33,7 +33,19 @@ object Chapter9 {
   }
 
   case class ParseError(stack: List[(Location, String)]) {
-    def push(location: Location, message: String): ParseError = copy(stack = (location, message) :: stack)
+
+    def push(location: Location, message: String): ParseError = {
+      copy(stack = (location, message) :: stack)
+    }
+
+    def label(message: String): ParseError = {
+      ParseError(latestLocation.map(l => (l, message)).toList)
+    }
+
+    def latestLocation: Option[Location] = latest map (_._1)
+
+    def latest: Option[(Location, String)] = stack.lastOption
+
   }
 
   trait Parsers[Parser[+_]] {
@@ -246,20 +258,27 @@ object Chapter9 {
     def mapSuccess[B](f: Success[A] => Success[B]): Result[B] = {
       this match {
         case Success(a, charsConsumed) => f(Success(a, charsConsumed))
-        case Failure(pe) => Failure(pe)
+        case Failure(pe, c) => Failure(pe, c)
       }
     }
 
-    def mapFailure(f: ParseError => ParseError): Result[A] = {
+    def mapFailure(f: Failure => Failure): Result[A] = {
       this match {
-        case Failure(pe) => Failure(f(pe))
+        case Failure(pe, c) => f(Failure(pe, c))
+        case _ => this
+      }
+    }
+
+    def mapError(f: ParseError => ParseError): Result[A] = {
+      this match {
+        case Failure(pe, c) => Failure(f(pe), c)
         case _ => this
       }
     }
   }
 
   case class Success[+A](a: A, charsConsumed: Int) extends Result[A]
-  case class Failure(pe: ParseError) extends Result[Nothing]
+  case class Failure(pe: ParseError, isCommitted: Boolean) extends Result[Nothing]
 
   abstract class MyParser[+A]() {
 
@@ -273,9 +292,8 @@ object Chapter9 {
 
     override def run[A](p: MyParser[A])(input: String): Either[ParseError, A] = {
       val initialLocation = Location(input, 0)
-      val stack: List[(Location, String)] = List.empty
       p.parse(initialLocation) match {
-        case Failure(pe) => Left(pe)
+        case Failure(pe, c) => Left(pe)
         case Success(a, _) => Right(a)
       }
     }
@@ -285,19 +303,19 @@ object Chapter9 {
     override def errorMessage(e: ParseError): String = ???
 
     override implicit def string(s: String): MyParser[String] = (input: Location) => {
-      if (input.current().startsWith(s)) Success(s, s.length) else Failure(input.toError(s"Expected $s"))
+      if (input.current().startsWith(s)) Success(s, s.length) else Failure(input.toError(s"Expected $s"), !s.isEmpty && input.current().startsWith(s.substring(0, 1)))
     }
 
     override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = (input: Location) => {
       s1.parse(input) match {
-        case Failure(_) => s2.parse(input)
-        case Success(a, charsConsumed) => Success(a, charsConsumed)
+        case Failure(pe, false) => s2.parse(input)
+        case r => r
       }
     }
 
     override def flatMap[A, B](a: MyParser[A])(f: A => MyParser[B]): MyParser[B] = (input: Location) => {
       a.parse(input) match {
-        case Failure(pe) => Failure(pe)
+        case Failure(pe, c) => Failure(pe, c)
         case Success(a, charsConsumed) => f(a).parse(input.jump(charsConsumed))
       }
     }
@@ -308,14 +326,23 @@ object Chapter9 {
 
     override def regex(r: Regex): MyParser[String] = (input: Location) => {
       r.findFirstIn(input.current()) match {
-        case None => Failure(input.toError(s"expected $r"))
+        case None => Failure(input.toError(s"expected $r"), isCommitted = true)
         case Some(s) => Success(s, s.length)
       }
     }
 
     override def scope[A](message: String)(p: MyParser[A]): MyParser[A] = (input: Location) => {
-      p.parse(input).mapFailure(_.push(input, message))
+      p.parse(input).mapError(_.push(input, message))
     }
+
+    def label[A](message: String)(p: MyParser[A]): MyParser[A] = (input: Location) => {
+      p.parse(input).mapError(_.label(message))
+    }
+
+    def attempt[A](p: MyParser[A]): MyParser[A] = (input: Location) => {
+      p.parse(input).mapFailure(f => Failure(f.pe, isCommitted = false))
+    }
+
   }
 
 
@@ -373,6 +400,11 @@ object Chapter9 {
   object Ex13 {
     // Change parse result type to Result as proposed in text.
     // This is not better that what I did, just different.
+  }
+
+  object Ex14 {
+    // Let string use scope/label
+    // I dont find this meaningful, as string is a primitive.
   }
 
   def main(args: Array[String]): Unit = {
