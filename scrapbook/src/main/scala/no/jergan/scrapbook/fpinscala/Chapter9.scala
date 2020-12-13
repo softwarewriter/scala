@@ -3,14 +3,35 @@ package no.jergan.scrapbook.fpinscala
 import no.jergan.scrapbook.fpinscala.Chapter8.Prop.forAll
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
 
-import scala.::
 import scala.util.matching.Regex
 
 object Chapter9 {
 
-  trait Parsers[ParseError, Parser[+_]] {
+  case class Location(input: String, offset: Int = 0) {
+    lazy val line = input.slice(0,offset+1).count(_ == '\n') + 1
+    lazy val col = input.slice(0,offset+1).lastIndexOf('\n') match {
+      case -1 => offset + 1
+      case lineStart => offset - lineStart }
+
+    def current(): String = {
+      input.substring(offset)
+    }
+
+    def jump(n: Int): Location = {
+      Location(input, offset + n)
+    }
+
+  }
+
+  case class ParseError(stack: List[(Location, String)])
+
+  trait Parsers[Parser[+_]] {
 
     def run[A](p: Parser[A])(input: String): Either[ParseError, A]
+
+    def errorLocation(e: ParseError): Location
+
+    def errorMessage(e: ParseError): String
 
     // primitives
 
@@ -77,10 +98,21 @@ object Chapter9 {
       } yield n
     }
 
+    // Error
+    def expected[A](expected: String)(a: Parser[A]): Parser[A] = {
+      a
+    }
+
+    def error[A](error: String)(a: Parser[A]): Parser[A] = {
+      a
+    }
+
+    def scope[A](msg: String)(p: Parser[A]): Parser[A]
+
     object J {
 
-      def root(): Parser[JSON.JObject] = {
-        jsonMap()
+      def root(): Parser[JSON] = {
+        json()
       }
 
       def json(): Parser[JSON] = {
@@ -91,10 +123,8 @@ object Chapter9 {
         string("null").map(_ => JSON.JNull)
       }
 
-      def jsonString(): Parser[JSON.JString] = {
-        char('"')
-          .flatMap(_ => regex("[A-Z].*".r)
-            .flatMap(s => char('"').map(_ => JSON.JString(s))))
+      def jsonString: Parser[JSON.JString] = {
+        jsonInside('"', '"', regex("[A-Z].*".r).map(s => JSON.JString(s)))
       }
 
       def jsonNumber(): Parser[JSON.JNumber] = {
@@ -109,11 +139,11 @@ object Chapter9 {
 
       def jsonArray(): Parser[JSON.JArray] = {
         for {
-          _ <- jsonWhite()
+          _ <- jsonWhite
           _ <- char('[')
           elements <- many[JSON](jsonArrayElement())
           last <- many[JSON](json())
-          _ <- jsonWhite()
+          _ <- jsonWhite
           _ <- char(']')
         } yield {
           JSON.JArray((elements ++ last).toIndexedSeq)
@@ -122,45 +152,45 @@ object Chapter9 {
 
       def jsonArrayElement(): Parser[JSON] = {
         for {
-          _ <- jsonWhite()
+          _ <- jsonWhite
           o <- json()
-          _ <- jsonWhite()
+          _ <- jsonWhite
           _ <- char(',')
-          _ <- jsonWhite()
+          _ <- jsonWhite
         } yield o
       }
 
       def jsonMap(): Parser[JSON.JObject] = {
         for {
-          _ <- jsonWhite()
+          _ <- jsonWhite
           _ <- char('{')
           entries <- many[JSON.JMapEntry](jsonMapEntry())
           _ <- char('}')
-          _ <- jsonWhite()
+          _ <- jsonWhite
         } yield JSON.JObject(entries.map(e => (e.name, e.value)).toMap)
       }
 
       def jsonMapEntry(): Parser[JSON.JMapEntry] = {
         for {
-          _ <- jsonWhite()
-          name <- jsonQString()
-          _ <- jsonWhite()
+          _ <- jsonWhite
+          name <- jsonString
+          _ <- jsonWhite
           _ <- char('=')
-          _ <- jsonWhite()
+          _ <- jsonWhite
           value <- json()
-          _ <- jsonWhite()
-        } yield JSON.JMapEntry(name, value)
+          _ <- jsonWhite
+        } yield JSON.JMapEntry(name.get, value)
       }
 
-      def jsonWhite(): Parser[JSON] = {
+      def jsonWhite: Parser[JSON] = {
         regex("\\s*".r).map(_ => JSON.JNull)
       }
+    }
 
-      def jsonQString(): Parser[String] = {
-        char('"')
-          .flatMap(_ => regex("[A-Z].*".r)
-            .flatMap(s => char('"').map(_ => s)))
-      }
+    def jsonInside[A](start: Char, end: Char, parser: Parser[A]): Parser[A] = {
+      char(start)
+        .flatMap(_ => parser)
+          .flatMap(json => char(end).map(_ => json))
     }
 
     implicit def operators[A](p: Parser[A]): ParserOps[A] = ParserOps[A](p)
@@ -198,6 +228,47 @@ object Chapter9 {
     }
   }
 
+  abstract class MyParser[+A]() {
+
+    def parse(input: Location): Either[ParseError, (A, Location)]
+
+  }
+
+  object MyParsers extends Parsers[MyParser] {
+
+    override def run[A](p: MyParser[A])(input: String): Either[ParseError, A] = {
+      val initialLocation = Location(input, 0)
+      p.parse(initialLocation) match {
+        case Left(parseError) => Left(parseError)
+        case Right((a, _)) => Right(a)
+      }
+    }
+
+    override def errorLocation(e: ParseError): Location = ???
+
+    override def errorMessage(e: ParseError): String = ???
+
+    override implicit def string(s: String): MyParser[String] = {
+      new MyParser[String]() {
+
+        override def parse(input: Location): Either[ParseError, (String, Location)] = {
+          if (input.current().startsWith(s)) Right(s, input.jump(s.length)) else Left(ParseError(null))
+        }
+      }
+    }
+
+    override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = ???
+
+    override def flatMap[A, B](a: MyParser[A])(f: A => MyParser[B]): MyParser[B] = ???
+
+    override def slice[A](p: MyParser[A]): MyParser[String] = ???
+
+    override def regex(r: Regex): MyParser[String] = ???
+
+    override def scope[A](msg: String)(p: MyParser[A]): MyParser[A] = ???
+  }
+
+
   object Ex1 {
     // Implemented map2 using product and many1 using map2
   }
@@ -230,6 +301,23 @@ object Chapter9 {
 
   object Ex8 {
     // Implemented map
+  }
+
+  object Ex9 {
+    // Implemented json functionality
+  }
+
+  object Ex10 {
+    // Implemented error combinators.
+  }
+
+  object Ex11 {
+    // Errors in or-chain.
+    // - silent - no errors from parser
+  }
+
+  object Ex12 {
+    // Representation of Parser.
   }
 
   def main(args: Array[String]): Unit = {
