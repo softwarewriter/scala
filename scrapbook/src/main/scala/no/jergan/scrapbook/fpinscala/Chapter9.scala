@@ -258,7 +258,7 @@ object Chapter9 {
     def mapSuccess[B](f: Success[A] => Success[B]): Result[B] = {
       this match {
         case Success(a, charsConsumed) => f(Success(a, charsConsumed))
-        case Failure(pe, c) => Failure(pe, c)
+        case e@Failure(_, _) => e
       }
     }
 
@@ -315,8 +315,10 @@ object Chapter9 {
 
     override def flatMap[A, B](a: MyParser[A])(f: A => MyParser[B]): MyParser[B] = (input: Location) => {
       a.parse(input) match {
-        case Failure(pe, c) => Failure(pe, c)
         case Success(a, charsConsumed) => f(a).parse(input.jump(charsConsumed))
+          .mapFailure(f => Failure(f.pe, isCommitted = f.isCommitted || charsConsumed != 0))
+          .mapSuccess(s => Success(s.a, s.charsConsumed + charsConsumed))
+        case e@Failure(_, _) => e
       }
     }
 
