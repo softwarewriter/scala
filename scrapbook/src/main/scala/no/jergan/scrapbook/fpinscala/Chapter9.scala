@@ -248,18 +248,23 @@ object Chapter9 {
 
     override def errorMessage(e: ParseError): String = ???
 
-    override implicit def string(s: String): MyParser[String] = {
-      new MyParser[String]() {
+    override implicit def string(s: String): MyParser[String] = (input: Location) => {
+      if (input.current().startsWith(s)) Right(s, input.jump(s.length)) else Left(ParseError(null))
+    }
 
-        override def parse(input: Location): Either[ParseError, (String, Location)] = {
-          if (input.current().startsWith(s)) Right(s, input.jump(s.length)) else Left(ParseError(null))
-        }
+    override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = (input: Location) => {
+      s1.parse(input) match {
+        case Left(_) => s2.parse(input)
+        case Right((a, location)) => Right(a, location)
       }
     }
 
-    override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = ???
-
-    override def flatMap[A, B](a: MyParser[A])(f: A => MyParser[B]): MyParser[B] = ???
+    override def flatMap[A, B](a: MyParser[A])(f: A => MyParser[B]): MyParser[B] = (input: Location) => {
+      a.parse(input) match {
+        case Left(parserError) => Left(parserError)
+        case Right((a, location)) => f(a).parse(location)
+      }
+    }
 
     override def slice[A](p: MyParser[A]): MyParser[String] = ???
 
