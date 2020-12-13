@@ -1,5 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
+import no.jergan.scrapbook.fpinscala.Chapter6.State
 import no.jergan.scrapbook.fpinscala.Chapter8.Prop.forAll
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
 
@@ -19,6 +20,14 @@ object Chapter9 {
 
     def jump(n: Int): Location = {
       Location(input, offset + n)
+    }
+
+    def substring(location: Location): String = {
+      input.substring(offset, location.offset)
+    }
+
+    def toError(message: String): ParseError = {
+      ParseError(List((this, message)))
     }
 
   }
@@ -231,13 +240,15 @@ object Chapter9 {
   abstract class MyParser[+A]() {
 
     def parse(input: Location): Either[ParseError, (A, Location)]
-
+    // alternativt
+    // def run(s: State[Location, Either[ParseError, A]])
   }
 
   object MyParsers extends Parsers[MyParser] {
 
     override def run[A](p: MyParser[A])(input: String): Either[ParseError, A] = {
       val initialLocation = Location(input, 0)
+      val stack: List[(Location, String)] = List.empty
       p.parse(initialLocation) match {
         case Left(parseError) => Left(parseError)
         case Right((a, _)) => Right(a)
@@ -249,7 +260,7 @@ object Chapter9 {
     override def errorMessage(e: ParseError): String = ???
 
     override implicit def string(s: String): MyParser[String] = (input: Location) => {
-      if (input.current().startsWith(s)) Right(s, input.jump(s.length)) else Left(ParseError(null))
+      if (input.current().startsWith(s)) Right(s, input.jump(s.length)) else Left(input.toError(s"Expected $s"))
     }
 
     override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = (input: Location) => {
@@ -266,9 +277,19 @@ object Chapter9 {
       }
     }
 
-    override def slice[A](p: MyParser[A]): MyParser[String] = ???
+    override def slice[A](p: MyParser[A]): MyParser[String] = (input: Location) => {
+      p.parse(input) match {
+        case Left(parserError) => Left(parserError)
+        case Right((_, location)) => Right(input.substring(location), location)
+      }
+    }
 
-    override def regex(r: Regex): MyParser[String] = ???
+    override def regex(r: Regex): MyParser[String] = (input: Location) => {
+      r.findFirstIn(input.current()) match {
+        case None => Left(ParseError(null))
+        case Some(s) => Right((s, input.jump(s.length)))
+      }
+    }
 
     override def scope[A](msg: String)(p: MyParser[A]): MyParser[A] = ???
   }
@@ -322,16 +343,39 @@ object Chapter9 {
   }
 
   object Ex12 {
-    // Representation of Parser.
+    // Representation of MyParser.
   }
 
   def main(args: Array[String]): Unit = {
 
-    def f(a: Boolean) = {
-      if (a) true
-      false
+    trait T {
+
+      def m(i: Int): Int
+
     }
-    println("pelle: " + f(true))
+
+    class C extends T {
+      override def m(i: Int): Int = i * 2
+    }
+
+    case class CC() extends T {
+      override def m(i: Int): Int = i * 2
+    }
+
+    object O extends T {
+      override def m(i: Int): Int = i * 3
+    }
+
+    case object CO extends T {
+      override def m(i: Int): Int = i * 3
+    }
+
+    println(new C().m(3))
+    println(CC().m(3))
+
+    println(O.m(3))
+    println(CO.m(3))
+
 
   }
 
