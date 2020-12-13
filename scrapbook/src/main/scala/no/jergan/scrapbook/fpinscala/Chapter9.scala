@@ -22,8 +22,8 @@ object Chapter9 {
       Location(input, offset + n)
     }
 
-    def substring(location: Location): String = {
-      input.substring(offset, location.offset)
+    def substring(n: Int): String = {
+      input.substring(offset, offset + n)
     }
 
     def toError(message: String): ParseError = {
@@ -237,9 +237,16 @@ object Chapter9 {
     }
   }
 
+//  type Parser[+A] = Location => Result[A]
+
+  trait Result[+A]
+  case class Success[+A](a: A, charsConsumed: Int) extends Result[A]
+  case class Failure(pe: ParseError) extends Result[Nothing]
+
   abstract class MyParser[+A]() {
 
-    def parse(input: Location): Either[ParseError, (A, Location)]
+    def parse(input: Location): Result[A]
+
     // alternativt
     // def run(s: State[Location, Either[ParseError, A]])
   }
@@ -250,8 +257,8 @@ object Chapter9 {
       val initialLocation = Location(input, 0)
       val stack: List[(Location, String)] = List.empty
       p.parse(initialLocation) match {
-        case Left(parseError) => Left(parseError)
-        case Right((a, _)) => Right(a)
+        case Failure(pe) => Left(pe)
+        case Success(a, _) => Right(a)
       }
     }
 
@@ -260,34 +267,34 @@ object Chapter9 {
     override def errorMessage(e: ParseError): String = ???
 
     override implicit def string(s: String): MyParser[String] = (input: Location) => {
-      if (input.current().startsWith(s)) Right(s, input.jump(s.length)) else Left(input.toError(s"Expected $s"))
+      if (input.current().startsWith(s)) Success(s, s.length) else Failure(input.toError(s"Expected $s"))
     }
 
     override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = (input: Location) => {
       s1.parse(input) match {
-        case Left(_) => s2.parse(input)
-        case Right((a, location)) => Right(a, location)
+        case Failure(_) => s2.parse(input)
+        case Success(a, charsConsumed) => Success(a, charsConsumed)
       }
     }
 
     override def flatMap[A, B](a: MyParser[A])(f: A => MyParser[B]): MyParser[B] = (input: Location) => {
       a.parse(input) match {
-        case Left(parserError) => Left(parserError)
-        case Right((a, location)) => f(a).parse(location)
+        case Failure(pe) => Failure(pe)
+        case Success(a, charsConsumed) => f(a).parse(input.jump(charsConsumed))
       }
     }
 
     override def slice[A](p: MyParser[A]): MyParser[String] = (input: Location) => {
       p.parse(input) match {
-        case Left(parserError) => Left(parserError)
-        case Right((_, location)) => Right(input.substring(location), location)
+        case Failure(pe) => Failure(pe)
+        case Success(_, charsConsumed) => Success(input.substring(charsConsumed), charsConsumed)
       }
     }
 
     override def regex(r: Regex): MyParser[String] = (input: Location) => {
       r.findFirstIn(input.current()) match {
-        case None => Left(ParseError(null))
-        case Some(s) => Right((s, input.jump(s.length)))
+        case None => Failure(input.toError(s"expected $r"))
+        case Some(s) => Success(s, s.length)
       }
     }
 
@@ -344,6 +351,11 @@ object Chapter9 {
 
   object Ex12 {
     // Representation of MyParser.
+  }
+
+  object Ex13 {
+    // Change parse result type to Result as proposed in text.
+    // This is not better that what I did, just different.
   }
 
   def main(args: Array[String]): Unit = {
