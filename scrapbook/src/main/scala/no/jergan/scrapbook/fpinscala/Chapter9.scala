@@ -32,7 +32,9 @@ object Chapter9 {
 
   }
 
-  case class ParseError(stack: List[(Location, String)])
+  case class ParseError(stack: List[(Location, String)]) {
+    def push(location: Location, message: String): ParseError = copy(stack = (location, message) :: stack)
+  }
 
   trait Parsers[Parser[+_]] {
 
@@ -239,7 +241,16 @@ object Chapter9 {
 
 //  type Parser[+A] = Location => Result[A]
 
-  trait Result[+A]
+  trait Result[+A] {
+
+     def mapError(f: ParseError => ParseError): Result[A] = {
+       this match {
+         case Failure(pe) => Failure(f(pe))
+         case _ => this
+       }
+     }
+  }
+
   case class Success[+A](a: A, charsConsumed: Int) extends Result[A]
   case class Failure(pe: ParseError) extends Result[Nothing]
 
@@ -298,7 +309,9 @@ object Chapter9 {
       }
     }
 
-    override def scope[A](msg: String)(p: MyParser[A]): MyParser[A] = ???
+    override def scope[A](message: String)(p: MyParser[A]): MyParser[A] = (input: Location) => {
+      p.parse(input).mapError(_.push(input, message))
+    }
   }
 
 
