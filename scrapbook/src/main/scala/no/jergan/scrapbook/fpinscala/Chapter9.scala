@@ -52,9 +52,9 @@ object Chapter9 {
 
     def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
-    def errorLocation(e: ParseError): Location
+    def errorLocation(e: ParseError): Option[Location]
 
-    def errorMessage(e: ParseError): String
+    def errorMessage(e: ParseError): Option[String]
 
     // primitives
 
@@ -284,23 +284,24 @@ object Chapter9 {
 
     def parse(input: Location): Result[A]
 
-    // alternativt
-    // def run(s: State[Location, Either[ParseError, A]])
   }
 
   object MyParsers extends Parsers[MyParser] {
 
     override def run[A](p: MyParser[A])(input: String): Either[ParseError, A] = {
-      val initialLocation = Location(input, 0)
-      p.parse(initialLocation) match {
+      p.parse(Location(input, 0)) match {
         case Failure(pe, c) => Left(pe)
         case Success(a, _) => Right(a)
       }
     }
 
-    override def errorLocation(e: ParseError): Location = ???
+    override def errorLocation(e: ParseError): Option[Location] = {
+      e.latestLocation
+    }
 
-    override def errorMessage(e: ParseError): String = ???
+    override def errorMessage(e: ParseError): Option[String] = {
+      e.latest.map(_._2)
+    }
 
     override implicit def string(s: String): MyParser[String] = (input: Location) => {
       if (input.current().startsWith(s)) Success(s, s.length) else Failure(input.toError(s"Expected $s"), !s.isEmpty && input.current().startsWith(s.substring(0, 1)))
@@ -407,6 +408,10 @@ object Chapter9 {
   object Ex14 {
     // Let string use scope/label
     // I dont find this meaningful, as string is a primitive.
+  }
+
+  object Ex15 {
+    // Implemented errorLocation and errorMessage
   }
 
   def main(args: Array[String]): Unit = {
