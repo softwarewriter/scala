@@ -46,6 +46,10 @@ object Chapter9 {
 
     def latest: Option[(Location, String)] = stack.lastOption
 
+    def human: String = {
+      "todo"
+    }
+
   }
 
   trait Parsers[Parser[+_]] {
@@ -412,6 +416,10 @@ object Chapter9 {
 
   object Ex15 {
     // Implemented errorLocation and errorMessage
+  }
+
+  object Ex16 {
+    // TODO
   }
 
   def main(args: Array[String]): Unit = {
