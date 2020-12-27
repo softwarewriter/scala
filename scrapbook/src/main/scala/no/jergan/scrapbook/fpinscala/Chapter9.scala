@@ -32,7 +32,12 @@ object Chapter9 {
 
   }
 
-  case class ParseError(stack: List[(Location, String)]) {
+  case class ParseError(stack: List[(Location, String)],
+                        otherFailures: List[ParseError]) {
+
+    def addOtherFailure(otherFailure: ParseError): ParseError = {
+      copy(otherFailures = otherFailure :: otherFailures)
+    }
 
     def push(location: Location, message: String): ParseError = {
       copy(stack = (location, message) :: stack)
@@ -47,9 +52,13 @@ object Chapter9 {
     def latest: Option[(Location, String)] = stack.lastOption
 
     def human: String = {
-      "todo"
+      def human(location: Location, string: String): String = {
+        s"(${location.line}, ${location.col}: ${string}"
+      }
+      val result = new StringBuilder()
+      stack.foreach(e => result.append(human(e._1, e._2)))
+      result.toString()
     }
-
   }
 
   trait Parsers[Parser[+_]] {
@@ -313,7 +322,7 @@ object Chapter9 {
 
     override def or[A](s1: MyParser[A], s2: => MyParser[A]): MyParser[A] = (input: Location) => {
       s1.parse(input) match {
-        case Failure(pe, false) => s2.parse(input)
+        case Failure(pe1, false) => s2.parse(input).mapError(_.addOtherFailure(pe1))
         case r => r
       }
     }
@@ -419,7 +428,16 @@ object Chapter9 {
   }
 
   object Ex16 {
-    // TODO
+    // Implemented simple human toString
+  }
+
+  object Ex17 {
+    // Skipped
+  }
+
+  object Ex18 {
+    // Implemented additional state in ParseError.
+    // This look quite asymmetric, and I would prefer to model the whole ParseError as a tree (not a stack)
   }
 
   def main(args: Array[String]): Unit = {
