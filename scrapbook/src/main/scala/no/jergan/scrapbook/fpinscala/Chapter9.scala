@@ -27,7 +27,7 @@ object Chapter9 {
     }
 
     def toError(message: String): ParseError = {
-      ParseError(List((this, message)))
+      ParseError(this, message)
     }
 
   }
@@ -44,7 +44,7 @@ object Chapter9 {
     }
 
     def label(message: String): ParseError = {
-      ParseError(latestLocation.map(l => (l, message)).toList)
+      ParseError(latestLocation.map(l => (l, message)).toList, List())
     }
 
     def latestLocation: Option[Location] = latest map (_._1)
@@ -59,6 +59,14 @@ object Chapter9 {
       stack.foreach(e => result.append(human(e._1, e._2)))
       result.toString()
     }
+  }
+
+  object ParseError {
+
+    def apply(location: Location, string: String): ParseError = {
+      ParseError(List((location, string)), List())
+    }
+
   }
 
   trait Parsers[Parser[+_]] {

@@ -7,13 +7,14 @@ import org.http4s.client.Client
 import org.http4s.server.Server
 import platform.implicits._
 import io.circe.literal._
-import org.scalatest.{Assertion, Succeeded}
+import org.scalatest.{Assertion, Ignore, Succeeded}
 import platform.Database
 import org.http4s.client.dsl.io._
 import org.scalatest.compatible.Assertion
 
 import scala.concurrent.Future
 
+@Ignore
 class ApplicationTest extends platform.test.SharedResourceSpec {
 
   override type FixtureParam = (Client[IO])
