@@ -163,6 +163,21 @@ object Chapter10 {
 
   }
 
+  object Ex7 {
+
+    def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+      v.length match {
+        case 0 => m.zero
+        case 1 => m.op(m.zero, f(v.last))
+        case _ => {
+          val (l, r) = v.splitAt(v.length / 2)
+          m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+        }
+      }
+    }
+
+  }
+
   def main(args: Array[String]): Unit = {
     Ex6.test()
   }
