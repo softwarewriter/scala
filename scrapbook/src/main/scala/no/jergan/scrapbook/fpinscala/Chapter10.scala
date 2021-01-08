@@ -123,7 +123,6 @@ object Chapter10 {
         override def op(a1: String, a2: String): String = a1 + a2
         override val zero: String = ""
       }
-
       println(concatenate(List("ole", "dole", "doff"), concat))
     }
   }
@@ -152,6 +151,12 @@ object Chapter10 {
     }
 
     def test(): Unit = {
+      def f(z: Int, a: String): Int = z + a.length
+      def ff: String => Int => Int = (a: String) => (z: Int) => f(z, a)
+      def fff = ff("ole")
+      println(fff(4))
+
+      println(foldLeft[String, Int](List("ole", "dole", "doff"))(0)(_ + _.length))
       println(foldLeft[String, String](List("ole", "dole", "doff"))("left")(_ + _))
       println(foldRight[String, String](List("ole", "dole", "doff"))("right")(_ + _))
     }
