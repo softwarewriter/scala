@@ -15,6 +15,11 @@ object Chapter10 {
 
   }
 
+  def inverseMonoid[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+    override def op(a1: A, a2: A): A = m.op(a2, a1)
+    override val zero: A = m.zero
+  }
+
   object Ex1 {
 
     val intAddition: Monoid[Int] = new Monoid[Int] {
@@ -44,6 +49,7 @@ object Chapter10 {
       override def op(a1: Option[A], a2: Option[A]): Option[A] = a1.orElse(a2)
       override val zero: Option[A] = None
     }
+
   }
 
   object Ex3 {
@@ -124,11 +130,6 @@ object Chapter10 {
 
   object Ex6 {
 
-    def inverseEndoMonoid[A](m: Monoid[A => A]): Monoid[A => A] = new Monoid[A => A] {
-      override def op(a1: A => A, a2: A => A): A => A = m.op(a2, a1)
-      override val zero: A => A = m.zero
-    }
-
     def curryTest[A, B, C]() {
       def f(a: A, b: B): C = ???
       def ab(a: A): B => C = (b: B) => f(a, b)
@@ -138,7 +139,7 @@ object Chapter10 {
 
     def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
       val aToBtoB: A => B => B = (a: A) => (b: B) => f(b, a)
-      val m: Monoid[B => B] = inverseEndoMonoid(Ex3.endoMonoid[B])
+      val m: Monoid[B => B] = inverseMonoid(Ex3.endoMonoid[B])
       val bToB: B => B = Ex5.foldMap[A, B => B](as, m)(aToBtoB)
       bToB(z)
     }
