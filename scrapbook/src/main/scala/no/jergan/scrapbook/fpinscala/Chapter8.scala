@@ -153,6 +153,10 @@ object Chapter8 {
       Gen(State(map(nonNegativeInt)(n => start + n % (stopExclusive - start))))
     }
 
+    def int(): Gen[Int] = {
+      Gen(State(map(Chapter6.nonNegativeInt)(identity)))
+    }
+
     def double(): Gen[Double] = {
       Gen(State(map(Chapter6.double)(identity)))
     }
@@ -333,6 +337,7 @@ object Chapter8 {
   }
 
   def main(args: Array[String]): Unit = {
+    Ex5.test()
   }
 
 

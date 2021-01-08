@@ -118,8 +118,15 @@ object Chapter5 {
       (cons(v, s), v)
     })._1.append(Stream[B](z)) // TODO: Could we somehow avoid this append?
 
-    //TODO: Do this while redoing chapter 5 according to the new version
-    def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = ???
+    // TODO: Should redo this while redoing chapter 5 according to the new version
+    //       However, I had to do this now to be able to run exercises in Chapter10
+    def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = {
+
+      (uncons, s2.uncons) match {
+        case (Some((h1, t1)), Some((h2, t2))) => cons(f(h1, h2), t1.zipWith(t2)(f))
+        case (_, _) => empty
+      }
+    }
 
     @tailrec
     final def find(p: A => Boolean): Option[A] = {
