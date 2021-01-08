@@ -105,9 +105,10 @@ object Chapter10 {
     def concatenate[A](as: List[A], m: Monoid[A]): A = as.foldLeft(m.zero)(m.op)
 
     def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = {
-//    as.map(f).foldLeft(m.zero)(m.op)
+      as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
 //    or
-      as.map(f).foldRight(m.zero)(m.op)
+//    as.map(f).foldLeft(m.zero)(m.op)
+//    or ditto right
     }
 
     def test(): Unit = {
@@ -122,20 +123,39 @@ object Chapter10 {
 
   object Ex6 {
 
+    def curryTest[A, B, C]() {
+      def f(a: A, b: B): C = ???
+      def ab(a: A): B => C = (b: B) => f(a, b)
+      def ac(b: B): A => C = (a: A) => f(a, b)
+      def abc: A => B => C = (a: A) => (b: B) => f(a, b)
+    }
+
+    /*
     def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = {
 
-      def ff: A => B = a => f(z, a)
+      def atoB: A => B = a => f(z, a)
+      def btoB(a: A): B => B = (b: B) => f(b, a)
+
       val m: Monoid[B] = new Monoid[B] {
-        override def op(a1: B, a2: B): B = ???
+        override def op(b1: B, b2: B): B = ???
         override val zero: B = z
       }
 
-      val b = Ex5.foldMap[A, B](as, m)(ff)
+      val b = Ex5.foldMap[A, B](as, m)(atoB)
       b
     }
 
+     */
+    def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = {
+      val aToBtoB: A => B => B = (a: A) => (b: B) => f(a, b)
+      val m: Monoid[B => B] = Ex3.endoMonoid[B]
+      val bToB: B => B = Ex5.foldMap[A, B => B](as, m)(aToBtoB)
+      bToB(z)
+    }
+
     def test(): Unit = {
-      println(foldLeft[String, String](List("ole", "dole", "doff"), "")(_ + _))
+//      println(foldLeft[String, String](List("ole", "dole", "doff"), "")(_ + _))
+      println(foldRight[String, String](List("ole", "dole", "doff"))("hei")(_ + _))
     }
 
   }
