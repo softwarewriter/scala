@@ -52,46 +52,47 @@ object Chapter10 {
       override def op(a1: A => A, a2: A => A): A => A = a => {
         a1(a2(a))
       }
-      override val zero: A => A = a => a
+      override val zero: A => A = identity
     }
   }
 
   object Ex4 {
 
     def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
+      val associative = Prop.forAll[List[A]](gen.listOfN(3)){l => {
+        val a1 = l(0)
+        val a2 = l(1)
+        val a3 = l(2)
+        m.op(a1, m.op(a2, a3)) == m.op(m.op(a1, a2), a3)
+      }}
+      val leftZero = Prop.forAll[A](gen){a => a == m.op(m.zero, a) }
+      val rightZero = Prop.forAll[A](gen){a => a == m.op(a, m.zero) }
+      associative
+        .&&(leftZero)
+        .&&(rightZero)
+    }
 
-      Prop.forAll[A](gen){a => println(a); true }
-      /*
-      Prop { (max, n, rng) => {
+    def option[A](genA: Gen[A]): Gen[Option[A]] = {
+      boolean
+        .flatMap(b => genA
+          .map(a => if (b) Some(a) else None))
+    }
 
-        def assosiative(a1: A, a2: A, a3: A): Boolean = {
-          m.op(a1, m.op(a2, a3)) == m.op(m.op(a1, a2), a3)
-        }
-
-        def zeroLeft(a: A): Boolean = {
-          m.op(m.zero, a) == a
-        }
-
-        def zeroRight(a: A): Boolean = {
-          m.op(a, m.zero) == a
-        }
-
-        val list: List[A] = gen.listOfN(3).sample.run(rng)._1
-        val a: A = list(0)
-        println(a)
-        if (zeroLeft(a) && zeroRight(a)) Passed else Falsified("Not zero", 1)
-//        Falsified("Not zero", 1)
-      }
-      }
-
-       */
+    def endoFunction(genInt: Gen[Int]): Gen[Int => Int] = {
+      genInt
+        .map(i => _ + i)
     }
 
     def test(): Unit = {
-      val monoid = Ex1.intAddition
-      val gi: Gen[Int] = int()
-      val monoidProp = monoidLaws(monoid, gi)
-      Prop.run(monoidProp)
+      /*
+      Prop.run(monoidLaws(Ex1.intAddition, int))
+      Prop.run(monoidLaws(Ex1.intMultiplication, int))
+      Prop.run(monoidLaws(Ex1.booleanOr, boolean))
+      Prop.run(monoidLaws(Ex1.booleanAnd, boolean))
+      Prop.run(monoidLaws(Ex2.optionMonoid[Int], option[Int](int)))
+
+       */
+      Prop.run(monoidLaws(Ex3.endoMonoid[Int], endoFunction(int)))
     }
 
   }

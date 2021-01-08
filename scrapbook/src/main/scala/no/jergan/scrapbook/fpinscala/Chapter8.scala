@@ -153,7 +153,7 @@ object Chapter8 {
       Gen(State(map(nonNegativeInt)(n => start + n % (stopExclusive - start))))
     }
 
-    def int(): Gen[Int] = {
+    def int: Gen[Int] = {
       Gen(State(map(Chapter6.nonNegativeInt)(identity)))
     }
 
