@@ -39,7 +39,7 @@ object Chapter8 {
         run(max, n, rng) match {
           case Passed => Passed
           case Proved => Proved
-          case Falsified(f, s) => Falsified(f + "\n + message", s)
+          case Falsified(f, s) => Falsified(f + s"\n + $message", s)
         }
       }
     }
