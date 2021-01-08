@@ -1,9 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter10.Monoid
-import no.jergan.scrapbook.fpinscala.Chapter6.SimpleRNG
-import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, choose, int}
-import no.jergan.scrapbook.fpinscala.Chapter8.Prop.{Falsified, Passed, Proved, Result}
+import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
 
 object Chapter10 {
@@ -178,8 +175,54 @@ object Chapter10 {
 
   }
 
+  object Ex8 {
+
+    import no.jergan.scrapbook.fpinscala.Chapter7NonBlocking._
+
+    def par[A](m: Monoid[A]): Monoid[Par[A]] = ???
+
+    def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = ???
+
+    // TODO:
+  }
+
+  object Ex9 {
+
+    def isOrdered(is: IndexedSeq[Int]): Boolean = {
+
+      trait Span
+
+      case object Edge extends Span
+      case object NonSorted extends Span
+      case class MinMax(min: Int, max: Int) extends Span
+
+      val m: Monoid[Span] = new Monoid[Span] {
+        override def op(s1: Span, s2: Span): Span = (s1, s2) match {
+          case (NonSorted, _) => NonSorted
+          case (_, NonSorted) => NonSorted
+          case (Edge, s) => s
+          case (s, Edge) => s
+          case (s1: MinMax, s2: MinMax) => if (s1.max > s2.min) NonSorted else MinMax(s1.min, s2.max)
+        }
+        override val zero: Span = Edge
+      }
+      val span = Ex5.foldMap(is.toList, m)((i: Int) => MinMax(i, i))
+      span match {
+        case NonSorted => false
+        case _ => true
+      }
+    }
+
+    def test(): Unit = {
+      println(isOrdered(List().toIndexedSeq))
+      println(isOrdered(List(1, 2, 3, 4).toIndexedSeq))
+      println(isOrdered(List(1, 2, 4, 3).toIndexedSeq))
+      println(isOrdered(List(2, 1, 3, 4).toIndexedSeq))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex6.test()
+    Ex9.test()
   }
 
 }
