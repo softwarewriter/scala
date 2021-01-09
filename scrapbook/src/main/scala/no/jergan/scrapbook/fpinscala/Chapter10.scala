@@ -2,6 +2,7 @@ package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex10.{WC, blank, wcMonoid}
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex12.Foldable
+import no.jergan.scrapbook.fpinscala.Chapter10.Ex13.{Branch, FoldableTree, Leaf}
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex7.foldMapV
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
@@ -98,13 +99,13 @@ object Chapter10 {
       Prop.run(monoidLaws(Ex1.booleanOr, boolean))
       Prop.run(monoidLaws(Ex1.booleanAnd, boolean))
       Prop.run(monoidLaws(Ex2.optionMonoid[Int], option[Int](int)))
-/*
-    // TODO: How to compare two methods
-      val f: Int => Int = Ex3.endoMonoid[Int].op(identity, identity)
-      println(f)
-      println(f(3))
-      Prop.run(monoidLaws(Ex3.endoMonoid[Int], endoFunction(int)))
- */
+      /*
+          // TODO: How to compare two methods
+            val f: Int => Int = Ex3.endoMonoid[Int].op(identity, identity)
+            println(f)
+            println(f(3))
+            Prop.run(monoidLaws(Ex3.endoMonoid[Int], endoFunction(int)))
+       */
     }
 
   }
@@ -115,9 +116,9 @@ object Chapter10 {
 
     def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = {
       as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
-//    or
-//    as.map(f).foldLeft(m.zero)(m.op)
-//    or ditto right
+      //    or
+      //    as.map(f).foldLeft(m.zero)(m.op)
+      //    or ditto right
     }
 
     def test(): Unit = {
@@ -191,7 +192,7 @@ object Chapter10 {
 
     def parFoldMap[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
       val parBs = Par.parMap(as.toList)(f)
-//      Par.map(parBs)(bs => foldMapV[B, B](bs.toIndexedSeq, m)(identity))
+      //      Par.map(parBs)(bs => foldMapV[B, B](bs.toIndexedSeq, m)(identity))
       Par.flatMap(parBs)(bs => foldMapV[B, Par[B]](bs.toIndexedSeq, par(m))(b => Par.unit(b)))
     }
 
@@ -267,6 +268,8 @@ object Chapter10 {
       def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
       def concatenate[A](as: F[A])(m: Monoid[A]): A =
         foldLeft(as)(m.zero)(m.op)
+      def toList[A](fa: F[A]): List[A] =
+        foldRight(fa)(List[A]())(_ :: _)
     }
 
     object FoldableList extends Foldable[List] {
@@ -330,7 +333,9 @@ object Chapter10 {
     // Changed from "case object Leaf" to "case class Branch"
 
     sealed trait Tree[A]
+
     case class Leaf[A](value: A) extends Tree[A]
+
     case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
     object FoldableTree extends Foldable[Tree] {
@@ -345,6 +350,7 @@ object Chapter10 {
           case Leaf(v) => f(z, v)
           case Branch(l, r) => foldLeft(l)(foldLeft(r)(z)(f))(f)
         }
+
       override def foldMap[A, B](t: Tree[A])(f: A => B)(mb: Monoid[B]): B =
         t match {
           case Leaf(v) => f(v)
@@ -352,47 +358,43 @@ object Chapter10 {
         }
     }
 
-    object Ex14 {
+  }
 
-      object FoldableOption extends Foldable[Option] {
-        override def foldRight[A, B](o: Option[A])(z: B)(f: (A, B) => B): B = {
-          o match {
-            case Some(a) => f(a, z)
-            case None => z
-          }
+  object Ex14 {
+
+    object FoldableOption extends Foldable[Option] {
+      override def foldRight[A, B](o: Option[A])(z: B)(f: (A, B) => B): B = {
+        o match {
+          case Some(a) => f(a, z)
+          case None => z
+        }
+      }
+
+      override def foldLeft[A, B](o: Option[A])(z: B)(f: (B, A) => B): B =
+        o match {
+          case Some(a) => f(z, a)
+          case None => z
         }
 
-        override def foldLeft[A, B](o: Option[A])(z: B)(f: (B, A) => B): B =
-          o match {
-            case Some(a) => f(z, a)
-            case None => z
-          }
-
-        override def foldMap[A, B](o: Option[A])(f: A => B)(mb: Monoid[B]): B =
-          o match {
-            case Some(a) => f(a)
-            case None => mb.zero
-          }
-      }
+      override def foldMap[A, B](o: Option[A])(f: A => B)(mb: Monoid[B]): B =
+        o match {
+          case Some(a) => f(a)
+          case None => mb.zero
+        }
     }
+  }
 
-    /*
-    object Ex15 {
-      // Changed from "(fa: F[A])" to "(fa: Foldable[A])"
+  object Ex15 {
+    // Implemented toList on Foldable
 
-      def toList[A](fa: Foldable[A]): List[A] = {
-
-        fa.foldRight(fa)(List[A]())()
-      }
+    def test(): Unit = {
+      val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4)))
+      println(FoldableTree.toList(tree))
     }
-
-     */
-
-
   }
 
   def main(args: Array[String]): Unit = {
-    Ex11.test()
+    Ex15.test()
   }
 
 }
