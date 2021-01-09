@@ -30,9 +30,9 @@ object Chapter7 {
     def isCancelled: Boolean
   }
 
-  object Par {
+  type Par[A] = ExecutorService => Future[A]
 
-    type Par[A] = ExecutorService => Future[A]
+  object Par {
 
     def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
 

@@ -173,11 +173,7 @@ object Chapter10 {
         case 1 => f(v.last)
         case _ => {
           val (l, r) = v.splitAt(v.length / 2)
-//          println(l)
-//          println(r)
-          val res = m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
- //         println(res)
-          res
+          m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
         }
       }
     }
@@ -186,26 +182,19 @@ object Chapter10 {
 
   object Ex8 {
 
-    import no.jergan.scrapbook.fpinscala.Chapter7NonBlocking._
+    import no.jergan.scrapbook.fpinscala.Chapter7._
 
     def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
       override def op(a1: Par[A], a2: Par[A]): Par[A] = Par.map2(a1, a2)(m.op)
       override val zero: Par[A] = Par.unit(m.zero)
     }
 
-    def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
-      def go[A, B](v: IndexedSeq[A], m: Monoid[Par[B]])(f: A => B): Par[B] = {
-        v.length match {
-          case 0 => m.zero
-          case 1 => Par.unit(f(v.last))
-          case _ => {
-            val (l, r) = v.splitAt(v.length / 2)
-            m.op(go(l, m)(f), go(r, m)(f))
-          }
-        }
-      }
-      go(v, par(m))(f)
+    def parFoldMap[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+      val parBs = Par.parMap(as.toList)(f)
+//      Par.map(parBs)(bs => foldMapV[B, B](bs.toIndexedSeq, m)(identity))
+      Par.flatMap(parBs)(bs => foldMapV[B, Par[B]](bs.toIndexedSeq, par(m))(b => Par.unit(b)))
     }
+
   }
 
   object Ex9 {
@@ -259,15 +248,15 @@ object Chapter10 {
 
   object Ex11 {
 
-    def count1(s: String): Int = {
+    def count(s: String): Int = {
       foldMapV[Char, WC](blank + s + blank, wcMonoid)((c: Char) => WC(c.toString.equals(blank), 0, c.toString.equals(blank)))
         .words
     }
     def test(): Unit = {
-      println(count1(""))
-      println(count1("ole"))
-      println(count1(" ole "))
-      println(count1("ole eller dole"))
+      println(count(""))
+      println(count("ole"))
+      println(count(" ole "))
+      println(count("ole eller dole"))
     }
   }
 
@@ -360,6 +349,39 @@ object Chapter10 {
         foldLeft(t)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
 
     }
+
+    object Ex14 {
+
+      object FoldableOption extends Foldable[Option] {
+        override def foldRight[A, B](o: Option[A])(z: B)(f: (A, B) => B): B = {
+          o match {
+            case Some(a) => f(a, z)
+            case None => z
+          }
+        }
+
+        override def foldLeft[A, B](o: Option[A])(z: B)(f: (B, A) => B): B =
+          o match {
+            case Some(a) => f(z, a)
+            case None => z
+          }
+
+        override def foldMap[A, B](o: Option[A])(f: A => B)(mb: Monoid[B]): B =
+          foldLeft(o)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+      }
+    }
+
+    /*
+    object Ex15 {
+      // Changed from "(fa: F[A])" to "(fa: Foldable[A])"
+
+      def toList[A](fa: Foldable[A]): List[A] = {
+
+        fa.foldRight(fa)(List[A]())()
+      }
+    }
+
+     */
 
 
   }
