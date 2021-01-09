@@ -1,5 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
+import no.jergan.scrapbook.fpinscala.Chapter10.Ex7.foldMapV
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
 
@@ -165,7 +166,7 @@ object Chapter10 {
     def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
       v.length match {
         case 0 => m.zero
-        case 1 => m.op(m.zero, f(v.last))
+        case 1 => f(v.last)
         case _ => {
           val (l, r) = v.splitAt(v.length / 2)
           m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
@@ -179,11 +180,24 @@ object Chapter10 {
 
     import no.jergan.scrapbook.fpinscala.Chapter7NonBlocking._
 
-    def par[A](m: Monoid[A]): Monoid[Par[A]] = ???
+    def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
+      override def op(a1: Par[A], a2: Par[A]): Par[A] = Par.map2(a1, a2)(m.op)
+      override val zero: Par[A] = Par.unit(m.zero)
+    }
 
-    def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = ???
-
-    // TODO:
+    def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+      def go[A, B](v: IndexedSeq[A], m: Monoid[Par[B]])(f: A => B): Par[B] = {
+        v.length match {
+          case 0 => m.zero
+          case 1 => Par.unit(f(v.last))
+          case _ => {
+            val (l, r) = v.splitAt(v.length / 2)
+            m.op(go(l, m)(f), go(r, m)(f))
+          }
+        }
+      }
+      go(v, par(m))(f)
+    }
   }
 
   object Ex9 {

@@ -83,12 +83,12 @@ object Chapter7NonBlocking {
     }
 
     def map2[A, B, C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
-      es => new Future[Either[Exception, C]] {
-        def apply(cb: Either[Exception, C] => Unit): Unit = {
+      es => new Future[AOrX[C]] {
+        def apply(cb: AOrX[C] => Unit): Unit = {
           var ar: Option[AOrX[A]] = None
-          var br: Option[Either[Exception, B]] = None
+          var br: Option[AOrX[B]] = None
 
-          val combiner = Actor[Either[AOrX[A], Either[Exception, B]]](es) {
+          val combiner = Actor[Either[AOrX[A], AOrX[B]]](es) {
             case Left(a) => br match {
               case None => ar = Some(a)
               case Some(b) => eval(es)(cb(combine(a, b, f)))
