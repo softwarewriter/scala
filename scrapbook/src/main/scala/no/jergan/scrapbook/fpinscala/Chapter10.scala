@@ -1,5 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
+import no.jergan.scrapbook.fpinscala.Chapter10.Ex10.{Part, Stub, WC, space, wcMonoid}
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex7.foldMapV
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
@@ -169,7 +170,11 @@ object Chapter10 {
         case 1 => f(v.last)
         case _ => {
           val (l, r) = v.splitAt(v.length / 2)
-          m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+//          println(l)
+//          println(r)
+          val res = m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+ //         println(res)
+          res
         }
       }
     }
@@ -235,8 +240,48 @@ object Chapter10 {
     }
   }
 
+  object Ex10 {
+
+    sealed trait WC
+    case class Stub(chars: String) extends WC
+    case class Part(lStub: String, words: Int, rStub: String) extends WC
+
+    val empty = ""
+    val space = " "
+    val wcMonoid: Monoid[WC] = new Monoid[WC] {
+      override def op(a1: WC, a2: WC): WC = (a1, a2) match {
+        case (s1: Stub, s2: Stub) => Part(s1.chars, combine(s1.chars, s2.chars), s2.chars)
+        case (s1: Stub, p2: Part) => Part(s1.chars, p2.words + combine(s1.chars, p2.lStub), p2.rStub)
+        case (p1: Part, s2: Stub) => Part(p1.lStub, p1.words + combine(p1.rStub, s2.chars), s2.chars)
+        case (p1: Part, p2: Part) => Part(p1.lStub, p1.words + p2.words + combine(p1.rStub, p2.lStub), p2.rStub)
+      }
+      override val zero: WC = Stub(space)
+
+      def combine(s1: String, s2: String): Int = {
+        if (s1.equals(space) ^ s2.equals(space)) 1 else 0
+      }
+    }
+  }
+
+  object Ex11 {
+
+    def count1(s: String): Int = {
+      foldMapV[Char, WC](s, wcMonoid)((c: Char) => Stub(c.toString)) match {
+        case p: Part => p.words
+        case s: Stub => if (s.chars.equals(space)) 0 else 1
+      }
+    }
+
+    def test(): Unit = {
+      println(count1(""))
+      println(count1("ole"))
+      println(count1(" ole "))
+      println(count1("ole eller dole e"))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex9.test()
+    Ex11.test()
   }
 
 }
