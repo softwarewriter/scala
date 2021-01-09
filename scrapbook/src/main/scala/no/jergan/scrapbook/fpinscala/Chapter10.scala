@@ -287,7 +287,7 @@ object Chapter10 {
       }
 
       override def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]): B =
-        foldLeft(as)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+        foldLeft(as)(mb.zero)((b, a) => mb.op(b, f(a)))
     }
 
     object FoldableIndexedSeq extends Foldable[IndexedSeq] {
@@ -300,7 +300,7 @@ object Chapter10 {
         if (as.isEmpty) z else foldLeft(as.splitAt(1)._2)(f(z, as.head))(f)
 
       override def foldMap[A, B](as: IndexedSeq[A])(f: A => B)(mb: Monoid[B]): B = {
-        foldLeft(as)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+        foldLeft(as)(mb.zero)((b, a) => mb.op(b, f(a)))
       }
     }
 
@@ -336,18 +336,20 @@ object Chapter10 {
     object FoldableTree extends Foldable[Tree] {
       override def foldRight[A, B](t: Tree[A])(z: B)(f: (A, B) => B): B =
         t match {
-          case l: Leaf[A] => f(l.value, z)
-          case b: Branch[A] => foldRight(b.left)(foldRight(b.right)(z)(f))(f)
+          case Leaf(v) => f(v, z)
+          case Branch(l, r) => foldRight(r)(foldRight(l)(z)(f))(f)
         }
 
       override def foldLeft[A, B](t: Tree[A])(z: B)(f: (B, A) => B): B =
         t match {
-          case l: Leaf[A] => f(z, l.value)
-          case b: Branch[A] => foldLeft(b.left)(foldLeft(b.right)(z)(f))(f)
+          case Leaf(v) => f(z, v)
+          case Branch(l, r) => foldLeft(l)(foldLeft(r)(z)(f))(f)
         }
       override def foldMap[A, B](t: Tree[A])(f: A => B)(mb: Monoid[B]): B =
-        foldLeft(t)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
-
+        t match {
+          case Leaf(v) => f(v)
+          case Branch(l, r) => mb.op(foldMap(l)(f)(mb), foldMap(r)(f)(mb))
+        }
     }
 
     object Ex14 {
@@ -367,7 +369,10 @@ object Chapter10 {
           }
 
         override def foldMap[A, B](o: Option[A])(f: A => B)(mb: Monoid[B]): B =
-          foldLeft(o)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+          o match {
+            case Some(a) => f(a)
+            case None => mb.zero
+          }
       }
     }
 
