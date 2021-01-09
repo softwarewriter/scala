@@ -5,6 +5,8 @@ import no.jergan.scrapbook.fpinscala.Chapter10.Ex7.foldMapV
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
 
+import scala.annotation.tailrec
+
 object Chapter10 {
 
   trait Monoid[A] {
@@ -209,7 +211,7 @@ object Chapter10 {
 
     def isOrdered(is: IndexedSeq[Int]): Boolean = {
 
-      trait Span
+      sealed trait Span
 
       case object Edge extends Span
       case object NonSorted extends Span
@@ -266,6 +268,71 @@ object Chapter10 {
       println(count1(" ole "))
       println(count1("ole eller dole"))
     }
+  }
+
+  object Ex12 {
+    trait Foldable[F[_]] {
+      def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B
+      def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B
+      def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
+      def concatenate[A](as: F[A])(m: Monoid[A]): A =
+        foldLeft(as)(m.zero)(m.op)
+    }
+
+    object FoldableList extends Foldable[List] {
+
+      override def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = {
+        as match {
+          case Nil => z
+          case l => f(l.head, foldRight(l.tail)(z)(f))
+        }
+      }
+
+      @tailrec
+      override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
+        as match {
+          case Nil => z
+          case l => foldLeft(l.tail)(f(z, l.head))(f)
+        }
+      }
+
+      override def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]): B =
+        foldLeft(as)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+    }
+
+    object FoldableIndexedSeq extends Foldable[IndexedSeq] {
+      @tailrec
+      override def foldRight[A, B](as: IndexedSeq[A])(z: B)(f: (A, B) => B): B =
+        if (as.isEmpty) z else foldRight(as.splitAt(as.length - 1)._1)(f(as.last, z))(f)
+
+      @tailrec
+      override def foldLeft[A, B](as: IndexedSeq[A])(z: B)(f: (B, A) => B): B =
+        if (as.isEmpty) z else foldLeft(as.splitAt(1)._2)(f(z, as.head))(f)
+
+      override def foldMap[A, B](as: IndexedSeq[A])(f: A => B)(mb: Monoid[B]): B = {
+        foldLeft(as)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+      }
+    }
+
+    object FoldableStream extends Foldable[Chapter5.Stream] {
+      override def foldRight[A, B](as: Chapter5.Stream[A])(z: B)(f: (A, B) => B): B = {
+        as.uncons match {
+          case Some((h, t)) => f(h, foldRight(t)(z)(f))
+          case None => z
+        }
+      }
+
+      override def foldLeft[A, B](as: Chapter5.Stream[A])(z: B)(f: (B, A) => B): B = {
+        as.uncons match {
+          case Some((h, t)) => foldLeft(t)(f(z, h))(f)
+          case None => z
+        }
+      }
+
+      override def foldMap[A, B](as: Chapter5.Stream[A])(f: A => B)(mb: Monoid[B]): B =
+        foldLeft(as)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+    }
+
   }
 
   def main(args: Array[String]): Unit = {
