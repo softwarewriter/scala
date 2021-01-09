@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex10.{WC, blank, wcMonoid}
+import no.jergan.scrapbook.fpinscala.Chapter10.Ex12.Foldable
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex7.foldMapV
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
@@ -332,6 +333,34 @@ object Chapter10 {
       override def foldMap[A, B](as: Chapter5.Stream[A])(f: A => B)(mb: Monoid[B]): B =
         foldLeft(as)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
     }
+
+  }
+
+  object Ex13 {
+
+    // Changed from "case object Leaf" to "case class Branch"
+
+    sealed trait Tree[A]
+    case class Leaf[A](value: A) extends Tree[A]
+    case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
+    object FoldableTree extends Foldable[Tree] {
+      override def foldRight[A, B](t: Tree[A])(z: B)(f: (A, B) => B): B =
+        t match {
+          case l: Leaf[A] => f(l.value, z)
+          case b: Branch[A] => foldRight(b.left)(foldRight(b.right)(z)(f))(f)
+        }
+
+      override def foldLeft[A, B](t: Tree[A])(z: B)(f: (B, A) => B): B =
+        t match {
+          case l: Leaf[A] => f(z, l.value)
+          case b: Branch[A] => foldLeft(b.left)(foldLeft(b.right)(z)(f))(f)
+        }
+      override def foldMap[A, B](t: Tree[A])(f: A => B)(mb: Monoid[B]): B =
+        foldLeft(t)(mb.zero)((b: B, a: A) => mb.op(b, f(a)))
+
+    }
+
 
   }
 
