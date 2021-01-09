@@ -1,6 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter10.Ex10.{Part, Stub, WC, space, wcMonoid}
+import no.jergan.scrapbook.fpinscala.Chapter10.Ex10.{WC, blank, wcMonoid}
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex7.foldMapV
 import no.jergan.scrapbook.fpinscala.Chapter8.Gen.{boolean, int}
 import no.jergan.scrapbook.fpinscala.Chapter8.{Gen, Prop}
@@ -241,24 +241,15 @@ object Chapter10 {
   }
 
   object Ex10 {
-
-    sealed trait WC
-    case class Stub(chars: String) extends WC
-    case class Part(lStub: String, words: Int, rStub: String) extends WC
-
-    val empty = ""
-    val space = " "
+    case class WC(leftBlank: Boolean, words: Int, rightBlank: Boolean)
+    val blank = " "
     val wcMonoid: Monoid[WC] = new Monoid[WC] {
-      override def op(a1: WC, a2: WC): WC = (a1, a2) match {
-        case (s1: Stub, s2: Stub) => Part(s1.chars, combine(s1.chars, s2.chars), s2.chars)
-        case (s1: Stub, p2: Part) => Part(s1.chars, p2.words + combine(s1.chars, p2.lStub), p2.rStub)
-        case (p1: Part, s2: Stub) => Part(p1.lStub, p1.words + combine(p1.rStub, s2.chars), s2.chars)
-        case (p1: Part, p2: Part) => Part(p1.lStub, p1.words + p2.words + combine(p1.rStub, p2.lStub), p2.rStub)
-      }
-      override val zero: WC = Stub(space)
+      override def op(a1: WC, a2: WC): WC =
+        WC(a1.leftBlank, a1.words + a2.words + combine(a1.rightBlank, a2.leftBlank), a2.rightBlank)
+      override val zero: WC = WC(true, 0, true)
 
-      def combine(s1: String, s2: String): Int = {
-        if (s1.equals(space) ^ s2.equals(space)) 1 else 0
+      def combine(b1: Boolean, b2: Boolean): Int = {
+        if (b1 && !b2) 1 else 0
       }
     }
   }
@@ -266,17 +257,14 @@ object Chapter10 {
   object Ex11 {
 
     def count1(s: String): Int = {
-      foldMapV[Char, WC](s, wcMonoid)((c: Char) => Stub(c.toString)) match {
-        case p: Part => p.words
-        case s: Stub => if (s.chars.equals(space)) 0 else 1
-      }
+      foldMapV[Char, WC](blank + s + blank, wcMonoid)((c: Char) => WC(c.toString.equals(blank), 0, c.toString.equals(blank)))
+        .words
     }
-
     def test(): Unit = {
       println(count1(""))
       println(count1("ole"))
       println(count1(" ole "))
-      println(count1("ole eller dole e"))
+      println(count1("ole eller dole"))
     }
   }
 
