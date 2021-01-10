@@ -1,5 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
+import no.jergan.scrapbook.fpinscala.Chapter10.Ex1.intAddition
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex10.{WC, blank, wcMonoid}
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex12.Foldable
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex13.{Branch, FoldableTree, Leaf}
@@ -21,6 +22,14 @@ object Chapter10 {
   def inverseMonoid[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
     override def op(a1: A, a2: A): A = m.op(a2, a1)
     override val zero: A = m.zero
+  }
+
+  def mapMergeMonoid[K, V](mv: Monoid[V]): Monoid[Map[K, V]] = new Monoid[Map[K, V]] {
+    val zero = Map[K, V]()
+    def op(a: Map[K, V], b: Map[K, V]) =
+      (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
+        acc.updated(k, mv.op(a.getOrElse(k, mv.zero), b.getOrElse(k, mv.zero)))
+      }
   }
 
   object Ex1 {
@@ -393,8 +402,48 @@ object Chapter10 {
     }
   }
 
+  object Ex16 {
+
+    def productMonoid[A, B](ma: Monoid[A], mb: Monoid[B]): Monoid[(A, B)] = new Monoid[(A, B)] {
+      override def op(a1: (A, B), a2: (A, B)): (A, B) = {
+        (ma.op(a1._1, a2._1), mb.op(a1._2, a2._2))
+      }
+      override val zero: (A, B) = (ma.zero, mb.zero)
+    }
+  }
+
+  object Ex17 {
+
+    def functionMonoid[A, B](mb: Monoid[B]): Monoid[A => B] = new Monoid[A => B] {
+
+      override def op(a1: A => B, a2: A => B): A => B = (a: A) =>
+        mb.op(a1(a), a2(a))
+      override val zero: A => B = _ =>
+        mb.zero
+    }
+
+  }
+
+  object Ex18 {
+
+    def bag[A](as: IndexedSeq[A]): Map[A, Int] = {
+
+      val m: Monoid[Map[A, Int]] = mapMergeMonoid[A, Int](intAddition)
+      val f: A => Map[A, Int] = (a: A) =>
+        Map(a -> 1)
+
+      foldMapV[A, Map[A, Int]](as, m)(f)
+    }
+
+    def test(): Unit = {
+
+      println(bag(List("ole", "dole", "ole", "doff").toIndexedSeq))
+    }
+
+  }
+
   def main(args: Array[String]): Unit = {
-    Ex15.test()
+    Ex18.test()
   }
 
 }
