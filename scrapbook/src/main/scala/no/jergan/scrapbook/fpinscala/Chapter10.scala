@@ -427,16 +427,12 @@ object Chapter10 {
   object Ex18 {
 
     def bag[A](as: IndexedSeq[A]): Map[A, Int] = {
-
       val m: Monoid[Map[A, Int]] = mapMergeMonoid[A, Int](intAddition)
-      val f: A => Map[A, Int] = (a: A) =>
-        Map(a -> 1)
-
+      val f: A => Map[A, Int] = (a: A) => Map(a -> 1)
       foldMapV[A, Map[A, Int]](as, m)(f)
     }
 
     def test(): Unit = {
-
       println(bag(List("ole", "dole", "ole", "doff").toIndexedSeq))
     }
 
