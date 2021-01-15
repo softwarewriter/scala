@@ -5,8 +5,11 @@ import fs2._
 import fs2.{Stream, io}
 
 import java.nio.file.Paths
-import _root_.io.circe.fs2._
 import org.typelevel.jawn.AsyncParser
+
+import _root_.io.circe.fs2._
+import _root_.io.circe.{Decoder, HCursor}
+
 /*
   links
     https://github.com/circe/circe-iteratee
@@ -22,6 +25,15 @@ object Memory2 extends IOApp {
 
   val filename: String = "/Users/oyvind/tmp/personsRaw.json"
 //  val filename: String = "/Users/oyvind/tmp/elements.json"
+
+  case class Person(name: String, age: Int)
+
+  implicit val personDecoder: Decoder[Person] = (c: HCursor) => {
+    for {
+      name      <- c.downField("name").as[String]
+      age       <- c.downField("age").as[Int]
+    } yield Person(name, age)
+  }
 
   def createApplication(): Resource[IO, Stream[IO, String]] = {
     for {
@@ -39,7 +51,9 @@ object Memory2 extends IOApp {
         str
 //          .evalTap(s => IO(println(s"chunk: $s")))
           .through(stringParser(AsyncParser.UnwrapArray))
-          .evalTap(j => IO(println(s"json: $j")))
+//          .evalTap(j => IO(println(s"json: $j")))
+          .through(decoder[IO, Person])
+          .evalTap(p => IO(println(s"person: $p")))
           .compile
           .lastOrError
           .map(_ => ExitCode.Success)
