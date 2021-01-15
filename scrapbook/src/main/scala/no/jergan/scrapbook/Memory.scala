@@ -12,14 +12,18 @@ object Memory {
 
   case class Person(name: String, age: Int)
 
-  val filename: String = "/Users/oyvind/tmp/persons.json"
+  val filename: String = "/Users/oyvind/tmp/personsRaw.json"
 
   implicit val personsEncoder: Encoder[List[Person]] = (persons: List[Person]) => {
+    Json.arr(persons.map(p => personEncoder(p)):_*)
+    /*
     Json
       .obj(
         "persons" := Json.arr(persons.map(p => personEncoder(p)):_*)
       )
       .dropNullValues
+
+     */
   }
 
   implicit val personEncoder: Encoder[Person] = (person: Person) => {
@@ -72,7 +76,7 @@ object Memory {
   def countElements(string: String): Option[Int] = {
     parse(string)
       .toOption
-      .flatMap(j => j.hcursor.downField("persons").values)
+      .flatMap(j => j.hcursor.values)
       .map(v => v.size)
   }
 

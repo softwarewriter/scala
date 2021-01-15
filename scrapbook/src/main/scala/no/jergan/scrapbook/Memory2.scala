@@ -15,10 +15,13 @@ import org.typelevel.jawn.AsyncParser
     https://gist.github.com/BenFradet/a69e3fa86ad2654ed017e2cb2881c307
  */
 
+/**
+ * This works with -Xmx20m
+ */
 object Memory2 extends IOApp {
 
-//  val filename: String = "/Users/oyvind/tmp/persons.json"
-  val filename: String = "/Users/oyvind/tmp/elements.json"
+  val filename: String = "/Users/oyvind/tmp/personsRaw.json"
+//  val filename: String = "/Users/oyvind/tmp/elements.json"
 
   def createApplication(): Resource[IO, Stream[IO, String]] = {
     for {
