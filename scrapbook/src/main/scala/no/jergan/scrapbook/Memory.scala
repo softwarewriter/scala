@@ -5,10 +5,16 @@ import io.circe.{Decoder, Encoder, HCursor, Json, ParsingFailure}
 import io.circe.syntax._
 import io.circe.parser._
 
+import java.nio.file.{Files, Paths}
+import java.nio.charset.StandardCharsets
+import scala.io.Source
+
 object Memory {
 
   case class Person(name: String, age: Int/*, books: List[Book]*/)
   case class Book(title: String, author: String, pages: Int)
+
+  val filename: String = "/Users/oyvind/tmp/persons.json"
 
   implicit val personsEncoder: Encoder[List[Person]] = (persons: List[Person]) => {
     Json
@@ -44,10 +50,12 @@ object Memory {
    */
 
   def main(args: Array[String]): Unit = {
-    val json: Json = generate(10)
-    val string = json.asJson.noSpaces
-//    println(string)
-    println(countElements(string))
+//    write()
+    read()
+
+    //    println(string)
+
+//    println(countElements(string))
 
 //    val parsed: Either[ParsingFailure, Json] = parse(string)
 //    println(parsed)
@@ -59,13 +67,26 @@ object Memory {
 //    println(r)//
   }
 
+  def write(): Unit = {
+    val json: Json = generate(1000 * 1000)
+    val string = json.asJson.noSpaces
+    Files.write(Paths.get(filename), string.getBytes(StandardCharsets.UTF_8))
+  }
+
+  def read(): Unit = {
+    val string = Source.fromFile(filename).mkString
+    println("string length: " + string.length)
+    println(countElements(string)) // fails on -Xmx300m
+  }
+
   def generate(n: Int): Json = {
 //    val books = (1 to 5).toList.map(i => Book(s"title $i", s"author + $i", i * 100))
-    val persons: List[Person] = (1 to n).toList.map(i => Person(s"name $i", i + 20/*, books*/))
+    val persons: List[Person] = (1 to n).toList.map(i => Person(s"name $i", i/*, books*/))
     persons.asJson
   }
 
   def countElements(string: String): Option[Int] = {
+    /*
     val parsed: Either[ParsingFailure, Json] = parse(string)
     parsed match {
       case Left(_) => None
@@ -82,7 +103,9 @@ object Memory {
 //        println(json.hcursor.downField("persons"))
       }
     }
-    parsed
+
+     */
+    parse(string)
       .toOption
       .flatMap(j => j.hcursor.downField("persons").values)
       .map(v => v.size)
