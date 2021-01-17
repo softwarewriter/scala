@@ -67,9 +67,16 @@ object Chapter11 {
       def sequence[A](lfa: List[F[A]]): F[List[A]] = {
         lfa match {
           case Nil => unit(Nil)
-          case l => flatMap(l.head)(a => map(sequence(l.tail))(t => a :: t))
+          case l => flatMap(l.head)(h => map(sequence(l.tail))(t => h :: t))
         }
       }
+
+      /*
+      def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] = {
+
+      }
+
+       */
 
     }
 
