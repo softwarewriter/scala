@@ -64,8 +64,8 @@ object Chapter11 {
         flatMap(fa)(a => map(fb)(b => f(a, b)))
       }
 
-      def sequence[A](lfa: List[F[A]]): F[List[A]] = {
-        lfa match {
+      def sequence[A](lma: List[F[A]]): F[List[A]] = {
+        lma match {
           case Nil => unit(Nil)
           case l => flatMap(l.head)(h => map(sequence(l.tail))(t => h :: t))
         }
@@ -73,6 +73,10 @@ object Chapter11 {
 
       def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = {
         sequence(la.map(f))
+      }
+
+      def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
+        sequence(List.fill(n)(ma))
       }
     }
 
@@ -107,37 +111,42 @@ object Chapter11 {
         override def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
       }
 
-
-  }
-
-  object Ex1 {
-  }
-
-  object Ex2 {
-//    case class State[S, +A](run: S => (A, S))
-    case class St()
-    case class State2[+A](run: St => (A, St))
-
-    def stateMonad[S]: Monad[State2] = new Monad[State2] {
-      override def unit[A](a: A): State2[A] = ???
-      override def flatMap[A, B](fa: State2[A])(f: A => State2[B]): State2[B] = ???
     }
 
-    trait Monad2[F[_, _]] {
-      def unit[A, B](a: A, b: B): F[A, B]
-      def flatMap[A, B, C, D](fa: F[A, B])(f: (A, B) => F[C, D]): F[C, D]
+    object Ex1 {
+      // Implemented monad instances
     }
 
-    val stateMonad2: Monad2[State] = new Monad2[State] {
-      override def unit[A, B](a: A, b: B): State[A, B] = State.unit[A, B](b)
-      override def flatMap[A, B, C, D](fa: State[A, B])(f: (A, B) => State[C, D]): State[C, D] = ???
-    }
+    object Ex2 {
+      //    case class State[S, +A](run: S => (A, S))
+      case class St()
+      case class State2[+A](run: St => (A, St))
+
+      def stateMonad[S]: Monad[State2] = new Monad[State2] {
+        override def unit[A](a: A): State2[A] = ???
+        override def flatMap[A, B](fa: State2[A])(f: A => State2[B]): State2[B] = ???
+      }
+
+      trait Monad2[F[_, _]] {
+        def unit[A, B](a: A, b: B): F[A, B]
+        def flatMap[A, B, C, D](fa: F[A, B])(f: (A, B) => F[C, D]): F[C, D]
+      }
+
+      val stateMonad2: Monad2[State] = new Monad2[State] {
+        override def unit[A, B](a: A, b: B): State[A, B] = State.unit[A, B](b)
+        override def flatMap[A, B, C, D](fa: State[A, B])(f: (A, B) => State[C, D]): State[C, D] = ???
+      }
 
     }
 
   }
 
   object Ex3 {
+    // Implemented sequence and traverse
+  }
+
+  object Ex4 {
+    // Implemented replicateM
   }
 
   def main(args: Array[String]): Unit = {
