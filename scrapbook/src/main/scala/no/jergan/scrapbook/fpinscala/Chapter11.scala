@@ -71,13 +71,9 @@ object Chapter11 {
         }
       }
 
-      /*
-      def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] = {
-
+      def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = {
+        sequence(la.map(f))
       }
-
-       */
-
     }
 
     object Monad {
