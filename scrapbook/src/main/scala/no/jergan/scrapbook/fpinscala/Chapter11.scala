@@ -1,7 +1,8 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter7.Par
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
+import no.jergan.scrapbook.fpinscala.Chapter6.State
+import no.jergan.scrapbook.fpinscala.Chapter7.Par
 import no.jergan.scrapbook.fpinscala.Chapter9.Parsers
 
 object Chapter11 {
@@ -63,21 +64,28 @@ object Chapter11 {
         flatMap(fa)(a => map(fb)(b => f(a, b)))
       }
 
+      def sequence[A](lfa: List[F[A]]): F[List[A]] = {
+        lfa match {
+          case Nil => unit(Nil)
+          case l => flatMap(l.head)(a => map(sequence(l.tail))(t => a :: t))
+        }
+      }
+
     }
 
     object Monad {
 
-      val parMonad = new Monad[Par] {
+      val parMonad: Monad[Par] = new Monad[Par] {
         override def unit[A](a: A): Par[A] = Par.unit(a)
         override def flatMap[A, B](fa: Par[A])(f: A => Par[B]): Par[B] = Par.flatMap(fa)(f)
       }
 
-      def parserMonad[P[+_]](p: Parsers[P]) = new Monad[P] {
-        override def unit[A](a: A): P[A] = p.succeed(a)
-        override def flatMap[A, B](fa: P[A])(f: A => P[B]): P[B] = p.flatMap(fa)(f)
+      def parserMonad[Parser[+_]](p: Parsers[Parser]): Monad[Parser] = new Monad[Parser] {
+        override def unit[A](a: A): Parser[A] = p.succeed(a)
+        override def flatMap[A, B](fa: Parser[A])(f: A => Parser[B]): Parser[B] = p.flatMap(fa)(f)
       }
 
-      val optionMonad = new Monad[Option] {
+      val optionMonad: Monad[Option] = new Monad[Option] {
         override def unit[A](a: A): Option[A] = Some(a)
         override def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
       }
@@ -91,16 +99,42 @@ object Chapter11 {
 
        */
 
-      val listMonad = new Monad[List] {
+      val listMonad: Monad[List] = new Monad[List] {
         override def unit[A](a: A): List[A] = List(a)
         override def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
       }
+
+
+  }
+
+  object Ex1 {
+  }
+
+  object Ex2 {
+//    case class State[S, +A](run: S => (A, S))
+    case class St()
+    case class State2[+A](run: St => (A, St))
+
+    def stateMonad[S]: Monad[State2] = new Monad[State2] {
+      override def unit[A](a: A): State2[A] = ???
+      override def flatMap[A, B](fa: State2[A])(f: A => State2[B]): State2[B] = ???
+    }
+
+    trait Monad2[F[_, _]] {
+      def unit[A, B](a: A, b: B): F[A, B]
+      def flatMap[A, B, C, D](fa: F[A, B])(f: (A, B) => F[C, D]): F[C, D]
+    }
+
+    val stateMonad2: Monad2[State] = new Monad2[State] {
+      override def unit[A, B](a: A, b: B): State[A, B] = State.unit[A, B](b)
+      override def flatMap[A, B, C, D](fa: State[A, B])(f: (A, B) => State[C, D]): State[C, D] = ???
+    }
 
     }
 
   }
 
-  object Ex1 {
+  object Ex3 {
   }
 
   def main(args: Array[String]): Unit = {
