@@ -36,18 +36,6 @@ object Chapter11 {
         case Left(fa) => map(fa)(Left(_))
         case Right(fb) => map(fb)(Right(_))
       }
-
-      /*
-         requires flatMap
-      def product[A, B](fa: F[A], fb: F[B]): F[(A, B)]
-       */
-
-      /*
-         requires flatMap
-      def map2[A, B, C](fa: F[A])(fb: F[B])(f: (A, B) => C): F[C] = {
-        map(fa)(a => map(fb)(b => f(a, b)))
-      }
-       */
     }
   }
 
@@ -233,7 +221,7 @@ object Chapter11 {
 
   object Pelle {
     // A => F[B]
-    // observation: a Monioid over the type Kleisli arrow is associative and have a zero element.
+    // observation: a Monioid over the type "endo" Kleisli arrow is associative and have a zero element.
     // this is the same as a flatMap of a Monad being associative.
     // and the unit of the Monad being the zero element.
 
@@ -241,6 +229,67 @@ object Chapter11 {
       override def op(f: A => F[A], g: A => F[A]): A => F[A] = monad.compose(f, g)
       override val zero: A => F[A] = a => monad.unit(a)
     }
+
+  }
+
+  object Ex10 {
+    /*
+    use compose(f, g) == a => flatMap(f(a))(g)
+
+    Left identity
+    Prove that
+    compose(unit, f) == f
+    is equivalent to
+    flatMap(unit(y))(f) == f(y)
+
+    - compose(unit, f) == f
+    - a => flatMap(unit(a))(f) == a => f
+    - flatMap(unit(a))(f) == f(a)
+
+    Right identity
+    Prove that
+    compose(f, unit) == f
+    is equivalent to
+    flatMap(x)(unit) == x
+
+    - compose(f, unit) == f
+    - a => flatMap(f(a)(unit) == a => f
+    - flatMap(f(a)(unit) == f(a)
+    - flatMap(x)(unit) == x
+
+     */
+  }
+
+  object Ex11 {
+    val optionMonad: Monad[Option] = new Monad[Option] {
+      override def unit[A](a: A): Option[A] = Some(a)
+      override def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa match {
+        case None => None
+        case Some(a) => f(a)
+      }
+    }
+
+    /*
+     Chose identity laws for the monad Option:
+     Left identity
+       flatMap(unit(y))(f) == f(y)
+         f = _ => None
+           flatMap(unit(y))(None) == None
+         None == None
+         f = _ => Some(a)
+           flatMap(unit(y))(_ => Some(a)) == Some(y)
+           flatMap(Some(y))(_ => Some(a)) == Some(y)
+           Some(y) == Some(y)
+
+     Right identity
+       flatMap(x)(unit) == x
+         x = None
+           None == None
+         x = Some(a)
+           flatMap(Some(a))(unit) == Some(a)
+           unit(a) == Some(a)
+           Some(a) == Some(a)
+     */
 
   }
 
