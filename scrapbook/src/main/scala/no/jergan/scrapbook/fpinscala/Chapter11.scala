@@ -233,18 +233,13 @@ object Chapter11 {
 
   object Pelle {
     // A => F[B]
-    // observation: a Monioid over the type Kleisli arrow is associative and have a null element.
+    // observation: a Monioid over the type Kleisli arrow is associative and have a zero element.
     // this is the same as a flatMap of a Monad being associative.
+    // and the unit of the Monad being the zero element.
 
-    // then what is the zero element of the Monoid over the type Kleisli arrow?
-    //
-    // substitute compose(f, g) by a => flatMap(f(a))(g)
-
-     */
-
-    def kleisliArrowMonoid[F[_], A, B](monad: Monad[F]): Monoid[A => F[B]] = new Monoid[A => F[B]] {
-      override def op(f: A => F[B], g: A => F[B]): A => F[B] = monad.compose(f, g)
-      override val zero: A => F[B] = a => monad.unit(a)
+    def kleisliArrowMonoid[F[_], A](monad: Monad[F]): Monoid[A => F[A]] = new Monoid[A => F[A]] {
+      override def op(f: A => F[A], g: A => F[A]): A => F[A] = monad.compose(f, g)
+      override val zero: A => F[A] = a => monad.unit(a)
     }
 
   }
