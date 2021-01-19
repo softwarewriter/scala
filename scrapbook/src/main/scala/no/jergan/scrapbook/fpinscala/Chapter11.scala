@@ -1,5 +1,6 @@
 package no.jergan.scrapbook.fpinscala
 
+import no.jergan.scrapbook.fpinscala.Chapter10.Monoid
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
 import no.jergan.scrapbook.fpinscala.Chapter6.State
 import no.jergan.scrapbook.fpinscala.Chapter7.Par
@@ -198,38 +199,6 @@ object Chapter11 {
 
   object Ex7 {
     // Implemented compose
-
-    // Monad laws
-    // map
-    // unit
-    // flatMap
-//    flatmap(a => (unit(f(a)))) === map(f)
-//    unit(a).flatMap(f) = unit(f(a))
-
-    /*
-    val ps: Gen[(Double, Double, Double)] = for {
-      price1 <- Gen.double()
-      price2 <- Gen.double()
-      price3 <- Gen.double()
-    } yield (price1, price2, price3)
-
-    val o: Option[String] = ???
-    def f: String => Option[String] = ???
-    def g: String => Option[String] = ???
-
-    val r1: Option[String] = o
-      .flatMap(f)
-      .flatMap(g)
-
-    val r2: Option[String] = o
-      .flatMap(s => f(s).flatMap(g))
-
-    Some(v).flatMap(f).flatMap(g) == Some(v).flatMap(a => f(a).flatMap(g))
-    f(v).flatMap(g) == f(v).flatMap(g)
-
-     */
-
-//    compose(compose (f, g) h) === compose (f, compose(g, h))
   }
 
   object Ex8 {
@@ -237,7 +206,9 @@ object Chapter11 {
   }
 
   object Ex9 {
-    // Show that
+    // Show that associativity in composition of Kleisli arrows are the same as
+    // associativity in flatMap
+
     //   1) compose(compose(f, g), h) === compose(f, compose(g, h))
     // and
     //   2) flatMap(x)(f).flatMap(g) === flatMap(x)(a => flatMap(f(a))(g))
@@ -258,6 +229,24 @@ object Chapter11 {
     // ==> a => flatMap(f(a))(b => flatMap(g(b))(h))
     // eliminate a and replace f(a) by x
     // ==> flatMap(x)(b => flatMap(g(b))(h))
+  }
+
+  object Pelle {
+    // A => F[B]
+    // observation: a Monioid over the type Kleisli arrow is associative and have a null element.
+    // this is the same as a flatMap of a Monad being associative.
+
+    // then what is the zero element of the Monoid over the type Kleisli arrow?
+    //
+    // substitute compose(f, g) by a => flatMap(f(a))(g)
+
+     */
+
+    def kleisliArrowMonoid[F[_], A, B](monad: Monad[F]): Monoid[A => F[B]] = new Monoid[A => F[B]] {
+      override def op(f: A => F[B], g: A => F[B]): A => F[B] = monad.compose(f, g)
+      override val zero: A => F[B] = a => monad.unit(a)
+    }
+
   }
 
   def main(args: Array[String]): Unit = {
