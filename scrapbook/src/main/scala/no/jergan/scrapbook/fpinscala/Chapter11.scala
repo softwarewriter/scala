@@ -89,6 +89,12 @@ object Chapter11 {
 
     def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a =>
       flatMap(f(a))(g)
+
+    def join[A](ffa: F[F[A]]): F[A] = {
+//      flatMap(ffa)(identity)
+      flatMap[F[A], A](ffa)((fa: F[A]) => fa)
+    }
+
   }
 
   object Monad {
@@ -291,6 +297,10 @@ object Chapter11 {
            Some(a) == Some(a)
      */
 
+  }
+
+  object Ex12 {
+    // implemented join
   }
 
   def main(args: Array[String]): Unit = {
