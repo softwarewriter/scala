@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter10.Monoid
+import no.jergan.scrapbook.fpinscala.Chapter11.Monad.listMonad
 import no.jergan.scrapbook.fpinscala.Chapter5.Stream
 import no.jergan.scrapbook.fpinscala.Chapter6.State
 import no.jergan.scrapbook.fpinscala.Chapter7.Par
@@ -95,6 +96,13 @@ object Chapter11 {
       flatMap[F[A], A](ffa)((fa: F[A]) => fa)
     }
 
+    def flatMapUsingJoinAndMap[A, B](fa: F[A])(f: A => F[B]): F[B] = {
+//      join(map(fa)(f))
+      join(map[A, F[B]](fa)(a => f(a)))
+    }
+
+    def composeUsingJoinAndMap[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a =>
+      join(map(f(a))(g))
   }
 
   object Monad {
@@ -301,6 +309,29 @@ object Chapter11 {
 
   object Ex12 {
     // implemented join
+
+    {
+      val lls: List[List[String]] = ???
+      val joined: List[String] = listMonad.join(lls)
+    }
+
+    {
+      val llls: List[List[List[String]]] = ???
+      val joined: List[List[String]] = listMonad.join(llls)
+    }
+  }
+
+  object Ex13 {
+    // implemented flatMapUsingJoinAndMap
+    // implemented composeUsingJoinAndMap
+  }
+
+  object Ex14 {
+    // Monad laws with join, map and unit
+    // join(map[A, F[B]](fa)(a => f(a)))
+
+
+
   }
 
   def main(args: Array[String]): Unit = {
