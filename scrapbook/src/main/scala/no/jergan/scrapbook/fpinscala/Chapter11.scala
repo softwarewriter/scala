@@ -327,10 +327,45 @@ object Chapter11 {
   }
 
   object Ex14 {
+
+    val fa: List[Int] = listMonad.unit(42)
+    def f: Int => List[Int] = ???
+    def g: Int => List[Int] = ???
+
+    val r: List[Int] = fa
+      .flatMap(a =>
+        f(a)
+          .flatMap(b =>
+            g(b)
+              .map(r => r)
+          )
+      )
+
     // Monad laws with join, map and unit
-    // join(map[A, F[B]](fa)(a => f(a)))
 
+    /*
+      Associative law for flatMap:
+        ma.flatMap(f).flatMap(g) == ma.flatMap(a => f(a).flatMap(g))
+        flatMap(flatMap(ma)(f))(g) == flatMap(ma)(a => flatMap(f(a)(g))
 
+        Substitute: flatMap(fa)(f) with join(map(fa)(f)) to get
+        join(map(join(map(ma)(f)))(g) == join(map(ma)(a => join(map(f(a)(g)))
+
+      Right equality
+        flatMap(ma)(unit) == ma
+        Substitute: flatMap(fa)(f) with join(map(fa)(f)) to get
+        join(map(fa)(unit)) == ma
+
+      Left equality
+        flatMap(unit(y))(f) == f(y)
+        Substitute: flatMap(fa)(f) with join(map(fa)(f)) to get
+        join(map(unit(y))(f) == f(y)
+
+     */
+
+  }
+
+  object Ex15 {
 
   }
 
