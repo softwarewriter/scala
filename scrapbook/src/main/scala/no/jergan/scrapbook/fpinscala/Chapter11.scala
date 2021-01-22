@@ -366,6 +366,17 @@ object Chapter11 {
   }
 
   object Ex15 {
+    // Associative law for    Par: the order of which the Par are executed are should not effect the final result.
+    // Associative law for Parser: if matching (a(bc)) it should also match ((ab)c)
+
+  }
+
+  object Ex16 {
+    // Right identity law for List: for each element in a list, wrap in a list, then flatten the list => should give the original list
+    //  Left identity law for list: wrap y in a list, unwrao, apply to f => should give f(y)
+
+    // Right identity law for Gen: given a generator for a, take the a and wrap it into a new generator => should give a generator for the original value
+    //  Left identity law for Gen: create a generator for y, unwrap the y and apply to f => should give a f(y)
 
   }
 
