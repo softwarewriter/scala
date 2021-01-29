@@ -396,14 +396,30 @@ object Chapter11 {
 
   }
 
-  def main(args: Array[String]): Unit = {
+  object Ex18 {
 
-//    Thread.currentThread().wait()
-    val v: String = Thread.currentThread().synchronized {
-      Thread.currentThread().wait(10)
-      "hei" }
-    println(v)
-//    Ex6.test()
+    def stateMonad[S] = new Monad[({type f[x] = State[S, x]})#f] {
+      override def unit[A](a: A): State[S, A] = State(s => (a, s))
+      override def flatMap[A, B](fa: State[S, A])(f: A => State[S, B]): State[S, B] = fa.flatMap(f)
+    }
+
+    def test: Unit =  {
+      val stateMonadInt = stateMonad[Int]
+
+      val replicate: State[Int, List[String]] = stateMonadInt.replicateM(3, stateMonadInt.unit("hei"))
+      println(replicate.run(0))
+
+      val sequence: State[Int, List[String]] = stateMonadInt.sequence(List(stateMonadInt.unit("a"), stateMonadInt.unit("b"), stateMonadInt.unit("c")))
+      println(sequence.run(0))
+
+      val map2: State[Int, String] = stateMonadInt.map2(stateMonadInt.unit("a"), stateMonadInt.unit("b"))(_ + _)
+      println(map2.run(0))
+    }
+
+  }
+
+  def main(args: Array[String]): Unit = {
+    Ex18.test
   }
 
 }
