@@ -401,20 +401,68 @@ object Chapter11 {
     def stateMonad[S] = new Monad[({type f[x] = State[S, x]})#f] {
       override def unit[A](a: A): State[S, A] = State(s => (a, s))
       override def flatMap[A, B](fa: State[S, A])(f: A => State[S, B]): State[S, B] = fa.flatMap(f)
+
+      def getState[S]: State[S, S] = ???
+      def setState[S](s: => S): State[S, Unit] = ???
+
     }
 
     def test: Unit =  {
       val stateMonadInt = stateMonad[Int]
 
-      val replicate: State[Int, List[String]] = stateMonadInt.replicateM(3, stateMonadInt.unit("hei"))
+      def state(a: String): State[Int, String] = State[Int, String](s => (a, s + 1))
+
+      val sa = state("a")
+      val sb = state("b")
+      val sc = state("c")
+
+      val replicate: State[Int, List[String]] = stateMonadInt.replicateM(3, sa)
       println(replicate.run(0))
 
-      val sequence: State[Int, List[String]] = stateMonadInt.sequence(List(stateMonadInt.unit("a"), stateMonadInt.unit("b"), stateMonadInt.unit("c")))
+      val sequence: State[Int, List[String]] = stateMonadInt.sequence(List(sa, sb, sc))
       println(sequence.run(0))
 
-      val map2: State[Int, String] = stateMonadInt.map2(stateMonadInt.unit("a"), stateMonadInt.unit("b"))(_ + _)
+      val map2: State[Int, String] = stateMonadInt.map2(sa, sb)(_ + _)
       println(map2.run(0))
     }
+
+  }
+
+  object Ex19 {
+
+    // We have heard nothing about getState/setState before page 202.
+  }
+
+  object Ex20 {
+
+    case class Reader[R, A](run: R => A) {
+
+
+    }
+
+    object Reader {
+      def readerMonad[R] = new Monad[({type f[x] = Reader[R, x]})#f] {
+        override def unit[A](a: A): Reader[R, A] = new Reader(_ => a)
+
+        override def flatMap[A, B](fa: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] =
+          Reader[R, B](r => f(fa.run(r)).run(r))
+
+      }
+
+      def ask[R]: Reader[R, R] = Reader(identity)
+
+    }
+
+    // Flat map reads an A from R, based on this A obtains a reader of B and then reads this
+
+    // Sequence applied to a list of Readers gives a Reader is a combination of the Readers and reads what they would have read.
+
+    // Join takes a Reader that can read a Reader[A] and creates a Reader[A]
+
+    // replicateM applied to a Reader gives a Reads that reads the same "thing" M times.
+
+    // Monad laws:
+
 
   }
 
