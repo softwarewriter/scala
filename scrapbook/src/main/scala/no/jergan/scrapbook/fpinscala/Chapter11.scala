@@ -103,6 +103,7 @@ object Chapter11 {
 
     def composeUsingJoinAndMap[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a =>
       join(map(f(a))(g))
+
   }
 
   object Monad {
@@ -377,11 +378,32 @@ object Chapter11 {
 
     // Right identity law for Gen: given a generator for a, take the a and wrap it into a new generator => should give a generator for the original value
     //  Left identity law for Gen: create a generator for y, unwrap the y and apply to f => should give a f(y)
+  }
+
+  object Ex17 {
+
+    case class Id[A](value: A) {
+      def map[B](f: A => B): Id[B] = Id(f(value))
+      def flatMap[B](f: A => Id[B]): Id[B] = f(value)
+    }
+
+    val idMonad: Monad[Id] = new Monad[Id] {
+      override def unit[A](a: A): Id[A] = Id(a)
+      override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = fa.flatMap(f)
+    }
+
+    Id("hei").flatMap(a => Id())
 
   }
 
   def main(args: Array[String]): Unit = {
-    Ex6.test()
+
+//    Thread.currentThread().wait()
+    val v: String = Thread.currentThread().synchronized {
+      Thread.currentThread().wait(10)
+      "hei" }
+    println(v)
+//    Ex6.test()
   }
 
 }
