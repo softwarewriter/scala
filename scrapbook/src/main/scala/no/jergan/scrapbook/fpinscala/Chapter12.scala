@@ -1,6 +1,8 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.fpinscala.Chapter11.Functor
+import no.jergan.scrapbook.fpinscala.Chapter11.{Functor, Monad}
+
+import scala.::
 
 object Chapter12 {
 
@@ -81,6 +83,65 @@ object Chapter12 {
 
   object Ex2 {
     // Implemented Applicative2
+  }
+
+  object Ex3 {
+    // Implemented map3 and map4
+  }
+
+  object E4 {
+    // What is the meaning of
+    // def sequence[A](a: List[Stream[A]]): Stream[List[A]]
+
+    // List[Stream[A]] => Stream[List[A]] where each element in the new stream is a list of elements from elements of the input streams
+    // (from corresponding position)
+
+  }
+
+  object Ex5 {
+
+    def eitherMonad[E] = new Monad[({type f[x] = Either[E, x]})#f] {
+
+      override def unit[A](a: => A): Either[E, A] = Right(a)
+      override def flatMap[A, B](fa: Either[E, A])(f: A => Either[E, B]): Either[E, B] = fa match {
+        case Right(a) => f(a)
+        case Left(l) => Left[E, B](l)
+      }
+    }
+  }
+
+  object Ex6 {
+
+    /*
+    def eitherApplicable[E] = new Applicative[({type f[x] = Either[E, x]})#f] {
+      override def unit[A](a: => A): Either[E, A] = Right(a)
+      override def map2[A, B, C](fa: Either[E, A], fb: Either[E, B])(f: (A, B) => C): Either[E, C] = {
+        (fa, fb) match {
+          case (Right(a), Right(b)) => Right(f(a, b))
+          case (Left(a), Right(_)) => Left(a)
+          case (Right(_), Left(b)) => Left(b)
+          case (Left(a), Left(b)) => Left( g(a, b))
+        }
+      }
+    }
+
+     */
+
+    sealed trait Validation[+E, +A]
+
+    case class Failure[E](head: E, tail: Vector[E] = Vector()) extends Validation[E, Nothing]
+    case class Success[A](a: A) extends Validation[Nothing, A]
+
+    def validationApplicable[E] = new Applicative[({type f[x] = Validation[E, x]})#f] {
+      override def unit[A](a: => A): Validation[E, A] = Success(a)
+      override def map2[A, B, C](fa: Validation[E, A], fb: Validation[E, B])(f: (A, B) => C): Validation[E, C] = (fa, fb) match {
+        case (Success(a), Success(b)) => unit(f(a, b))
+        case (Success(_), Failure(hb, tb)) => Failure(hb, tb)
+        case (Failure(ha, ta), Success(_)) => Failure(ha, ta)
+        case (Failure(ha, ta), Failure(hb, tb)) => Failure(ha, ta.appended(hb).appendedAll(tb))
+      }
+    }
+
   }
 
   def main(args: Array[String]): Unit = {

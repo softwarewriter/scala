@@ -42,7 +42,7 @@ object Chapter11 {
 
   trait Monad[F[_]] extends Functor[F] {
 
-    def unit[A](a: A): F[A]
+    def unit[A](a: => A): F[A]
 
     def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 
@@ -109,17 +109,17 @@ object Chapter11 {
   object Monad {
 
     val parMonad: Monad[Par] = new Monad[Par] {
-      override def unit[A](a: A): Par[A] = Par.unit(a)
+      override def unit[A](a: => A): Par[A] = Par.unit(a)
       override def flatMap[A, B](fa: Par[A])(f: A => Par[B]): Par[B] = Par.flatMap(fa)(f)
     }
 
     def parserMonad[Parser[+_]](p: Parsers[Parser]): Monad[Parser] = new Monad[Parser] {
-      override def unit[A](a: A): Parser[A] = p.succeed(a)
+      override def unit[A](a: => A): Parser[A] = p.succeed(a)
       override def flatMap[A, B](fa: Parser[A])(f: A => Parser[B]): Parser[B] = p.flatMap(fa)(f)
     }
 
     val optionMonad: Monad[Option] = new Monad[Option] {
-      override def unit[A](a: A): Option[A] = Some(a)
+      override def unit[A](a: => A): Option[A] = Some(a)
       override def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
     }
 
@@ -133,7 +133,7 @@ object Chapter11 {
      */
 
     val listMonad: Monad[List] = new Monad[List] {
-      override def unit[A](a: A): List[A] = List(a)
+      override def unit[A](a: => A): List[A] = List(a)
       override def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
     }
 
@@ -149,7 +149,7 @@ object Chapter11 {
     case class State2[+A](run: St => (A, St))
 
     def stateMonad[S]: Monad[State2] = new Monad[State2] {
-      override def unit[A](a: A): State2[A] = ???
+      override def unit[A](a: => A): State2[A] = ???
       override def flatMap[A, B](fa: State2[A])(f: A => State2[B]): State2[B] = ???
     }
 
@@ -277,7 +277,7 @@ object Chapter11 {
 
   object Ex11 {
     val optionMonad: Monad[Option] = new Monad[Option] {
-      override def unit[A](a: A): Option[A] = Some(a)
+      override def unit[A](a: => A): Option[A] = Some(a)
       override def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa match {
         case None => None
         case Some(a) => f(a)
@@ -388,7 +388,7 @@ object Chapter11 {
     }
 
     val idMonad: Monad[Id] = new Monad[Id] {
-      override def unit[A](a: A): Id[A] = Id(a)
+      override def unit[A](a: => A): Id[A] = Id(a)
       override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = fa.flatMap(f)
     }
 
@@ -399,7 +399,7 @@ object Chapter11 {
   object Ex18 {
 
     def stateMonad[S] = new Monad[({type f[x] = State[S, x]})#f] {
-      override def unit[A](a: A): State[S, A] = State(s => (a, s))
+      override def unit[A](a: => A): State[S, A] = State(s => (a, s))
       override def flatMap[A, B](fa: State[S, A])(f: A => State[S, B]): State[S, B] = fa.flatMap(f)
 
       def getState[S]: State[S, S] = ???
@@ -442,7 +442,7 @@ object Chapter11 {
 
     object Reader {
       def readerMonad[R] = new Monad[({type f[x] = Reader[R, x]})#f] {
-        override def unit[A](a: A): Reader[R, A] = new Reader(_ => a)
+        override def unit[A](a: => A): Reader[R, A] = new Reader(_ => a)
 
         override def flatMap[A, B](fa: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] =
           Reader[R, B](r => f(fa.run(r)).run(r))
