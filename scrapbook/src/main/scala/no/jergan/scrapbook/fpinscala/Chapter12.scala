@@ -61,6 +61,15 @@ object Chapter12 {
     def applyUsingUnitAndMap2[A, B](fab: F[A => B])(fa: F[A]): F[B] = {
       map2(fa, fab)((a, b) => b(a))
     }
+
+    def map3[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = {
+      apply(apply(apply[A, B => C => D](unit(a => b => c => f(a, b, c)))(fa))(fb))(fc)
+    }
+
+    def map4[A, B, C, D, E](fa: F[A], fb: F[B], fc: F[C], fd: F[D])(f: (A, B, C, D) => E): F[E] = {
+      apply(apply(apply(apply[A, B => C => D => E](unit(f.curried))(fa))(fb))(fc))(fd)
+    }
+
   }
 
   object Ex1 {
