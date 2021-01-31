@@ -447,6 +447,9 @@ object Chapter11 {
         override def flatMap[A, B](fa: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] =
           Reader[R, B](r => f(fa.run(r)).run(r))
 
+        def noop[A](fa: Reader[R, A]): Reader[R, A] =
+          Reader(r => fa.run(r))
+
       }
 
       def ask[R]: Reader[R, R] = Reader(identity)
