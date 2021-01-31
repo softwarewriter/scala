@@ -6,8 +6,12 @@ object Chapter12 {
 
   trait Applicative[F[_]] extends Functor[F] {
 
-    def unit[A](a: A): F[A]
+    def unit[A](a: => A): F[A]
     def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C]
+
+    def map[A, B](fa: F[A])(f: A => B): F[B] = {
+      map2[A, Any, B](fa, unit(()))( (a, b) => f(a))
+    }
 
     def traverse[A, B](as: List[A], f: A => F[B]): F[List[B]] = {
       as.foldRight[F[List[B]]](unit(List[B]()))(  (a: A, b: F[List[B]]) => map2(f(a), b) (_ :: _))
@@ -35,24 +39,41 @@ object Chapter12 {
 
   }
 
+  trait Applicative2[F[_]] extends Functor[F] {
+
+    def unit[A](a: => A): F[A]
+    def apply[A, B](fab: F[A => B])(fa: F[A]): F[B]
+
+    def map[A, B](fa: F[A])(f: A => B): F[B] = {
+      apply[A, B](unit(f))(fa)
+    }
+
+    def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
+/*
+      def g: F[A => C] = apply[B, A => C]( /*F[B => (A => C)*/ unit(b => a => f(a, b))   )(fb)
+      val fc = apply[A, C](g)(fa)
+      fc
+ */
+//      apply(apply[B, A => C](unit(b => a => f(a, b)))(fb))(fa)
+      apply(apply[A, B => C](unit(a => b => f(a, b)))(fa))(fb)
+    }
+
+    def applyUsingUnitAndMap2[A, B](fab: F[A => B])(fa: F[A]): F[B] = {
+      map2(fa, fab)((a, b) => b(a))
+    }
+  }
+
   object Ex1 {
 
     // Implemented sequence, replicateM and product
 
 
-    def test: Unit = {
-
-      // implemented
-
-    }
-
   }
 
   object Ex2 {
-
+    // Implemented Applicative2
   }
 
   def main(args: Array[String]): Unit = {
-    Ex1.test
   }
 }
