@@ -27,6 +27,10 @@ object Chapter12 {
       fas.foldRight[F[List[A]]](unit[List[A]](List[A]()))((a: F[A], b: F[List[A]]) => map2(a, b)(_ :: _))
     }
 
+    def sequenceMap[K, V](ofa: Map[K, F[V]]): F[Map[K, V]] = {
+      ofa.foldRight[F[Map[K, V]]](unit[Map[K, V]](Map[K, V]()))((kv, b) => map2(kv._2, b)( (v: V, b2: Map[K, V]) => b2 + (kv._1 -> v)))
+    }
+
     def replicateMUsingSequence[A](n: Int, fa: F[A]): F[List[A]] = {
       sequence(List.fill(n)(fa))
     }
@@ -222,6 +226,10 @@ object Chapter12 {
 
   object Ex11 {
     // Tried to implement compose of Monads. This stops when we try to implement flatMap
+  }
+
+  object Ex12 {
+    // Implemented sequenceMap
   }
 
   def main(args: Array[String]): Unit = {
