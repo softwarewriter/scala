@@ -47,15 +47,16 @@ object Chapter12 {
       map2(map2(fa, fb)((_, _)), fc)((a, b) => f(a._1, a._2, b))
     }
 
-    def product[G[_]](G: Applicative[G]) = new Applicative[({type f[x] = (F[x], G[x])})#f] {
+    def product[G[_]](G: Applicative[G]) =  {
+      val self = this
 
-      override def unit[A](a: => A): (F[A], G[A]) = (Applicative.this.unit(a), G.unit(a))
+      new Applicative[({type f[x] = (F[x], G[x])})#f] {
+        override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a), G.unit(a))
 
-      override def map2[A, B, C](fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
-        (Applicative.this.map2(fa._1, fb._1)(f), G.map2(fa._2, fb._2)(f))
+        override def map2[A, B, C](fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) =
+          (self.map2(fa._1, fb._1)(f), G.map2(fa._2, fb._2)(f))
       }
     }
-
   }
 
   trait Applicative2[F[_]] extends Functor[F] {
@@ -195,8 +196,10 @@ object Chapter12 {
   }
 
   object Ex8 {
+    // Implemented product (of Applicatives)
+  }
 
-    // Implemented product of Applicatives
+  object Ex9 {
 
   }
 
