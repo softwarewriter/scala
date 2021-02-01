@@ -57,6 +57,19 @@ object Chapter12 {
           (self.map2(fa._1, fb._1)(f), G.map2(fa._2, fb._2)(f))
       }
     }
+
+    def compose[G[_]](G: Applicative[G]) = {
+      val self = this
+
+      new Applicative[({type f[x] = F[G[x]]})#f] {
+        override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+        override def map2[A, B, C](fga: F[G[A]], fgb: F[G[B]])(f: (A, B) => C): F[G[C]] = {
+          self.map2(fga, fgb)(G.map2(_, _)(f))
+        }
+      }
+
+    }
+
   }
 
   trait Applicative2[F[_]] extends Functor[F] {
@@ -200,6 +213,7 @@ object Chapter12 {
   }
 
   object Ex9 {
+    // Implemented compose (of Applicatives)
 
   }
 
