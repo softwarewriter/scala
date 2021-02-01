@@ -28,7 +28,7 @@ object Chapter12 {
     }
 
     def sequenceMap[K, V](ofa: Map[K, F[V]]): F[Map[K, V]] = {
-      ofa.foldRight[F[Map[K, V]]](unit[Map[K, V]](Map[K, V]()))((kv, b) => map2(kv._2, b)( (v: V, b2: Map[K, V]) => b2 + (kv._1 -> v)))
+      ofa.foldRight[F[Map[K, V]]](unit[Map[K, V]](Map[K, V]())){case ((k, fv), b) => map2(fv, b)((v: V, b2: Map[K, V]) => b2 + (k -> v))}
     }
 
     def replicateMUsingSequence[A](n: Int, fa: F[A]): F[List[A]] = {
