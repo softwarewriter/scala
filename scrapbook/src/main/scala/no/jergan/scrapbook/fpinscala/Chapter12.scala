@@ -214,9 +214,17 @@ object Chapter12 {
 
   object Ex9 {
     // Implemented compose (of Applicatives)
+  }
 
+  object Ex10 {
+    // Skipped as this is to be "extremely challenging"
+  }
+
+  object Ex11 {
+    // Tried to implement compose of Monads. This stops when we try to implement flatMap
   }
 
   def main(args: Array[String]): Unit = {
   }
+
 }

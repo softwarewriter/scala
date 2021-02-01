@@ -104,6 +104,19 @@ object Chapter11 {
     def composeUsingJoinAndMap[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a =>
       join(map(f(a))(g))
 
+    def compose[G[_]](G: Monad[G]) = {
+      val self = this
+
+      new Monad[({type f[x] = F[G[x]]})#f] {
+        override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+
+        override def flatMap[A, B](fga: F[G[A]])(f: A => F[G[B]]): F[G[B]] = {
+//          self.flatMap(fga)(ga => G.flatMap(ga)(a => f(a)))
+          ???
+        }
+      }
+
+    }
   }
 
   object Monad {
