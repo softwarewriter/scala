@@ -39,6 +39,23 @@ object Chapter12 {
       map2(fa, fb)((_, _))
     }
 
+    def map2UsingMapAndProduct[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
+      map(product(fa, fb))(a => f(a._1, a._2))
+    }
+
+    def map3UsingMap2[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = {
+      map2(map2(fa, fb)((_, _)), fc)((a, b) => f(a._1, a._2, b))
+    }
+
+    def product[G[_]](G: Applicative[G]) = new Applicative[({type f[x] = (F[x], G[x])})#f] {
+
+      override def unit[A](a: => A): (F[A], G[A]) = (Applicative.this.unit(a), G.unit(a))
+
+      override def map2[A, B, C](fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
+        (Applicative.this.map2(fa._1, fb._1)(f), G.map2(fa._2, fb._2)(f))
+      }
+    }
+
   }
 
   trait Applicative2[F[_]] extends Functor[F] {
@@ -141,6 +158,45 @@ object Chapter12 {
         case (Failure(ha, ta), Failure(hb, tb)) => Failure(ha, ta.appended(hb).appendedAll(tb))
       }
     }
+
+  }
+
+  object Ex6_2 {
+    // implemented map2UsingMapAndProduct
+  }
+
+  object Ex7 {
+
+    // Prove that if the monads laws hold, the monad-implementation of map and map2 satisfy the applicative laws.
+    /*
+
+      monad-Map:
+
+    def map[A, B](fa: F[A])(f: A => B): F[B] = {
+      flatMap(fa)(a => unit(f(a)))
+    }
+
+    def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
+      flatMap(fa)(a => map(fb)(b => f(a, b)))
+    }
+
+    Requirements for map (from functor):
+    -
+      map(v)(identity) == v
+      map(map(v)(g))(f) == map(v)(f compose g)
+
+      map(v)(identity) --> flatMap(v)(a => unit(identity(a))) --> v
+      Left: map(map(v)(g))(f) --> flatMap(flatMap(v)(a => unit(g(a)))(b => unit(g(b)))
+      Right: map(v)(f compose g) --> flatMap(v)(a => unit((f compose g)(a)))
+
+     */
+
+
+  }
+
+  object Ex8 {
+
+    // Implemented product of Applicatives
 
   }
 
