@@ -96,6 +96,10 @@ object Chapter12 {
       apply(apply[A, B => C](unit(a => b => f(a, b)))(fa))(fb)
     }
 
+    def map2UsingOneApplyOnly[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
+      apply(map(fa)(f.curried))(fb)
+    }
+
     def applyUsingUnitAndMap2[A, B](fab: F[A => B])(fa: F[A]): F[B] = {
       map2(fa, fab)((a, b) => b(a))
     }
