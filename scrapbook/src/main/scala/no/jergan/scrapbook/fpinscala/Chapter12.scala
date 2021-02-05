@@ -1,6 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex12.Foldable
+import no.jergan.scrapbook.fpinscala.Chapter10.Monoid
 import no.jergan.scrapbook.fpinscala.Chapter11.{Functor, Monad}
 
 import scala.::
@@ -290,7 +291,39 @@ object Chapter12 {
   object Ex14 {
 
     // implemented map on traverse
+  }
 
+  object Ex15 {
+    // Why can't any Foldable be a functor?
+
+    trait Foldable[F[_]] extends Functor[F] {
+      def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
+
+      override def map[A, B](fa: F[A])(f: A => B): F[B] = {
+        val mb: Monoid[F[B]] = ???
+        val afb: A => F[B] = ???
+        foldMap[A, F[B]](fa)(afb)(mb)
+      }
+    }
+
+    trait FoldableList extends Functor[List] {
+      def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]): B
+
+      override def map[A, B](fa: List[A])(f: A => B): List[B] = {
+        val mb: Monoid[List[B]] = new Monoid[List[B]] {
+          override val zero: List[B] = List()
+          override def op(a1: List[B], a2: List[B]): List[B] = a1.appendedAll(a2)
+        }
+        val afb: A => List[B] = a => List(f(a))
+        foldMap[A, List[B]](fa)(afb)(mb)
+      }
+    }
+
+    // We can't implement mb and afb in general.
+
+  }
+
+  object Ex16 {
 
   }
 
