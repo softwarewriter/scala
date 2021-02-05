@@ -114,12 +114,23 @@ object Chapter12 {
 
   }
 
-  trait Traverse[F[_]] {
+  trait Traverse[F[_]] extends Functor[F] {
+
+    case class Id[A](a: A)
+
+    implicit val applicativeId: Applicative[Id] = new Applicative[Id] {
+      override def unit[A](a: => A): Id[A] = Id(a)
+      override def map2[A, B, C](fa: Id[A], fb: Id[B])(f: (A, B) => C): Id[C] = unit(f(fa.a, fb.a))
+    }
 
     def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
 
     def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] =
       traverse(fga)(ga => ga)
+
+    def map[A, B](fa: F[A])(f: A => B): F[B] = {
+      traverse[Id, A, B](fa)(a => applicativeId.unit(f(a))).a
+    }
   }
 
   object Ex1 {
@@ -276,6 +287,12 @@ object Chapter12 {
     }
   }
 
+  object Ex14 {
+
+    // implemented map on traverse
+
+
+  }
 
   def main(args: Array[String]): Unit = {
   }
