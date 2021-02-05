@@ -271,6 +271,22 @@ object Chapter12 {
     val treeTraverse = new Traverse[Tree] {
       override def map[A, B](fa: Tree[A])(f: A => B): Tree[B] =
         Tree(f(fa.head), fa.tail.map(t => map(t)(f)))
+
+      override def traverse[G[_] : Applicative, A, B](fa: Tree[A])(f: A => G[B]): G[Tree[B]] = {
+        val AG = implicitly[Applicative[G]]
+
+        val gh: G[B] = f(fa.head)
+
+
+        val f2: Tree[A] => G[Tree[B]] = fa2 => traverse(fa2)(f)
+
+        val gt: G[List[Tree[B]]] = listTraverse.traverse[G, Tree[A], Tree[B]](fa.tail)(f2)
+
+//        val gt: G[List[Tree[B]]] = ???
+
+
+        AG.map2(gh, gt)((h, t) => Tree(h, t))
+      }
     }
 
   }
