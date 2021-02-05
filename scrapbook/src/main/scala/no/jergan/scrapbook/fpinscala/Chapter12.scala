@@ -143,6 +143,14 @@ object Chapter12 {
     def reverse[A](fa: F[A]): F[A] = {
       mapAccum[List[A], A, A](fa, toList(fa).reverse)((_, as) => (as.head, as.tail))._1
     }
+/*
+    def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B
+    def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
+ */
+
+    def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = {
+      mapAccum[B, A, A](as, z)((a, s) => (a, f(s, a)))._2
+    }
   }
 
   object Ex1 {
