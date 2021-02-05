@@ -143,13 +143,14 @@ object Chapter12 {
     def reverse[A](fa: F[A]): F[A] = {
       mapAccum[List[A], A, A](fa, toList(fa).reverse)((_, as) => (as.head, as.tail))._1
     }
-/*
-    def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B
-    def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
- */
 
     def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = {
-      mapAccum[B, A, A](as, z)((a, s) => (a, f(s, a)))._2
+      mapAccum[B, A, Any](as, z)((a, s) => ((), f(s, a)))._2
+    }
+
+    def fuse[G[_],H[_],A,B](fa: F[A])(f: A => G[B], g: A => H[B]) (G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) = {
+      implicit val GH = G.product(H)
+      traverse[({type f[x] = (G[x], H[x])})#f, A, B](fa)(a => (f(a), g(a)))
     }
   }
 
@@ -342,11 +343,15 @@ object Chapter12 {
   }
 
   object Ex16 {
-    // Implemented reverse
+    // Implemented reverse. Still don't understand what this means.
   }
 
   object Ex17 {
     // implemented foldLeft
+  }
+
+  object Ex18 {
+    // implemented fuse
   }
 
   def main(args: Array[String]): Unit = {
