@@ -3,8 +3,7 @@ package no.jergan.scrapbook.fpinscala
 import no.jergan.scrapbook.fpinscala.Chapter10.Ex12.Foldable
 import no.jergan.scrapbook.fpinscala.Chapter10.Monoid
 import no.jergan.scrapbook.fpinscala.Chapter11.{Functor, Monad}
-
-import scala.::
+import no.jergan.scrapbook.fpinscala.Chapter6.State
 
 object Chapter12 {
 
@@ -88,12 +87,12 @@ object Chapter12 {
     }
 
     def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = {
-/*
-      def g: F[A => C] = apply[B, A => C]( /*F[B => (A => C)*/ unit(b => a => f(a, b))   )(fb)
-      val fc = apply[A, C](g)(fa)
-      fc
- */
-//      apply(apply[B, A => C](unit(b => a => f(a, b)))(fb))(fa)
+      /*
+            def g: F[A => C] = apply[B, A => C]( /*F[B => (A => C)*/ unit(b => a => f(a, b))   )(fb)
+            val fc = apply[A, C](g)(fa)
+            fc
+       */
+      //      apply(apply[B, A => C](unit(b => a => f(a, b)))(fb))(fa)
       apply(apply[A, B => C](unit(a => b => f(a, b)))(fa))(fb)
     }
 
@@ -121,16 +120,28 @@ object Chapter12 {
 
     implicit val applicativeId: Applicative[Id] = new Applicative[Id] {
       override def unit[A](a: => A): Id[A] = Id(a)
+
       override def map2[A, B, C](fa: Id[A], fb: Id[B])(f: (A, B) => C): Id[C] = unit(f(fa.a, fb.a))
     }
 
-    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
+    def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
 
-    def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] =
+    def sequence[G[_] : Applicative, A](fga: F[G[A]]): G[F[A]] =
       traverse(fga)(ga => ga)
 
     def map[A, B](fa: F[A])(f: A => B): F[B] = {
       traverse[Id, A, B](fa)(a => applicativeId.unit(f(a))).a
+    }
+
+    //    def traverseS[S,A,B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] = traverse[({type f[x] = State[S,x]})#f,A,B](fa)(f)(Monad.stateMonad)
+
+    def mapAccum[S, A, B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) = ???
+
+    def toList[A](fa: F[A]): List[A] =
+      mapAccum(fa, List[A]())((a, s) => ((), a :: s))._2.reverse
+
+    def reverse[A](fa: F[A]): F[A] = {
+      mapAccum[List[A], A, A](fa, toList(fa).reverse)((_, as) => (as.head, as.tail))._1
     }
   }
 
@@ -306,6 +317,8 @@ object Chapter12 {
       }
     }
 
+    // We can't implement mb and afb in general.
+
     trait FoldableList extends Functor[List] {
       def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]): B
 
@@ -318,13 +331,14 @@ object Chapter12 {
         foldMap[A, List[B]](fa)(afb)(mb)
       }
     }
-
-    // We can't implement mb and afb in general.
-
   }
 
   object Ex16 {
+    // Implemented reverse
+  }
 
+  object Ex17 {
+    // implemented foldLeft
   }
 
   def main(args: Array[String]): Unit = {
