@@ -124,9 +124,9 @@ object Chapter12 {
       override def map2[A, B, C](fa: Id[A], fb: Id[B])(f: (A, B) => C): Id[C] = unit(f(fa.a, fb.a))
     }
 
-    def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
+    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
 
-    def sequence[G[_] : Applicative, A](fga: F[G[A]]): G[F[A]] =
+    def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] =
       traverse(fga)(ga => ga)
 
     def map[A, B](fa: F[A])(f: A => B): F[B] = {
@@ -152,6 +152,20 @@ object Chapter12 {
       implicit val GH = G.product(H)
       traverse[({type f[x] = (G[x], H[x])})#f, A, B](fa)(a => (f(a), g(a)))
     }
+
+    /*
+    def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = {
+      val self = this
+
+      new Traverse[({type f[x] = F[G[x]]})#f] {
+        override def traverse[M[_]: Applicative, A, B](fa: F[G[A]])(f: A => M[B]): G[F[B]] = {
+          ???
+//          self.traverse(fa)(ga => G.traverse(ga)(a => f(a)))
+        }
+      }
+    }
+
+     */
   }
 
   object Ex1 {
@@ -352,6 +366,10 @@ object Chapter12 {
 
   object Ex18 {
     // implemented fuse
+  }
+
+  object Ex19 {
+    // implemented compose. Do not get it to compile :-( Not the solution either.
   }
 
   def main(args: Array[String]): Unit = {
