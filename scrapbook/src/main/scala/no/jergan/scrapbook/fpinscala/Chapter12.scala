@@ -110,10 +110,9 @@ object Chapter12 {
 
   }
 
-  trait Traverse[F[_]] extends Functor[F] {
+  trait Traverse[F[_]] {
 
-    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      sequence(map(fa)(f))
+    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
 
     def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] =
       traverse(fga)(ga => ga)
@@ -246,8 +245,6 @@ object Chapter12 {
     // Implemented Traverse for List, Option and Tree
 
     val listTraverse = new Traverse[List] {
-      override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
-
       override def traverse[G[_] : Applicative, A, B](fa: List[A])(f: A => G[B]): G[List[B]] = {
         val AG = implicitly[Applicative[G]]
         fa.foldRight(AG.unit(List[B]()))((ga, gb) => AG.map2(f(ga), gb)(_ :: _))
@@ -255,12 +252,10 @@ object Chapter12 {
     }
 
     val optionTraverse = new Traverse[Option] {
-      override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
-
       override def traverse[G[_] : Applicative, A, B](fa: Option[A])(f: A => G[B]): G[Option[B]] = {
         val AG = implicitly[Applicative[G]]
         fa match {
-          case Some(a) => AG.map(f(a))(a => Some(a))
+          case Some(a) => AG.map(f(a))(Some(_))
           case None => AG.unit(None)
         }
       }
@@ -269,12 +264,10 @@ object Chapter12 {
     case class Tree[+A](head: A, tail: List[Tree[A]])
 
     val treeTraverse = new Traverse[Tree] {
-      override def map[A, B](fa: Tree[A])(f: A => B): Tree[B] =
-        Tree(f(fa.head), fa.tail.map(t => map(t)(f)))
 
       override def traverse[G[_] : Applicative, A, B](fa: Tree[A])(f: A => G[B]): G[Tree[B]] = {
         val AG = implicitly[Applicative[G]]
-        AG.map2(f(fa.head), listTraverse.traverse(fa.tail)(traverse(_)(f)))((h, t) => Tree(h, t))
+        AG.map2(f(fa.head), listTraverse.traverse(fa.tail)(traverse(_)(f)))(Tree(_, _))
       }
     }
   }
