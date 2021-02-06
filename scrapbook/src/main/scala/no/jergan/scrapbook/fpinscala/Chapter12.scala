@@ -384,23 +384,11 @@ object Chapter12 {
             override def unit[A](a: => A): F[A] = monad.unit(a)
             override def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = monad.map2(fa, fb)(f)
           }
-
-          // fa(a): F[G[B]]
-          // Traverse[G] kan ta oss fra G[F[A]] -> F[G[A]]
-//          val v = F.flatMap(fga)(ga => T.sequence(G.map(a => F.unit(a)))(F))
-
-          // F[G[F[B]]]
-          // G[F[G[B]]] -> F[B]
+          val AF = applicative(F)
 //          val v = F.flatMap(fga)(ga => G.flatMap(ga)(a => G.unit(f(a))))
-
-          val v = F.flatMap(fga)(ga => {
-            T.sequence(G.flatMap(ga)(a => {
-              G.unit(f(a))
-            }))(applicative(F))
-          }
-          )
-          val v2 = F.map(v)(a => G.flatMap(a)(identity))
-          v2
+//          F.flatMap(fga)(ga => F.map(T.sequence(G.flatMap(ga)(a => G.unit(f(a))))(AF))(ggb => G.flatMap(ggb)(identity)))
+//          F.flatMap(fga)(ga => F.map(T.traverse(ga)(f)(AF))(ggb => G.flatMap(ggb)(identity)))
+          F.flatMap(fga)(ga => F.map(T.traverse(ga)(f)(AF))(G.join))
         }
       }
     }
