@@ -372,6 +372,39 @@ object Chapter12 {
     // implemented compose. Do not get it to compile :-( Not the solution either.
   }
 
+  object Ex20 {
+
+    def composeM[F[_], G[_]](F: Monad[F], G: Monad[G], T: Traverse[G]): Monad[({type f[x] = F[G[x]]})#f] = {
+
+      new Monad[({type f[x] = F[G[x]]})#f] {
+        override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
+        override def flatMap[A, B](fga: F[G[A]])(f: A => F[G[B]]): F[G[B]] = {
+
+          def applicative[F[_]](monad: Monad[F]): Applicative[F] = ???
+
+          // fa(a): F[G[B]]
+          // Traverse[G] kan ta oss fra G[F[A]] -> F[G[A]]
+//          val v = F.flatMap(fga)(ga => T.sequence(G.map(a => F.unit(a)))(F))
+
+          // F[G[F[B]]]
+          // G[F[G[B]]] -> F[B]
+//          val v = F.flatMap(fga)(ga => G.flatMap(ga)(a => G.unit(f(a))))
+
+          val v = F.flatMap(fga)(ga => {
+            T.sequence(G.flatMap(ga)(a => {
+              G.unit(f(a))
+            }))(applicative(F))
+          }
+          )
+          val v2 = F.map(v)(a => G.flatMap(a)(identity))
+          v2
+        }
+      }
+    }
+
+    // implemented composeM
+  }
+
   def main(args: Array[String]): Unit = {
   }
 
