@@ -396,6 +396,18 @@ object Chapter12 {
     // implemented composeM
   }
 
+  object ExE2 {
+
+    case class OptionT[M[_], A](value: M[Option[A]])(implicit M: Monad[M]) {
+      def flatMap[B](f: A => OptionT[M, B]): OptionT[M, B] = {
+        OptionT(M.flatMap(value) {
+          case Some(a) => f(a).value
+          case None => M.unit(None)
+        })
+      }
+    }
+  }
+
   def main(args: Array[String]): Unit = {
   }
 
