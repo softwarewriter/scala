@@ -380,7 +380,10 @@ object Chapter12 {
         override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
         override def flatMap[A, B](fga: F[G[A]])(f: A => F[G[B]]): F[G[B]] = {
 
-          def applicative[F[_]](monad: Monad[F]): Applicative[F] = ???
+          def applicative[F[_]](monad: Monad[F]): Applicative[F] = new Applicative[F] {
+            override def unit[A](a: => A): F[A] = monad.unit(a)
+            override def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = monad.map2(fa, fb)(f)
+          }
 
           // fa(a): F[G[B]]
           // Traverse[G] kan ta oss fra G[F[A]] -> F[G[A]]
