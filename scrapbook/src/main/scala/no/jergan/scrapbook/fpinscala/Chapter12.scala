@@ -63,18 +63,17 @@ object Chapter12 {
       }
     }
 
-    def compose[G[_]](G: Applicative[G]) = {
-      val self = this
+    def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = {
+
+      val F: Applicative[F] = this
 
       new Applicative[({type f[x] = F[G[x]]})#f] {
-        override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
-        override def map2[A, B, C](fga: F[G[A]], fgb: F[G[B]])(f: (A, B) => C): F[G[C]] = {
-          self.map2(fga, fgb)(G.map2(_, _)(f))
+        override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
+        override def map2[A, B, C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] = {
+          F.map2[G[A], G[B], G[C]](fa, fb)(G.map2[A, B, C](_, _)(f))
         }
       }
-
     }
-
   }
 
   trait Applicative2[F[_]] extends Functor[F] {
@@ -153,19 +152,14 @@ object Chapter12 {
       traverse[({type f[x] = (G[x], H[x])})#f, A, B](fa)(a => (f(a), g(a)))
     }
 
-    /*
     def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = {
-      val self = this
-
+      val F = this
       new Traverse[({type f[x] = F[G[x]]})#f] {
-        override def traverse[M[_]: Applicative, A, B](fa: F[G[A]])(f: A => M[B]): G[F[B]] = {
-          ???
-//          self.traverse(fa)(ga => G.traverse(ga)(a => f(a)))
+        override def traverse[AP[_]: Applicative, A, B](fga: F[G[A]])(f: A => AP[B]): AP[F[G[B]]] = {
+          F.traverse(fga)(G.traverse(_)(f))
         }
       }
     }
-
-     */
   }
 
   object Ex1 {
@@ -369,7 +363,7 @@ object Chapter12 {
   }
 
   object Ex19 {
-    // implemented compose. Do not get it to compile :-( Not the solution either.
+    // implemented compose
   }
 
   object Ex20 {
