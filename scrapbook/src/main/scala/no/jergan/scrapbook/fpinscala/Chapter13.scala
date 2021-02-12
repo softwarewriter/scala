@@ -1,6 +1,9 @@
 package no.jergan.scrapbook.fpinscala
 
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad
+import no.jergan.scrapbook.fpinscala.Chapter7.Par
+
+import scala.io.StdIn.readLine
 
 
 object Chapter13 {
@@ -33,6 +36,79 @@ object Chapter13 {
     }
   }
 
+  @annotation.tailrec
+  def step[F[_], A](freeA: Free[F, A]): Free[F, A] = freeA match {
+    case FlatMap(FlatMap(x, f), g) => step(x.flatMap(a => f(a).flatMap(g)))
+    case FlatMap(Return(x), f) => step(f(x))
+    case _ => freeA
+  }
+
+  def run[F[_], A](freeA: Free[F, A])(implicit F: Monad[F]): F[A] = step(freeA) match {
+    case Return(a) => F.unit(a)
+    case Suspend(s) => s
+    case FlatMap(Suspend(ss), f) => F.flatMap(ss)(a => run(f(a)))
+    case _ => sys.error("Should not happen")
+  }
+
+  sealed trait Console[A] {
+    def toPar: Par[A]
+    def toThunk: () => A
+  }
+
+  case object ReadLine extends Console[Option[String]] {
+    def toPar: Par[Option[String]] = Par.lazyUnit(run)
+    def toThunk: () => Option[String] = () => run
+
+    def run: Option[String] =
+      try Some(readLine())
+      catch { case e: Exception => None }
+  }
+
+  case class PrintLine(line: String) extends Console[Unit] {
+    def toPar: Par[Unit] = Par.lazyUnit(println(line))
+    def toThunk: () => Unit = () => println(line)
+  }
+
+  trait Translate[F[_], G[_]] {
+    def apply[A](f: F[A]): G[A]
+  }
+
+  type ~> [F[_], G[_]] = Translate[F, G]
+
+  object Console {
+    type ConsoleIO[A] = Free[Console, A]
+    def readLn: ConsoleIO[Option[String]] = Suspend(ReadLine)
+    def printLn(line: String): ConsoleIO[Unit] = Suspend(PrintLine(line))
+  }
+
+  val consoleToFunction0 = new (Console ~> Function0) {
+    def apply[A](a: Console[A]): () => A = a.toThunk
+  }
+
+  val consoleToPar = new (Console ~> Par) {
+    def apply[A](a: Console[A]): Par[A] = a.toPar
+  }
+
+  def runFree[F[_],G[_],A](free: Free[F,A])(t: F ~> G)(implicit G: Monad[G]): G[A] = step(free) match {
+      case Return(a) => G.unit(a)
+      case Suspend(r) => t(r)
+      case FlatMap(Suspend(r),f) => G.flatMap(t(r))(a => runFree(f(a))(t))
+      case _ => sys.error("Should not happen")
+    }
+
+  implicit val function0Monad: Monad[Function0] = new Monad[Function0] {
+    def unit[A](a: => A): () => A = () => a
+    def flatMap[A, B](a: Function0[A])(f: A => Function0[B]): () => B = () => f(a())()
+  }
+
+  implicit val parMonad: Monad[Par] = new Monad[Par] {
+    def unit[A](a: => A): Par[A] = Par.unit(a)
+    def flatMap[A,B](a: Par[A])(f: A => Par[B]): Par[B] = Par.fork(Par.flatMap(a)(f))
+  }
+
+  def runConsoleFunction0[A](a: Free[Console,A]): () => A = runFree[Console,Function0,A](a)(consoleToFunction0)
+  def runConsolePar[A](a: Free[Console,A]): Par[A] = runFree[Console,Par,A](a)(consoleToPar)
+
   object Ex1 {
     // implemented map and flatMap in trait Free
     // implemented def freeMonad
@@ -42,24 +118,13 @@ object Chapter13 {
     // implemented runTrampoline. IntelliJ struggles with the types but solution is correct and compiles with sbt.
   }
 
+  object Ex3 {
+    // implemented run
+  }
+
   def main(args: Array[String]): Unit = {
 
   }
-
-
-  /*
-  @annotation.tailrec
-  def runTrampoline[A](a: Free[Function0,A]): A = (a) match {
-    case Return(a) => a
-    case Suspend(r) => r()
-    case FlatMap(x,f) => x match {
-      case Return(a) => runTrampoline { f(a) }
-      case Suspend(r) => runTrampoline { f(r()) }
-      case FlatMap(a0,g) => runTrampoline { a0 flatMap { a0 => g(a0) flatMap f } }
-    }
-  }
-
-   */
 
 
 }
