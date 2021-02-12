@@ -81,15 +81,15 @@ object Chapter13 {
     def printLn(line: String): ConsoleIO[Unit] = Suspend(PrintLine(line))
   }
 
-  val consoleToFunction0 = new (Console ~> Function0) {
+  val consoleToFunction0: Console ~> Function0 = new (Console ~> Function0) {
     def apply[A](a: Console[A]): () => A = a.toThunk
   }
 
-  val consoleToPar = new (Console ~> Par) {
+  val consoleToPar: Console ~> Par = new (Console ~> Par) {
     def apply[A](a: Console[A]): Par[A] = a.toPar
   }
 
-  def runFree[F[_],G[_],A](free: Free[F,A])(t: F ~> G)(implicit G: Monad[G]): G[A] = step(free) match {
+  def runFree[F[_],G[_],A](free: Free[F, A])(t: F ~> G)(implicit G: Monad[G]): G[A] = step(free) match {
       case Return(a) => G.unit(a)
       case Suspend(r) => t(r)
       case FlatMap(Suspend(r),f) => G.flatMap(t(r))(a => runFree(f(a))(t))
@@ -98,7 +98,7 @@ object Chapter13 {
 
   implicit val function0Monad: Monad[Function0] = new Monad[Function0] {
     def unit[A](a: => A): () => A = () => a
-    def flatMap[A, B](a: Function0[A])(f: A => Function0[B]): () => B = () => f(a())()
+    def flatMap[A, B](a: Function0[A])(f: A => Function0[B]): Function0[B] = () => f(a())()
   }
 
   implicit val parMonad: Monad[Par] = new Monad[Par] {
@@ -106,8 +106,25 @@ object Chapter13 {
     def flatMap[A,B](a: Par[A])(f: A => Par[B]): Par[B] = Par.fork(Par.flatMap(a)(f))
   }
 
-  def runConsoleFunction0[A](a: Free[Console,A]): () => A = runFree[Console,Function0,A](a)(consoleToFunction0)
-  def runConsolePar[A](a: Free[Console,A]): Par[A] = runFree[Console,Par,A](a)(consoleToPar)
+  def runConsoleFunction0[A](a: Free[Console, A]): () => A = runFree[Console, Function0, A](a)(consoleToFunction0)(function0Monad)
+  def runConsolePar[A](a: Free[Console, A]): Par[A] = runFree[Console, Par, A](a)(consoleToPar)(parMonad)
+
+  def translate[F[_], G[_], A](freeFA: Free[F, A])(fg: F ~> G): Free[G, A] = {
+    type FreeG[AA] = Free[G, AA]
+    val fFreeG: Translate[F, FreeG] = new Translate[F, FreeG] {
+      override def apply[A](f: F[A]): FreeG[A] = Suspend(fg(f))
+    }
+    val monadFreeG: Monad[FreeG] = freeMonad[G]
+    runFree(freeFA)(fFreeG)(monadFreeG)
+  }
+
+  def runConsole[A](freeConsoleA: Free[Console, A]): A = {
+    val t: Translate[Console, Function0] = new Translate[Console, Function0] {
+      override def apply[A](f: Console[A]): () => A = f.toThunk
+    }
+    val freeFunction0A: Free[Function0, A] = translate[Console, Function0, A](freeConsoleA)(t)
+    runTrampoline(freeFunction0A)
+  }
 
   object Ex1 {
     // implemented map and flatMap in trait Free
@@ -120,6 +137,10 @@ object Chapter13 {
 
   object Ex3 {
     // implemented run
+  }
+
+  object Ex4 {
+    // implemented translate and
   }
 
   def main(args: Array[String]): Unit = {
