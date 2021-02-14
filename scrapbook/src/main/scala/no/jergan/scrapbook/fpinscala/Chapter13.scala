@@ -148,13 +148,4 @@ object Chapter13 {
     // Skipped this. Hard and maybe not that relevant.
   }
 
-
-
-  def main(args: Array[String]): Unit = {
-
-    @246 top
-
-  }
-
-
 }
