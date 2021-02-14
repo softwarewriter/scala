@@ -140,10 +140,19 @@ object Chapter13 {
   }
 
   object Ex4 {
-    // implemented translate and
+    // implemented translate and runConsole. Needed some hints for the idea of "type FreeG[AA] = Free[G, AA]",
+    // the rest I was able to do myself.
   }
 
+  object Ex5 {
+    // Skipped this. Hard and maybe not that relevant.
+  }
+
+
+
   def main(args: Array[String]): Unit = {
+
+    @246 top
 
   }
 
