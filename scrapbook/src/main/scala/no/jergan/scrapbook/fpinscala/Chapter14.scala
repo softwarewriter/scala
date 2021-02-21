@@ -1,5 +1,7 @@
 package no.jergan.scrapbook.fpinscala
 
+import scala.collection.mutable
+
 object Chapter14 {
 
 
@@ -139,34 +141,63 @@ object Chapter14 {
       } yield sorted
     })
 
-  def quicksort0(xs: List[Int]): List[Int] = if (xs.isEmpty) xs else {
-    val arr = xs.toArray
+  sealed abstract class STMap[S, K, V] {
+    protected def value: mutable.HashMap[K, V]
 
-    def swap(x: Int, y: Int) = {
-      val tmp = arr(x)
-      arr(x) = arr(y)
-      arr(y) = tmp
+    def toMap: ST[S, Map[K, V]] = ST.apply(value.toMap)
+
+    def get(k: K): ST[S, Option[V]] = new ST[S, Option[V]] {
+      override protected def run(s: S): (Option[V], S) =
+        (value.get(k), s)
     }
 
-    def partition(n: Int, r: Int, pivot: Int) = {
-      val pivotVal = arr(pivot)
-      swap(pivot, r)
-      var j = n
-      for (i <- n until r) if (arr(i) < pivotVal) {
-        swap(i, j)
-        j += 1 }
-      swap(j, r)
-      j
+    def put(k: K, v: V): ST[S, Unit] = new ST[S, Unit] {
+      override protected def run(s: S): (Unit, S) = {
+        value.put(k, v)
+        ((), s)
+      }
     }
 
-    def qs(n: Int, r: Int): Unit = if (n < r) {
-      val pi = partition(n, r, n + (r - n) / 2)
-      qs(n, pi - 1)
-      qs(pi + 1, r)
+    def size(): ST[S, Int] = new ST[S, Int] {
+      override protected def run(s: S): (Int, S) = {
+        (value.size, s)
+      }
     }
-    qs(0, arr.length - 1)
-    arr.toList
+
   }
+
+  object STMap {
+
+    def fromMap[S, K, V](m: Map[K, V]): ST[S, STMap[S, K, V]] = ST[S, STMap[S, K, V]](new STMap[S, K, V] {
+      lazy val value: mutable.HashMap[K, V] = collection.mutable.HashMap(m.toSeq: _*)
+    })
+
+  }
+
+  def mapProgram(map: Map[String, Int]): Map[String, Int] = ST.runST(new RunnableST[Map[String, Int]] {
+      def apply[S]: ST[S, Map[String, Int]] = for {
+        m <- STMap.fromMap(map)
+        _ <- m.put("dole", 43)
+        oleV <- m.get("ole")
+        _ <- m.put("doffen", oleV.getOrElse(0) * 2)
+        size <- m.size()
+        _ <- m.put("size", size)
+        result <- m.toMap
+      } yield result
+    })
+
+/*
+
+    if (xs.isEmpty) xs else ST.runST(new RunnableST[List[Int]] {
+      def apply[S] = for {
+        arr <- STArray.fromList(xs)
+        size <- arr.size
+        _ <- qs(arr, 0, size - 1)
+        sorted <- arr.freeze
+      } yield sorted
+    })
+  }
+ */
 
   object Ex1 {
     // implemented fill
@@ -174,6 +205,10 @@ object Chapter14 {
 
   object Ex2 {
     // implemented qs and partition
+  }
+
+  object Ex3 {
+    // Created trait for mutable map
   }
 
   def main(args: Array[String]): Unit = {
@@ -194,11 +229,9 @@ object Chapter14 {
   println(r1)
 
      */
+//    println(quicksort(List(6, 4, 1, 5, 7, 2, 3, 8)))
 
-
-//    println(quicksort0(List(4, 2, 1, 3))) -> 1, 2, 3, 4
-//    println(quicksort(List(4, 2, 1, 3)))
-    println(quicksort(List(6, 4, 1, 5, 7, 2, 3, 8)))
+    println(mapProgram(Map("ole" -> 42)))
   }
 
 }
