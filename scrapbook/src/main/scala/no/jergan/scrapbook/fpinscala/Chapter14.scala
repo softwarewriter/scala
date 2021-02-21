@@ -68,10 +68,7 @@ object Chapter14 {
       }
     }
 
-    def read(i: Int): ST[S, A] = {
-      println(s"readIndex: $i")
-      ST(value(i))
-    }
+    def read(i: Int): ST[S, A] = ST(value(i))
 
     def freeze: ST[S, List[A]] = ST(value.toList)
 
@@ -106,32 +103,15 @@ object Chapter14 {
 
   }
 
-  /*
-def partition(n: Int, r: Int, pivot: Int) = {
-val pivotVal = arr(pivot)
-swap(pivot, r)
-var j = n
-for (i <- n until r) if (arr(i) < pivotVal) {
-swap(i, j)
-j += 1 }
-swap(j, r)
-j }
-
-   */
-
   def partitionI[S](arr: STArray[S, Int], i: Int, j: Int, n: Int, r: Int, pivot: Int): ST[S, Int] = {
-    println(s"parti: $i, $r")
     if (i == r) ST[S, Int](j)
-    else {
-      println(s"index: $i")
+    else
       arr.read(i)
         .flatMap(valI => if (valI < pivot) arr.swap(i, j).map(_ => j + 1) else ST[S, Int](j))
         .flatMap(j => partitionI(arr, i + 1, j, n, r, pivot))
-    }
   }
 
   def partition[S](arr: STArray[S, Int], n: Int, r: Int, pivot: Int): ST[S, Int] = {
-    println("part")
     for {
       pivotVal <- arr.read(pivot)
       _ <- arr.swap(pivot, r)
@@ -190,6 +170,10 @@ j }
 
   object Ex1 {
     // implemented fill
+  }
+
+  object Ex2 {
+    // implemented qs and partition
   }
 
   def main(args: Array[String]): Unit = {
