@@ -10,18 +10,8 @@ import scala.Console.println
 
 object CirceTest {
 
-  case class Thing(foo: String, bars: List[Bar])
+  case class Thing(foo: String, bars: List[String])
   case class Bar(name: String)
-
-  /*
-  implicit val encodeFoo: Encoder[Thing] = new Encoder[Thing] {
-    def apply(a: Thing): Json = Json.obj(
-      ("foo", Json.fromString(a.foo)),
-      ("bars", Json.fromValues(a.bars))
-    )
-  }
-
-   */
 
   implicit val decodeFoo: Decoder[Thing] = new Decoder[Thing] {
     final def apply(c: HCursor): Decoder.Result[Thing] = {
@@ -29,33 +19,42 @@ object CirceTest {
 //      println(c.keys)
 
     for {
-        foo <- c.downField("foo").as[String]
-        bars <- c.downField("bars").as[List[Bar]]
+      foo <- c.get[String]("foo")
+//        foo <- c.downField("foo").as[String]
+        bar <- c.downField("bars").downArray.as[String]
       } yield {
-        new Thing(foo, bars)
+        new Thing(foo, List(bar))
       }
     }
   }
 
+  /*
   implicit val decodeBar: Decoder[Bar] = new Decoder[Bar] {
     final def apply(c: HCursor): Decoder.Result[Bar] = {
       for {
-        name <- c.downField("name").as[String]
+        name <- c.downField("name").downArray.as[String]
       } yield {
         new Bar(name)
       }
     }
   }
 
+   */
+
   def main(args: Array[String]): Unit = {
 
 //    val result: Json = Thing("ole", 42)
-    val s = """{ "foo": "ole", "bars": [ {"name": "hei"}, {"name": "nei"} ] }"""
+    val s = """{ "foo": "ole", "bars": [ "n1", "n2" ] }"""
+//    val s = """{ "foo": "ole", "bars": [ { "n11", "n12" ] }, { ["n21", "n22" ] } ] }"""
     println(s)
     val result: Either[circe.Error, Thing] = parser.decode[Thing](s)
     println(result)
 
 //    println(result)
   }
+
+  // single array:
+  // all downArray and downArray.first and downArray.first.first works
+  // downArray.downArray does not work
 
 }

@@ -186,19 +186,6 @@ object Chapter14 {
       } yield result
     })
 
-/*
-
-    if (xs.isEmpty) xs else ST.runST(new RunnableST[List[Int]] {
-      def apply[S] = for {
-        arr <- STArray.fromList(xs)
-        size <- arr.size
-        _ <- qs(arr, 0, size - 1)
-        sorted <- arr.freeze
-      } yield sorted
-    })
-  }
- */
-
   object Ex1 {
     // implemented fill
   }
