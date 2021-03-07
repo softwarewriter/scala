@@ -1,6 +1,9 @@
 package no.jergan.scrapbook.fpinscala
 
+import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream, Reader, Writer}
+
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad
+import no.jergan.scrapbook.fpinscala.Chapter11.Monad.optionMonad
 
 
 object Chapter15 {
@@ -83,6 +86,11 @@ object Chapter15 {
       case Emit(h, t) => f(h) ++ t.flatMap(f)
       case Await(recv) => Await(recv andThen (a => a.flatMap(f)))
     }
+
+    def withIndex: Process[I, (O, Int)] = {
+      zip(this, count)
+    }
+
   }
 
   case class Halt[I, O]() extends Process[I, O]
@@ -201,10 +209,6 @@ object Chapter15 {
     zip[Double, Int, Double](count, sum).map(a => a._2 / a._1)
   }
 
-  def test[I]: Process[I, (I, I)] = {
-    zip(identityP, identityP)
-  }
-
   def loop[S, I, O](z: S)(f: (I, S) => (O, S)): Process[I, O] = {
     Await {
       case Some(i) => {
@@ -215,37 +219,27 @@ object Chapter15 {
     }
   }
 
-  def zipWithIndex[I]: Process[I, (I, Int)] = {
+  def identityWithIndex[I]: Process[I, (I, Int)] = {
     loop(0)((i, s) => ((i, s + 1), s + 1))
   }
 
-  def zipWithIndexUsingZip[I]: Process[I, (I, Int)] = {
+  def identityWithIndexUsingZip[I]: Process[I, (I, Int)] = {
     zip[I, I, Int](identityP, count)
   }
 
-  /*
-  case class Await[I, O](recv: Option[I] => Process[I, O]) extends Process[I, O]
-  case class Emit[I, O](head: O, tail: Process[I, O] = Halt[I, O]()) extends Process[I, O]
-
-   */
-
   def zip[I, O1, O2](p1: Process[I, O1], p2: Process[I, O2]): Process[I, (O1, O2)] = {
-//    p1.flatMap(o1 => p2.map(o2 => (o1, o2)))
-
+    // implementation only works for processes of same form.
     (p1, p2) match {
-      case (Halt(), Halt()) => Halt()
-      case (Await(f1), Await(f2)) => {
-//        def f: Option[I] => Process[I, (O1, O2)] = {
-
-//        }
-        def f: Option[I] => Process[I, (O1, O2)] = {
-          case Some(i) => zip(f1(Some(i)), f2(Some(i)))
-          case None => Halt()
-        }
-        Await[I, (O1, O2)](f)
-      }
-//      case (Emit(h1, t1), Emit(h2, t2)) => Emit((h1, h2), t1.flatMap(o1 => t2.map(o2 => (o1, o2))))
+      case (Await(f1), Await(f2)) => Await(a => zip(f1(a), f2(a)))
       case (Emit(h1, t1), Emit(h2, t2)) => Emit((h1, h2), zip(t1, t2))
+      case _ => Halt()
+    }
+  }
+
+  def exists[I](p: I => Boolean): Process[I, Boolean] = {
+    Await{
+      case Some(i) => if (p(i)) Emit(true) else exists(p)
+      case None => Emit(false)
     }
   }
 
@@ -273,16 +267,46 @@ object Chapter15 {
   }
 
   object Ex6 {
-    // implemented zipWithIndex
+    // implemented identityWithIndex
   }
 
   object Ex7 {
     // implemented zip
     // implemented mean using zip of count and sum
-    // implemented zipWithIndex using zip of count and identity
-
+    // implemented withIndex using zip an count
   }
 
+  object Ex8 {
+
+    def toCelsius(fahrenheit: Double): Double = (5.0 / 9.0) * (fahrenheit - 32.0)
+
+    def processFile[F[_]: Monad](from: File, to: File, p: Process[String, String]): F[Unit] = {
+      implicitly[Monad[F]].unit {
+
+        def go(in: Iterator[String], out: Writer, cur: Process[String, String]): Unit = {
+          cur match {
+            case Halt() => ()
+            case Await(recv) => if (in.hasNext) go(in, out, recv(Some(in.next()))) else ()
+            case Emit(h, t) => {
+              out.write(h)
+              go(in, out, t)
+            }
+          }
+        }
+        //      go(new FileInputStream(from), new FileOutputStream(to), p)
+      }
+    }
+
+    def test() {
+
+    processFile[Option](new File("from"), new File("to"),
+      filter[String](_.trim().nonEmpty)
+        pipe filter[String](l => !l.startsWith("#"))
+        pipe lift(java.lang.Double.parseDouble)
+        pipe lift(toCelsius)
+        pipe lift[Double, String](java.lang.Double.toString))(optionMonad)
+    }
+  }
 
   def main(args: Array[String]): Unit = {
 
@@ -303,10 +327,10 @@ object Chapter15 {
     print(meanUsingLoop(Stream(1, 3, 5)))
     print(meanUsingZip(Stream(1, 3, 5)))
 
-    print(zipWithIndex(Stream("a", "b")))
-    print(zipWithIndexUsingZip(Stream("a", "b")))
-
-    print(test(Stream("a", "b", "c")))
+    print(identityWithIndex(Stream("a", "b", "c")))
+    print(identityWithIndexUsingZip(Stream("a", "b", "c")))
+    print(exists[String](_ == "b")(Stream("a", "b", "c")))
+    print(exists[String](_ == "d")(Stream("a", "b", "c")))
   }
 
 }
