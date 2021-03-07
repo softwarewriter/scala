@@ -7,35 +7,6 @@ import no.jergan.scrapbook.fpinscala.Chapter11.Monad.optionMonad
 
 
 object Chapter15 {
-  /*
-    sealed trait Stream[+A]
-
-    case object Empty extends Stream[Nothing]
-
-    case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
-
-    object Stream {
-      def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
-        lazy val head = hd
-        lazy val tail = tl
-        Cons(() => head, () => tail)
-      }
-
-      def empty[A]: Stream[A] = Empty
-
-      def apply[A](as: A*): Stream[A] =
-        if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
-    }
-
-    object #:: {
-      def unapply[A](s: LazyList[A]): Option[(A, LazyList[A])] =
-        if (s.nonEmpty) Some((s.head, s.tail)) else None
-      @deprecated("Prefer LazyList instead", since = "2.13.0")
-      def unapply[A](s: Stream[A]): Option[(A, Stream[A])] =
-        if (s.nonEmpty) Some((s.head, s.tail)) else None
-    }
-
-   */
 
   sealed trait Process[I, O] {
 
