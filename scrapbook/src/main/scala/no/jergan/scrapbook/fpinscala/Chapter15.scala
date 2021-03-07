@@ -277,6 +277,10 @@ object Chapter15 {
   }
 
   object Ex8 {
+    // implemented exists
+  }
+
+  object Ex9 {
 
     def toCelsius(fahrenheit: Double): Double = (5.0 / 9.0) * (fahrenheit - 32.0)
 
