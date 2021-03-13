@@ -3,6 +3,9 @@ package no.jergan.scrapbook.fpinscala
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad
 import no.jergan.scrapbook.fpinscala.Chapter152.Process.{Await, Emit, End, Halt, Kill}
 
+/**
+ * Continuation of chapter15 with new Process trait
+ */
 object Chapter152 {
 
   trait Process[F[_], O] {
@@ -18,6 +21,29 @@ object Chapter152 {
         case End => p
         case thr => Halt(thr)
       }
+
+    def onComplete(p: => Process[F, O]): Process[F, O] =
+      this.onHalt {
+        case End => p.asFinalizer
+        case err => p.asFinalizer ++ Halt(err)
+      }
+
+    def asFinalizer: Process[F, O] = {
+      // Created m to have an explicit type to bind type A of req with type A of recv. If not it does not compile
+      // This is not done in solution.
+      def m[A](req: F[A], recv: Either[Throwable, A] => Process[F, O]): Process[F, O] = {
+        Await[F, A, O](req, {
+          case Left(Kill) => this.asFinalizer
+          case x => recv(x)
+        })
+      }
+
+      this match {
+        case Halt(err) => Halt(err)
+        case Emit(h, t) => Emit(h, t.asFinalizer)
+        case Await(req, recv) => m(req, recv)
+      }
+    }
 
     def flatMap[O2](f: O => Process[F, O2]): Process[F, O2] = {
       this match {
@@ -43,7 +69,25 @@ object Chapter152 {
           case Await(req, recv) => m(req, recv, acc)
         }
       }
+
       go(this, IndexedSeq())
+    }
+
+    def drain[B]: Process[F, B] = {
+      // Created m to have an explicit type to bind type A of req with type A of recv. If not it does not compile
+      // This is not done in solution.
+      def m[A](req: F[A], recv: Either[Throwable, A] => Process[F, O]): Process[F, B] = {
+        Await[F, A, B](req, {
+          case Left(t) => Halt(t)
+          case x => recv(x).drain
+        })
+      }
+
+      this match {
+        case Halt(t) => Halt(t)
+        case Emit(_, t) => t.drain
+        case Await(req, recv) => m(req, recv)
+      }
     }
 
   }
@@ -61,6 +105,18 @@ object Chapter152 {
     case e: Throwable => Halt(e)
   }
 
+  def eval[F[_], A](a: F[A]): Process[F, A] =
+    await[F, A, A](a) {
+      case Left(t) => Halt(t)
+      case Right(a) => Emit[F, A](a, Halt(End))
+    }
+
+
+  def eval_[F[_], A, B](a: F[A]): Process[F, B] =
+    eval(a).drain[B]
+
+
+
   object Process {
     case class Await[F[_], A, O](req: F[A], recv: Either[Throwable, A] => Process[F, O]) extends Process[F, O]
     case class Emit[F[_], O](head: O, tail: Process[F, O]) extends Process[F, O]
@@ -70,13 +126,37 @@ object Chapter152 {
     case object Kill extends Exception
   }
 
+  def resource[F[_], R, O](acquire: F[R])
+                         (use: Either[Throwable, R] => Process[F, O])
+                         (release: Either[Throwable, R] => Process[F, O]): Process[F, O] = {
+    await[F, R, O](acquire)(r => use(r).onComplete(release(r)))
+  }
+
+  def loop[F[_], A](fa: F[Option[A]]): Process[F, A] = {
+    lazy val lines: Process[F, A] = eval(fa)
+      .flatMap{
+        case Some(a) => Emit(a, lines)
+        case None => Halt(End)
+      }
+    lines
+  }
+
+
   object Ex10 {
     // implemented runLog
   }
 
+  object Ex11 {
+    // implemented eval and eval_
+  }
+
 
   def main(args: Array[String]): Unit = {
+
     println("pelle")
+
+//    # ex 11.15 page 284
+
   }
 
 }
