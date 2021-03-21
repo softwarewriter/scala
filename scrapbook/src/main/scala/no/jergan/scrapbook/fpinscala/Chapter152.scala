@@ -86,7 +86,8 @@ object Chapter152 {
       this match {
         case Halt(t) => Halt(t)
         case Emit(_, t) => t.drain
-        case Await(req, recv) => m(req, recv)
+        case Await(req, recv) => Await(req, recv andThen (p => p.drain))
+//        case Await(req, recv) => m(req, recv)
       }
     }
 
@@ -111,11 +112,12 @@ object Chapter152 {
       case Right(a) => Emit[F, A](a, Halt(End))
     }
 
-
   def eval_[F[_], A, B](a: F[A]): Process[F, B] =
     eval(a).drain[B]
 
-
+  def join[F[_], O](p: Process[F, Process[F, O]]): Process[F, O] = {
+    p.flatMap(identity)
+  }
 
   object Process {
     case class Await[F[_], A, O](req: F[A], recv: Either[Throwable, A] => Process[F, O]) extends Process[F, O]
@@ -141,6 +143,13 @@ object Chapter152 {
     lines
   }
 
+  case class Is[I]() {
+    sealed trait f[X]
+    val Get = new f[I] {}
+  }
+
+  type Process1[I, O] = Process[Is[I]#f, O]
+
 
   object Ex10 {
     // implemented runLog
@@ -150,13 +159,12 @@ object Chapter152 {
     // implemented eval and eval_
   }
 
+  object Ex12 {
+    // implemented join
+  }
 
   def main(args: Array[String]): Unit = {
-
     println("pelle")
-
-//    # ex 11.15 page 284
-
   }
 
 }

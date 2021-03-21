@@ -1,7 +1,8 @@
 package no.jergan.scrapbook.fpinscala
 
-import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream, Reader, Writer}
+import no.jergan.scrapbook.Scrap.a
 
+import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream, Reader, Writer}
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad.optionMonad
 
@@ -36,12 +37,12 @@ object Chapter15 {
 
     def pipe[O2](p2: Process[O, O2]): Process[I, O2] = p2 match {
       case Halt() => Halt()
-      case Emit(h, t) => Emit(h, this pipe t)
-      case Await(f) => this match {
-        case Emit(h, t) => t pipe f(Some(h))
-        case Halt() => Halt() pipe (f(None))
-        case Await(g) => Await((i: Option[I]) => g(i) pipe p2)
+      case Await(recv2) => this match {
+        case Halt() => Halt().pipe(recv2(None))
+        case Await(recv) => Await(a => recv(a).pipe(p2))
+        case Emit(h, t) => t.pipe(recv2(Some(h)))
       }
+      case Emit(h2, t2) => Emit(h2, this.pipe(t2))
     }
 
     def map[O2](f: O => O2): Process[I, O2] = this pipe lift(f)
@@ -235,6 +236,10 @@ object Chapter15 {
 
   object Ex5 {
     // tried to implement pipe, failed!
+    // second try went better.
+    // Remember:
+    // 1) Can invoke self (recursively)
+    // 2) Can use this/p even though we have already pattern matched on it.
   }
 
   object Ex6 {
@@ -306,6 +311,15 @@ object Chapter15 {
     print(identityWithIndexUsingZip(Stream("a", "b", "c")))
     print(exists[String](_ == "b")(Stream("a", "b", "c")))
     print(exists[String](_ == "d")(Stream("a", "b", "c")))
+
+    def f: Int => String = ???
+    def g: String => Float = ???
+
+    def h1: Int => Float = f andThen g
+
+    def h2: Int => Float = g compose f
+
+
   }
 
 }
