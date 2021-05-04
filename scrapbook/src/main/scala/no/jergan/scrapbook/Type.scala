@@ -1,8 +1,17 @@
-package no.jergan.scrapbook.fpinscala
+package no.jergan.scrapbook
 
 object Type {
 
   type Result[A] = Either[Int, A]
+
+  def m1(): Unit = {
+
+    var x: Any = ???
+
+    x = "pelle"
+//    val s: String = x
+
+  }
 
   def main(args: Array[String]): Unit = {
 
@@ -17,6 +26,5 @@ object Type {
     println("pelle")
 
   }
-
 
 }

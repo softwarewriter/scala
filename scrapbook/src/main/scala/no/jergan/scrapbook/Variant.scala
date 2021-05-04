@@ -1,7 +1,6 @@
-package no.jergan.scrapbook.fpinscala
+package no.jergan.scrapbook
 
 object Variant {
-
 
   class A1
   class A2 extends A1
@@ -20,8 +19,8 @@ object Variant {
     trait Covariant[+A2]
 
     val value: Covariant[A2] = ???
-    val a1: Covariant[A1] = value
-    val a2: Covariant[A2] = value
+    val a1: Covariant[A1]    = value
+    val a2: Covariant[A2]    = value
 //    val a3: Covariant[A3] = value
   }
 

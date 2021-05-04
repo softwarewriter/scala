@@ -1,7 +1,8 @@
 package no.jergan.scrapbook
 
-import cats.effect.{IO, Resource}
+import cats.effect.{IO, Resource, Sync}
 import cats.implicits._
+
 import java.io._
 
 /**
@@ -76,6 +77,8 @@ object CatsFile {
       val hei = IO(myPrint("hei"))
       hei.unsafeRunSync()
       hei.unsafeRunSync()
+
+     inputStream(new File("f")).use(fis => Sync[IO].unit)
    }
 
 }
