@@ -7,8 +7,10 @@ package no.jergan.scrapbook
   */
 object Scrap extends App {
 
-  val list: IndexedSeq[Int] = for (i <- 0 until 20 if (i % 2 == 0)) yield i
-  println(list.size)
+  val list = List("ole", "dole", "doff")
+  val map = Map("ole" -> 1, "dole" -> 2)
+
+  println(list.map(map))
 
 
   //   println(m(block))

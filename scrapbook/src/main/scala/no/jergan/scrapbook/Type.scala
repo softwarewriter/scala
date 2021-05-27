@@ -1,5 +1,15 @@
 package no.jergan.scrapbook
 
+object SomeOtherObject {
+
+  // Type imports are grey (like unused) in IntelliJ
+  import Type.Result
+
+  type MyType = Result[String]
+
+}
+
+
 object Type {
 
   type Result[A] = Either[Int, A]

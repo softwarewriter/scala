@@ -8,6 +8,7 @@ scalacOptions := Seq(
 )
 
 libraryDependencies ++= Seq(
+   "org.typelevel"     %% "cats-core"   % "2.2.0",
    "org.typelevel"     %% "cats-effect"   % "2.2.0",
 
    "org.http4s"        %% "http4s-server" % "0.21.7",
