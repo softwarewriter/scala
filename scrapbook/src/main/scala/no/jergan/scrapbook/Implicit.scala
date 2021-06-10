@@ -1,5 +1,8 @@
 package no.jergan.scrapbook
 
+import cats.{Applicative, Defer, Eval}
+import cats.data.{OptionT, ReaderT}
+
 object Implicit {
 
   object ImplicitValue {
@@ -92,6 +95,12 @@ object Implicit {
 
   }
   def main(args: Array[String]): Unit = {
+
+    val set: Iterable[String] = Set("a", "b")
+    val seq = Seq.apply("a", "b")
+    seq.foreach(a => ())
+    println(seq.mkString(", "))
+    println(seq.getClass)
     ImplicitValue.invoke()
     ImplicitConversion.invokeTakeIt()
     ImplicitClass.invokeTakeIt()

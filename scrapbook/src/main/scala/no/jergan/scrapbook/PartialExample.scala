@@ -1,11 +1,35 @@
 package no.jergan.scrapbook
 
+import cats.data.Kleisli
+
 /**
  * What does this class do?
  *
  * @author <a href="mailto:oyvind@jergan.no">Oyvind Jergan</a>
  */
 object PartialExample extends  App {
+
+  object WrappedFunction {
+
+    case class WF[A, B](run: PartialFunction[A, B])
+
+    def use: Unit = {
+
+       val wf1 = WF[String, Int] { s => s.length}
+       val wf2 = WF[String, Int] {
+         val pf1: PartialFunction[String, Int] = {
+           case null => 42
+         }
+         val pf2: PartialFunction[String, Int] = a => a.length
+         pf1 //orElse pf2
+       }
+
+      println(wf1.run.getClass)
+      println(wf2.run.getClass)
+      println(wf2.run.isDefinedAt("hei"))
+      println(wf2.run.apply("hei"))
+    }
+  }
 
    def completeFunction(i:Int)(x: Int): Int = i * x
 
@@ -34,6 +58,8 @@ object PartialExample extends  App {
    completeNumberFunction.apply(1)
    completeNumberFunction.apply(2)
    completeNumberFunction.apply(-2)
+
+  WrappedFunction.use
 
 }
 
