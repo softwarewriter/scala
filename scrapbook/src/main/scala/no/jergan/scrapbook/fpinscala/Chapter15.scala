@@ -1,7 +1,5 @@
 package no.jergan.scrapbook.fpinscala
 
-import no.jergan.scrapbook.Scrap.a
-
 import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream, Reader, Writer}
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad
 import no.jergan.scrapbook.fpinscala.Chapter11.Monad.optionMonad

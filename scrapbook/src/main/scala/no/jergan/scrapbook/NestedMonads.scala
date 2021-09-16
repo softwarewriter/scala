@@ -6,7 +6,7 @@ import cats.implicits.catsSyntaxApplicativeError
 import cats.{Applicative, ApplicativeError}
 
 /**
- * Cats.
+ * Nested monads.
  */
 object NestedMonads {
 
@@ -43,9 +43,9 @@ object NestedMonads {
   }
 
   def complexWithEitherT(): Unit = {
-    val v = for {
-      a <- EitherT(Some(Right(42)): Option[Either[Any, Int]])
-      b <- EitherT(Some(Right(43)): Option[Either[Any, Int]])
+      val v = for {
+      a <- EitherT[Option, Any, Int](Some(Right(42)))
+      b <- EitherT[Option, Any, Int](Some(Right[Any, Int](43)))
     } yield {
       a + b
     }

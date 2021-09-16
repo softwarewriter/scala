@@ -21,6 +21,19 @@ object Type {
     x = "pelle"
 //    val s: String = x
 
+    case class S1(s: String)
+
+    type S2 = S1
+
+    object S2 {
+      def apply(s: String): S2 = S1(s)
+    }
+
+    def m2: Unit = {
+
+      S1("hei")
+      S2("hei")
+    }
   }
 
   def main(args: Array[String]): Unit = {
