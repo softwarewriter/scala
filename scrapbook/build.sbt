@@ -24,4 +24,9 @@ libraryDependencies ++= Seq(
    "io.circe"          %% "circe-fs2"       % "0.13.0",
    "co.fs2"            %% "fs2-io"          % "2.4.4",
 
-   "org.apache.kafka" % "kafka-streams" % "0.11.0.0")
+   "org.apache.kafka" % "kafka-streams"    % "0.11.0.0",
+   "org.scalatest"    %% "scalatest"           % "3.2.9"
+
+)
+
+
