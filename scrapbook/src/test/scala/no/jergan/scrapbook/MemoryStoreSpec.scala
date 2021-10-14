@@ -22,27 +22,6 @@ class MemoryStoreSpec extends IOFunSuite {
     }
   }
 
-  /*
-  test("Test LRU") = {
-    for {
-      store <- MemoryStore[IO, String, Int](maxSize = Some(2))
-      _     <- store.put("k1", 42)
-      _     <- store.put("k2", 43)
-      val21  <- store.get("k2")
-      val11  <- store.get("k1")
-      _     <- store.put("k3", 44)
-      val12  <- store.get("k1")
-      val22  <- store.get("k2")
-    } yield {
-      assert(val11.contains(42))
-      assert(val21.contains(43))
-      assert(val12.contains(42))
-      assert(val22.isEmpty)
-    }
-  }
-
-   */
-
   test("Test timeout") = {
     for {
       store <- MemoryStore[IO, String, Int](timeout = Some(100))

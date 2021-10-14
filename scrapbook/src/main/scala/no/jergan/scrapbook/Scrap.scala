@@ -17,6 +17,11 @@ import scala.util.Try
 object Scrap {
 
   def main(args: Array[String]): Unit = {
+    val set1 = Set("ole", "dole")
+    val set2 = Set("dole", "ole")
+
+    println(set1.hashCode())
+    println(set2.hashCode())
 
   }
 

@@ -55,6 +55,13 @@ object NestedMonads {
     }
   }
 
+  def semi(): Unit = {
+    val v = EitherT[Option, Any, Int](Some(Right(42)))
+      .semiflatMap(i => Some(i + 1))
+      .value
+    println(v)
+  }
+
   def myTransformers(): Unit = {
 
     case class OT[F[_]: Monad, A](foa: F[Option[A]]) {
@@ -111,6 +118,7 @@ object NestedMonads {
     complex()
     complexWithEitherT()
     myTransformers()
+    semi()
   }
 
 }

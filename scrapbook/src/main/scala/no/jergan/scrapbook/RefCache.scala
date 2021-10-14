@@ -25,7 +25,9 @@ object RefCache {
 
   }
 
-  class MemoryStore[F[_]: Sync: Timer, K, V](ref: Ref[F, State[K, V]], timeout: Option[Long]) extends Store[F, K, V] {
+  class MemoryStore[F[_]: Sync: Timer, K, V](ref: Ref[F, State[K, V]],
+                                             maxSize: Option[Long],
+                                             timeout: Option[Long]) extends Store[F, K, V] {
 
     override def get(key: K): F[Option[V]] =
       for {
@@ -48,30 +50,32 @@ object RefCache {
 
   object MemoryStore {
 
-    case class State[K, V](map: Map[K, Entry[V]]) {
+    case class State[K, V](map: Map[K, Entry[V]],
+                           oldest: Option[Entry[V]],
+                           newest: Option[Entry[V]]) {
 
       def get(key: K, now: Long, timeout: Option[Long]): (State[K, V], Option[V]) =
         map.get(key) match {
           case None                                             => (this, None)
-          case Some(e) if timeout.fold(false)(e.time < now - _) => (State(map.removed(key)), None)
+          case Some(e) if timeout.fold(false)(e.time < now - _) => (State(map.removed(key), None, None), None)
           case Some(e)                                          => (this, Some(e.value))
         }
 
       def put(key: K, value: V, now: Long): State[K, V] =
-        State(map + (key -> Entry(value, now)))
+        State(map + (key -> Entry(None, value, now, None)), None, None)
     }
 
     object State {
 
-      def apply[K, V](): State[K, V] = State(Map.empty)
+      def apply[K, V](): State[K, V] = new State(Map.empty, None, None)
     }
 
-    case class Entry[V](value: V, time: Long)
+    case class Entry[V](older: Option[Entry[V]], value: V, time: Long, newer: Option[Entry[V]])
 
     def apply[F[_]: Sync: Timer, K, V](maxSize: Option[Long] = None, timeout: Option[Long] = None): F[Store[F, K, V]] =
       Ref
         .of[F, State[K, V]](State())
-        .map(new MemoryStore[F, K, V](_, timeout))
+        .map(new MemoryStore[F, K, V](_, maxSize, timeout))
 
   }
 
