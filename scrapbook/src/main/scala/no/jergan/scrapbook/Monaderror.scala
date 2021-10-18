@@ -26,30 +26,21 @@ object Monaderror extends IOApp {
     }
   }
 
+  def m4[F[_]: Applicative]()(implicit monadError: MonadError[F, Throwable]): F[Int] = {
+    monadError.raiseError[Int](new NullPointerException("pelle"))
+//    throw new NullPointerException("pelle")
+  }
+
   override def run(args: List[String]): IO[ExitCode] = {
-    /*
-    implicit def myApplicativeError(implicit ev: Applicative[IO]): ApplicativeError[IO, Throwable] = new ApplicativeError[IO, Throwable] {
-
-      override def raiseError[A](e: Throwable): IO[A] = IO {
-        println(s"pelle1 ${e.getMessage}")
-        throw e
-      }
-
-      override def handleErrorWith[A](fa: IO[A])(f: Throwable => IO[A]): IO[A] = {
-        println(s"pelle2")
-        fa
-      }
-
-      override def pure[A](x: A): IO[A] = ev.pure(x)
-      override def ap[A, B](ff: IO[A => B])(fa: IO[A]): IO[B] = ev.ap(ff)(fa)
-
+    val io = for {
+      i <- IO{42}
+      j <- m4[IO]()
     }
-
-     */
-//    val v = ApplicativeError[IO, Throwable]
-
-    m2[IO]("")
-      .flatMap(i => IO {println(s"Number was $i")})
+    yield i + j
+    io
+      .attempt
+      .flatMap(a => IO{println(a)})
+//      .flatMap(a => IO{println(a)})
       .map(_ => ExitCode.Success)
   }
 

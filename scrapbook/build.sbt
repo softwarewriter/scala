@@ -8,6 +8,8 @@ scalacOptions := Seq(
 )
 
 libraryDependencies ++= Seq(
+   "ch.qos.logback"   %  "logback-classic" % "1.2.0",
+
    "org.typelevel"     %% "cats-core"   % "2.2.0",
    "org.typelevel"     %% "cats-effect"   % "2.2.0",
 
