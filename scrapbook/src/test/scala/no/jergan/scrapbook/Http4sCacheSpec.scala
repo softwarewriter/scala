@@ -1,20 +1,23 @@
 package no.jergan.scrapbook
 
-import cats.effect.{Blocker, ConcurrentEffect, ExitCode, IO, Resource, Timer}
+import cats.effect.{ConcurrentEffect, IO, Resource, Timer}
+import cats.implicits.toSemigroupKOps
 import ch.qos.logback.classic.Level
-import io.circe.syntax.{EncoderOps, KeyOps}
-import io.circe.{Decoder, Encoder, Json}
+import io.chrisdavenport.mules.http4s.{CacheItem, CacheMiddleware, CacheType}
+import io.chrisdavenport.mules.caffeine._
+import io.circe.{Decoder, Encoder}
 import org.http4s.client.Client
-import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.dsl.io.{->, /, GET, NotFound, Ok, Root}
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.Server
-import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Method, Request, Uri}
+import org.http4s.{CacheDirective, EntityDecoder, EntityEncoder, HttpRoutes, Method, Status, Uri}
 import org.http4s.dsl.io._
 import org.http4s.implicits._
-import org.http4s.server.blaze.BlazeServerBuilder
 import io.circe.generic.auto._
 import io.circe.syntax._
+import org.http4s.blaze.client.BlazeClientBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.server.middleware.Caching
 
 import java.net.ServerSocket
 import scala.concurrent.ExecutionContext
@@ -25,6 +28,22 @@ class Http4sCacheSpec extends SharedResourceSpec {
   Logback.apply(Level.INFO)
 
   case class Person(firstName: String, lastName: String)
+
+  class Service() {
+    var count = 0;
+
+    val onkelSkrue  = new Person("Onkel", "Skrue")
+    val onkelDonald = new Person("Donald", "Duck")
+    val database = Map(
+      "0" -> onkelSkrue,
+      "1" -> onkelDonald
+    )
+
+    def person(id: String): Option[Person] = {
+      count += 1
+      database.get(id)
+    }
+  }
 
   implicit def entityEncoder[A: Encoder]: EntityEncoder[IO, A] = org.http4s.circe.jsonEncoderOf[IO, A]
   implicit def entityDecoder[A: Decoder]: EntityDecoder[IO, A] = org.http4s.circe.jsonOf[IO, A]
@@ -38,58 +57,81 @@ class Http4sCacheSpec extends SharedResourceSpec {
     port
   }
 
-  case class FixtureParam(client: Client[IO], server: Server[IO])
+  case class FixtureParam(client: Client[IO], service: Service)
 
   override def resource: Resource[IO, FixtureParam] = {
     val global = scala.concurrent.ExecutionContext.global
     for {
-      client <- BlazeClientBuilder[IO](global).resource
-      server <- TestServer.apply[IO](httpPort, global)
+      cache <- Resource.eval(CaffeineCache.build[IO, (Method, Uri), CacheItem](None, None, Some(10000L)))
+      cacheMiddleware = CacheMiddleware.client(cache, CacheType.Public)
+      client  <- BlazeClientBuilder[IO](global).resource
+      cachedClient = cacheMiddleware(client)
+      service = new Service()
+      _       <- TestServer.apply[IO](httpPort, global, service)
     } yield {
-      FixtureParam(client, server)
+      FixtureParam(cachedClient, service)
     }
   }
 
   "test" - {
-    "test2syn" in { fixture => {
+    "testCache" in { fixture => {
       for {
-        p <- fixture.client.expect[Person]("http://localhost/person")
+        p00 <- fixture.client.expect[Person](cached("0"))
+        p01 <- fixture.client.expect[Person](cached("0"))
+        p10 <- fixture.client.expect[Person](cached("1"))
+        p20 <- fixture.client.statusFromUri(cached("2"))
+        p21 <- fixture.client.statusFromUri(cached("2"))
+
+        nc00 <- fixture.client.expect[Person](nonCached("0"))
+        nc01 <- fixture.client.expect[Person](nonCached("0"))
       }
       yield {
+        assert(p00.lastName == "Skrue")
+        assert(p01.lastName == "Skrue")
+        assert(p10.lastName == "Duck")
+        assert(p20 == Status.NotFound)
+        assert(p21 == Status.NotFound)
 
+        assert(nc00.lastName == "Skrue")
+        assert(nc01.lastName == "Skrue")
+
+        assert(fixture.service.count == 5)
       }
     }
     }
   }
 
   object TestServer {
-    def apply[F[_]: ConcurrentEffect: Timer](port: Int, ec: ExecutionContext): Resource[IO, Server[IO]] = {
+    def apply[F[_]: ConcurrentEffect: Timer](port: Int, ec: ExecutionContext, service: Service): Resource[IO, Server] = {
 
-      def personService(id: String): Option[Person] = {
-        val onkelSkrue  = new Person("Onkel", "Skrue")
-        val onkelDonald = new Person("Donald", "Duck")
-        val database = Map(
-          "0" -> onkelSkrue,
-          "1" -> onkelDonald
-        )
-        database.get(id)
-      }
-
-      val personHttpService: HttpRoutes[IO] = HttpRoutes.of[IO] {
-        case GET -> Root / "person" / id =>
-          personService(id) match {
+      val cachedService: HttpRoutes[IO] = HttpRoutes.of[IO] {
+        case GET -> Root / "cached" / id =>
+          service.person(id) match {
             case None         => NotFound("No person with id " + id)
             case Some(person) => Ok(person)
           }
       }
+      val nonCachedService: HttpRoutes[IO] = HttpRoutes.of[IO] {
+        case GET -> Root / "noncached" / id =>
+          service.person(id) match {
+            case None         => NotFound("No person with id " + id)
+            case Some(person) => Ok(person)
+          }
+      }
+      val cached: HttpRoutes[IO] = Caching.publicCache(5.minutes, cachedService)
+      val nonCached: HttpRoutes[IO] = Caching.`no-store`(nonCachedService)
+      val allRoutes: HttpRoutes[IO] = cached <+> nonCached
 
       BlazeServerBuilder[IO](scala.concurrent.ExecutionContext.global)
         .bindHttp(port, "0.0.0.0")
         .enableHttp2(false)
         .withResponseHeaderTimeout(45.seconds)
         .withIdleTimeout(65.seconds)
-        .withHttpApp(personHttpService.orNotFound)
+        .withHttpApp(allRoutes.orNotFound)
         .resource
     }}
+
+  private def cached(id: String): Uri = Uri.unsafeFromString(s"http://localhost:$httpPort/cached/$id")
+  private def nonCached(id: String): Uri = Uri.unsafeFromString(s"http://localhost:$httpPort/noncached/$id")
 
 }

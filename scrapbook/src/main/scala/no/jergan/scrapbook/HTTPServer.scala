@@ -5,8 +5,8 @@ import io.circe.{Encoder, Json, JsonObject}
 import org.http4s.{HttpApp, HttpRoutes, Method, Request, Response, Status, Uri}
 import org.http4s.dsl.io._
 import org.http4s.implicits._
-import org.http4s.server.blaze.BlazeServerBuilder
 import io.circe.syntax._
+import org.http4s.blaze.server.BlazeServerBuilder
 
 /**
   * HTTP server for person.

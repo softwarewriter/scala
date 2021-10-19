@@ -26,8 +26,9 @@ object Monaderror extends IOApp {
     }
   }
 
-  def m4[F[_]: Applicative]()(implicit monadError: MonadError[F, Throwable]): F[Int] = {
+  def m4[F[_]: Sync]()(implicit monadError: MonadError[F, Throwable]): F[Int] = {
     monadError.raiseError[Int](new NullPointerException("pelle"))
+//    Sync[F].delay(throw new NullPointerException("pelle"))
 //    throw new NullPointerException("pelle")
   }
 
@@ -37,10 +38,11 @@ object Monaderror extends IOApp {
       j <- m4[IO]()
     }
     yield i + j
+
+//    val io = m4[IO]()
     io
-      .attempt
+//      .attempt
       .flatMap(a => IO{println(a)})
-//      .flatMap(a => IO{println(a)})
       .map(_ => ExitCode.Success)
   }
 
