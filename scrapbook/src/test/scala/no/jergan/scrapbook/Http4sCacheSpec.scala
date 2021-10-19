@@ -32,11 +32,11 @@ class Http4sCacheSpec extends SharedResourceSpec {
   class Service() {
     var count = 0;
 
-    val onkelSkrue  = new Person("Onkel", "Skrue")
-    val onkelDonald = new Person("Donald", "Duck")
+    val one  = new Person("Person", "One")
+    val two = new Person("Person", "Two")
     val database = Map(
-      "0" -> onkelSkrue,
-      "1" -> onkelDonald
+      "1" -> one,
+      "2" -> two
     )
 
     def person(id: String): Option[Person] = {
@@ -76,24 +76,24 @@ class Http4sCacheSpec extends SharedResourceSpec {
   "test" - {
     "testCache" in { fixture => {
       for {
-        p00 <- fixture.client.expect[Person](cached("0"))
-        p01 <- fixture.client.expect[Person](cached("0"))
-        p10 <- fixture.client.expect[Person](cached("1"))
-        p20 <- fixture.client.statusFromUri(cached("2"))
-        p21 <- fixture.client.statusFromUri(cached("2"))
+        c11 <- fixture.client.expect[Person](cached("1"))
+        c12 <- fixture.client.expect[Person](cached("1"))
+        c21 <- fixture.client.expect[Person](cached("2"))
+        c31 <- fixture.client.statusFromUri(cached("3"))
+        c32 <- fixture.client.statusFromUri(cached("3"))
 
-        nc00 <- fixture.client.expect[Person](nonCached("0"))
-        nc01 <- fixture.client.expect[Person](nonCached("0"))
+        nc10 <- fixture.client.expect[Person](nonCached("1"))
+        nc11 <- fixture.client.expect[Person](nonCached("1"))
       }
       yield {
-        assert(p00.lastName == "Skrue")
-        assert(p01.lastName == "Skrue")
-        assert(p10.lastName == "Duck")
-        assert(p20 == Status.NotFound)
-        assert(p21 == Status.NotFound)
+        assert(c11.lastName == "One")
+        assert(c12.lastName == "One")
+        assert(c21.lastName == "Two")
+        assert(c31 == Status.NotFound)
+        assert(c32 == Status.NotFound)
 
-        assert(nc00.lastName == "Skrue")
-        assert(nc01.lastName == "Skrue")
+        assert(nc10.lastName == "One")
+        assert(nc11.lastName == "One")
 
         assert(fixture.service.count == 5)
       }
