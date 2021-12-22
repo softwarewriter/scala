@@ -23,7 +23,7 @@ object CirceArray {
         .toList
         .sorted
         .map(k => s"$k: ${map.get(k).map(s => s.size).getOrElse(0)}")
-        .appended(s"Total: ${map.values.map(_.size).sum}")
+        .appended(s"Total: ${map.values.map(_.size).sum}\n")
         .mkString("\n")
     }
 
@@ -39,8 +39,8 @@ object CirceArray {
   val shipmentDecoder: Decoder[List[Shipment]] = Decoder[List[Shipment]].prepare(_.downField("shipments"))
   val inventoryDecoder: Decoder[List[Inventory]] = Decoder[List[Inventory]].prepare(_.downField("inventories"))
 
-  def shipmentMap(): String = {
-    val json = Files.readString(Paths.get("/Users/oyvind/development/klaveness/temp/cargo-api-alcoa/shipments.json"))
+  def shipmentMap(prefix: String): String = {
+    val json = Files.readString(Paths.get(s"/Users/oyvind/development/klaveness/temp/cargo-api-alcoa/prod/$prefix/shipments.json"))
  //   println(json)
 
     val cm = new CountMap()
@@ -52,11 +52,13 @@ object CirceArray {
 //    val cargoLines = io.circe.parser.decode(json)(cargoLineDecoder)
 //    println(cargoLines)
     shipments.map(ss => ss.foreach(s => s.cargoLines.foreach(cl => cm.add(cl.material, s.id))))
-    cm.asString()
+    val result = cm.asString()
+    Files.writeString(Paths.get(s"/Users/oyvind/development/klaveness/temp/cargo-api-alcoa/prod/$prefix/shipments.txt"), result)
+    result
   }
 
-  def inventoryMap(): String = {
-    val json = Files.readString(Paths.get("/Users/oyvind/development/klaveness/temp/cargo-api-alcoa/inventories.json"))
+  def inventoryMap(prefix: String): String = {
+    val json = Files.readString(Paths.get(s"/Users/oyvind/development/klaveness/temp/cargo-api-alcoa/prod/$prefix/inventories.json"))
     //   println(json)
 
     val cm = new CountMap()
@@ -68,12 +70,14 @@ object CirceArray {
     //    val cargoLines = io.circe.parser.decode(json)(cargoLineDecoder)
     //    println(cargoLines)
     inventories.map(is => is.foreach(i => cm.add(i.materialName, i.terminalId)))
-    cm.asString()
+    val result = cm.asString()
+    Files.writeString(Paths.get(s"/Users/oyvind/development/klaveness/temp/cargo-api-alcoa/prod/$prefix/inventories.txt"), result)
+    result
   }
 
   def main(args: Array[String]): Unit = {
-//    println(shipmentMap())
-    println(inventoryMap())
+    println(shipmentMap("before"))
+    println(inventoryMap("before"))
   }
 
 }

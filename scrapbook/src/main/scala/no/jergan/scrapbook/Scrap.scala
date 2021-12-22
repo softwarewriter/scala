@@ -17,7 +17,24 @@ import scala.util.Try
 object Scrap {
 
   def main(args: Array[String]): Unit = {
+/*
+    def pf1: PartialFunction[Int, String] = {
+      case 1 => "en"
+      case 2 => "to"
+    }
+    def pf2: PartialFunction[Int, String] = {
+      case 3 => "tre"
+      case 4 => "fire"
+    }
 
+    val pf = pf1.orElse(pf2)
+
+    println(pf(5))
+
+ */
+
+    val l = List(1, 2, 3, 4, 1, 2, 5)
+    println(l.distinct)
   }
 
 }
