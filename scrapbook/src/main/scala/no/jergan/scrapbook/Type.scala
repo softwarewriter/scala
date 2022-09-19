@@ -1,5 +1,11 @@
 package no.jergan.scrapbook
 
+import cats.data.{Kleisli, OptionT}
+import cats.{Applicative, Monad}
+import org.http4s.CharsetRange.*
+import org.http4s.{Request, Response}
+import org.http4s.server.Middleware
+
 object SomeOtherObject {
 
   // Type imports are grey (like unused) in IntelliJ
@@ -36,18 +42,19 @@ object Type {
     }
   }
 
+  trait WithType[A] {
+    type T
+    def get(a: A): T
+  }
+
+  class WithString extends WithType[Int] {
+    override type T = String
+    override def get(int: Int): String = int.toString
+  }
+
   def main(args: Array[String]): Unit = {
-
-    def mA[A](r: Result[A]): Unit = ???
-
-    def mString(r: Result[String]): Unit = ???
-
-    mA(Right("hei"))
-    mString(Right("hei"))
-    mString(Left(42))
-
-    println("pelle")
-
+    println(new WithString().get(42))
+    println(new WithString().getClass)
   }
 
 }

@@ -1,9 +1,18 @@
 package no.jergan.scrapbook
 
 import shapeless.Generic.Aux
-import shapeless.{::, lens, Generic, HList, HNil, Poly1}
+import shapeless.{::, Generic, HList, HNil, Lens, OpticDefns, Poly1, lens}
 
 object Shapeless {
+/*
+  case class Pair[A, B](a: A, b: B)
+
+  val p1 = Pair("pelle", 42)
+  val p2: Pair[String, Int] = ???
+  val p3: Long Pair String = ???
+  val p4: Long Pair String Pair Int = ???
+
+ */
 
   def main(args: Array[String]): Unit = {
 
@@ -11,10 +20,8 @@ object Shapeless {
 
     val pelle = Person("hei", 42, None)
 
-    val l: List[String] = List()
-    val l1: HList       = HNil
-
     val l2: Int :: String :: Person :: HNil = 42 :: "ole" :: pelle :: HNil
+    val l3: ::[Int, ::[String, ::[Person, HNil]]] = 42 :: "ole" :: pelle :: HNil
 
     object print extends Poly1 {
 
@@ -22,11 +29,11 @@ object Shapeless {
         println(s"int: " + i)
       }
 
-      implicit def caseString = at[String] { s =>
+      implicit def caseString: Case[String] { type Result } = at[String] { s =>
         println(s"string: " + s)
       }
 
-      implicit def casePelle = at[Person] { p =>
+      implicit def casePelle: Case[Person] { type Result } = at[Person] { p =>
         println(s"pelle: " + p.name)
       }
     }
@@ -43,7 +50,8 @@ object Shapeless {
     val gen: Aux[Person, String :: Int :: Option[Person] :: HNil] = Generic[Person]
     val pl: String :: Int :: Option[Person] :: HNil               = gen.to(pelle)
 
-    val ageLens  = lens[Person].age
+    val personLens: OpticDefns.RootLens[Person] = lens[Person]
+    val ageLens: Lens[Person, Int] = personLens.age
     val age: Int = ageLens.get(pelle)
 
   }

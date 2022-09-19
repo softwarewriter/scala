@@ -4,16 +4,15 @@ import cats.implicits.catsSyntaxTuple2Semigroupal
 import cats.Semigroup
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
-import no.jergan.scrapbook.scalawithcats.Ex10.Check.{And, Or, Pure}
+import no.jergan.scrapbook.scalawithcats.Ex10.Check.{MapCheck, PureCheck}
+import no.jergan.scrapbook.scalawithcats.Ex10.Predicate.{And, Or, Pure}
 
 
 object Ex10 {
 
-  class Pelle()
+  sealed trait Predicate[E, A] {
 
-  sealed trait Check[E, A] {
-
-    def and(check: Check[E, A]): And[E, A] = And(this, check)
+    def and(p: Predicate[E, A]): And[E, A] = And(this, p)
 
     def apply(a: A)(implicit ev: Semigroup[E]): Validated[E, A] = this match {
       case Pure(f) => f(a)
@@ -23,15 +22,30 @@ object Ex10 {
         case (_, Valid(a2)) => Valid(a2)
         case (Invalid(e1), Invalid(e2)) => Invalid(ev.combine(e1, e2))
       }
-
-        (l(a), r(a)).mapN((v1, v2) => a)
     }
   }
 
+  object Predicate {
+    case class Pure[E, A](f: A => Validated[E, A]) extends Predicate[E, A]
+    case class And[E, A](left: Predicate[E, A], right: Predicate[E, A]) extends Predicate[E, A]
+    case class Or[E, A](left: Predicate[E, A], right: Predicate[E, A]) extends Predicate[E, A]
+  }
+
+  sealed trait Check[E, A, B] {
+
+    def apply(a: A)(implicit ev: Semigroup[E]): Validated[E, B]
+
+    def map[C](f: B => C): Check[E, A, C] = MapCheck[E, A, B, C](this, f)
+
+  }
+
   object Check {
-    case class Pure[E, A](f: A => Validated[E, A]) extends Check[E, A]
-    case class And[E, A](left: Check[E, A], right: Check[E, A]) extends Check[E, A]
-    case class Or[E, A](left: Check[E, A], right: Check[E, A]) extends Check[E, A]
+    case class PureCheck[E, A](p: Predicate[E, A]) extends Check[E, A, A] {
+      override def apply(a: A)(implicit ev: Semigroup[E]): Validated[E, A] = p(a)
+    }
+    case class MapCheck[E, A, B, C](check: Check[E, A, B], f: B => C) extends Check[E, A, C] {
+      override def apply(a: A)(implicit ev: Semigroup[E]): Validated[E, C] = check(a).map(f)
+    }
   }
 
   def maxLengthCheck(maxLength: Int) = Pure[List[String], String](a => if (a.length > maxLength) Invalid(List(s"$a can be of maximum length $maxLength, was ${a.length}"))

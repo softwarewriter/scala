@@ -9,6 +9,20 @@ import cats.data.Kleisli
  */
 object PartialExample extends  App {
 
+  def m(f: PartialFunction[String, Int]): Unit = ???
+
+  m{
+    case "a" => 42
+    case "b" => 43
+  }
+
+  val v: PartialFunction[String, Int] = (a: String) => a match {
+    case "a" => 42
+    case "b" => 43
+  }
+
+  m(v)
+
   object WrappedFunction {
 
     case class WF[A, B](run: PartialFunction[A, B])
